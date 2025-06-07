@@ -67,11 +67,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     // Skip the first render to prevent navigation before mounting
     if (!isMounted.current) {
       isMounted.current = true;
-      return;
-    }
-
-    // Skip navigation until we've done our initial check
-    if (!initialCheckDone.current) {
       initialCheckDone.current = true;
       return;
     }
@@ -81,10 +76,15 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // If the user is not authenticated and not in the auth group or guest path, redirect to login
     if (!isAuthenticated && !inAuthGroup && !inGuestPath && !user?.id) {
-      router.replace("/login");
+      // Use setTimeout to ensure navigation happens after component is mounted
+      setTimeout(() => {
+        router.replace("/guest");
+      }, 0);
     } else if (isAuthenticated && inAuthGroup) {
       // If the user is authenticated and in the auth group, redirect to home
-      router.replace("/(tabs)");
+      setTimeout(() => {
+        router.replace("/(tabs)");
+      }, 0);
     }
   }, [isAuthenticated, segments, user]);
 

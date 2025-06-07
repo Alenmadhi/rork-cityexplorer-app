@@ -44,9 +44,9 @@ type MarkerProps = {
 };
 
 // Only import MapView on native platforms
-let MapView: React.ComponentType<MapViewProps> | undefined;
-let Marker: React.ComponentType<MarkerProps> | undefined;
-let PROVIDER_GOOGLE: string | undefined;
+let MapView: React.ComponentType<MapViewProps> | null = null;
+let Marker: React.ComponentType<MarkerProps> | null = null;
+let PROVIDER_GOOGLE: string | null = null;
 
 if (Platform.OS !== 'web') {
   try {

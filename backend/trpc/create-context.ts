@@ -1,7 +1,7 @@
 import { inferAsyncReturnType } from "@trpc/server";
 import { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 
-interface User {
+export interface User {
   id: string;
   name: string;
 }

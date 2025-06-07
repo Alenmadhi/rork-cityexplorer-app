@@ -2,8 +2,9 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import { z } from "zod";
 import superjson from "superjson";
 import { hiProcedure } from "./routes/example/hi/route";
+import { Context } from "./create-context";
 
-const t = initTRPC.create({
+const t = initTRPC.context<Context>().create({
   transformer: superjson,
 });
 
