@@ -1,25 +1,36 @@
-import { createTRPCReact } from "@trpc/react-query";
-import { httpLink } from "@trpc/client";
-import type { AppRouter } from "@/backend/trpc/app-router";
-import superjson from "superjson";
+import { createTRPCReact } from '@trpc/react-query';
+import { createTRPCClient, httpBatchLink } from '@trpc/client';
+import Constants from 'expo-constants';
+import type { AppRouter } from '@/backend/trpc/app-router';
+import { useAuthStore } from '@/stores/auth-store';
 
-export const trpc = createTRPCReact<AppRouter>();
-
+// Get the API URL from the manifest extra
 const getBaseUrl = () => {
-  if (process.env.EXPO_PUBLIC_RORK_API_BASE_URL) {
-    return process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
+  // If in development, use the localhost URL
+  if (__DEV__) {
+    const localhost = Constants.expoConfig?.hostUri?.split(':')[0] || 'localhost';
+    return `http://${localhost}:3000/api`;
   }
-
-  throw new Error(
-    "No base url found, please set EXPO_PUBLIC_RORK_API_BASE_URL"
-  );
+  
+  // In production, use the deployed API URL
+  return 'https://your-production-api.com/api';
 };
 
-export const trpcClient = trpc.createClient({
+// Create a tRPC client
+export const trpcClient = createTRPCClient<AppRouter>({
   links: [
-    httpLink({
-      url: `${getBaseUrl()}/api/trpc`,
-      transformer: superjson,
+    httpBatchLink({
+      url: `${getBaseUrl()}/trpc`,
+      headers() {
+        const { token } = useAuthStore.getState();
+        
+        return {
+          Authorization: token ? `Bearer ${token}` : '',
+        };
+      },
     }),
   ],
 });
+
+// Create a tRPC React client
+export const trpc = createTRPCReact<AppRouter>();

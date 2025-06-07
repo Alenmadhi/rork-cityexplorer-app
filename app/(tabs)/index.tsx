@@ -27,34 +27,18 @@ type Coordinate = {
   longitude: number;
 };
 
-type MapViewProps = {
-  style: any;
-  provider?: any;
-  initialRegion: Region;
-  children?: React.ReactNode;
-};
-
-type MarkerProps = {
-  coordinate: Coordinate;
-  title?: string;
-  description?: string;
-  pinColor?: string;
-  onPress?: () => void;
-  key?: string;
-};
-
 // Only import MapView on native platforms
-let MapView: React.ComponentType<MapViewProps> | null = null;
-let Marker: React.ComponentType<MarkerProps> | null = null;
-let PROVIDER_GOOGLE: string | null = null;
+let MapViewComponent: React.ComponentType<any> | null = null;
+let MarkerComponent: React.ComponentType<any> | null = null;
+let PROVIDER_GOOGLE_VALUE: string | null = null;
 
 if (Platform.OS !== 'web') {
   try {
     // Dynamic import to avoid loading on web
     const Maps = require('react-native-maps');
-    MapView = Maps.default;
-    Marker = Maps.Marker;
-    PROVIDER_GOOGLE = Maps.PROVIDER_GOOGLE;
+    MapViewComponent = Maps.default;
+    MarkerComponent = Maps.Marker;
+    PROVIDER_GOOGLE_VALUE = Maps.PROVIDER_GOOGLE;
   } catch (error) {
     console.warn('react-native-maps could not be loaded', error);
   }
@@ -287,11 +271,11 @@ export default function HomeScreen() {
           </View>
           
           <View style={styles.mapContainer}>
-            {Platform.OS !== 'web' && MapView ? (
+            {Platform.OS !== 'web' && MapViewComponent ? (
               locationPermission ? (
-                <MapView
+                <MapViewComponent
                   style={styles.map}
-                  provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+                  provider={Platform.OS === 'android' ? PROVIDER_GOOGLE_VALUE : undefined}
                   initialRegion={{
                     latitude: location?.coords.latitude || 41.1123,
                     longitude: location?.coords.longitude || 20.0826,
@@ -300,8 +284,8 @@ export default function HomeScreen() {
                   }}
                 >
                   {/* User location marker */}
-                  {location && Marker && (
-                    <Marker
+                  {location && MarkerComponent && (
+                    <MarkerComponent
                       coordinate={{
                         latitude: location.coords.latitude,
                         longitude: location.coords.longitude,
@@ -313,8 +297,8 @@ export default function HomeScreen() {
                   
                   {/* Issue markers */}
                   {nearbyIssues.map(issue => (
-                    Marker && (
-                      <Marker
+                    MarkerComponent && (
+                      <MarkerComponent
                         key={issue.id}
                         coordinate={issue.coordinates}
                         title={issue.title}
@@ -324,7 +308,7 @@ export default function HomeScreen() {
                       />
                     )
                   ))}
-                </MapView>
+                </MapViewComponent>
               ) : (
                 <View style={styles.mapPlaceholderContainer}>
                   <MapPin size={40} color={Colors.textSecondary} />

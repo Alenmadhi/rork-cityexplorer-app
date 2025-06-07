@@ -1,8 +1,8 @@
-import { protectedProcedure } from "../../../app-router";
+import { publicProcedure } from "../../../app-router";
 
-export const hiProcedure = protectedProcedure.query(() => {
+export const hiProcedure = publicProcedure.query(() => {
   return {
-    greeting: "Hello from a protected route!",
+    greeting: "Hello from tRPC server!",
     timestamp: new Date().toISOString(),
   };
 });

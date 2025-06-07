@@ -67,6 +67,10 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     // Skip the first render to prevent navigation before mounting
     if (!isMounted.current) {
       isMounted.current = true;
+      return;
+    }
+
+    if (!initialCheckDone.current) {
       initialCheckDone.current = true;
       return;
     }

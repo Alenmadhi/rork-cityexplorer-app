@@ -4,6 +4,8 @@ import { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 export interface User {
   id: string;
   name: string;
+  email: string;
+  role: 'user' | 'admin' | 'moderator';
 }
 
 // Function to create context for each request
@@ -26,6 +28,8 @@ export async function createContext({
       user = {
         id: "user-1",
         name: "Test User",
+        email: "test@example.com",
+        role: "user"
       };
     }
   }

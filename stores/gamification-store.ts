@@ -68,13 +68,13 @@ export const useGamificationStore = create<GamificationState>()(
           
           const { criteria } = badge;
           
-          if (criteria.type === 'reports' && userStats.reportsSubmitted >= criteria.count) {
+          if (criteria?.type === 'reports' && userStats.reportsSubmitted >= criteria.count) {
             get().unlockBadge(badge.id);
-          } else if (criteria.type === 'upvotes' && userStats.upvotesReceived >= criteria.count) {
+          } else if (criteria?.type === 'upvotes' && userStats.upvotesReceived && userStats.upvotesReceived >= criteria.count) {
             get().unlockBadge(badge.id);
-          } else if (criteria.type === 'comments' && userStats.commentsPosted >= criteria.count) {
+          } else if (criteria?.type === 'comments' && userStats.commentsPosted && userStats.commentsPosted >= criteria.count) {
             get().unlockBadge(badge.id);
-          } else if (criteria.type === 'fixes' && userStats.reportsResolved >= criteria.count) {
+          } else if (criteria?.type === 'fixes' && userStats.reportsResolved >= criteria.count) {
             get().unlockBadge(badge.id);
           }
         });
