@@ -4,7 +4,6 @@ import { Stack, useRouter } from 'expo-router';
 import { Camera, X, Check, MapPin, Mail, Phone, Globe, User as UserIcon, ChevronLeft } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useAuthStore } from '@/stores/auth-store';
-import type { User } from '@/types';
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -41,7 +40,7 @@ export default function EditProfileScreen() {
     
     // If no errors, save changes
     if (Object.keys(newErrors).length === 0 && user) {
-      const updatedUser: Partial<User> = {
+      const updatedUser = {
         ...user,
         name,
         email,
