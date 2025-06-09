@@ -4,6 +4,7 @@ import { Stack, useRouter } from 'expo-router';
 import { Camera, X, Check, MapPin, Mail, Phone, Globe, User, ChevronLeft } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useAuthStore } from '@/stores/auth-store';
+import { User } from '@/types';
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -39,18 +40,22 @@ export default function EditProfileScreen() {
     setErrors(newErrors);
     
     // If no errors, save changes
-    if (Object.keys(newErrors).length === 0) {
-      updateUser({
+    if (Object.keys(newErrors).length === 0 && user) {
+      const updatedUser: Partial<User> = {
         ...user,
         name,
         email,
-        phone,
-        address,
         bio,
-        website,
         avatar,
-      });
+        createdAt: user.createdAt || new Date().toISOString(),
+      };
       
+      // Only add optional fields if they have values
+      if (phone) updatedUser.phone = phone;
+      if (address) updatedUser.address = address;
+      if (website) updatedUser.website = website;
+      
+      updateUser(updatedUser);
       router.back();
     }
   };

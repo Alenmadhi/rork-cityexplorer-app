@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, FlatList, Platform } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, FlatList, Platform, ScrollView } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { MapPin, Calendar, AlertTriangle, ChevronRight, Map as MapIcon, List } from 'lucide-react-native';
@@ -275,7 +275,11 @@ const ScrollableFilterTabs = ({
   ];
   
   return (
-    <View style={filterStyles.container}>
+    <ScrollView 
+      horizontal 
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={filterStyles.container}
+    >
       {filters.map(filter => (
         <TouchableOpacity
           key={filter.value}
@@ -295,7 +299,7 @@ const ScrollableFilterTabs = ({
           </Text>
         </TouchableOpacity>
       ))}
-    </View>
+    </ScrollView>
   );
 };
 

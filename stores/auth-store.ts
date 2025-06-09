@@ -1,46 +1,102 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { persist, createJSONStorage } from 'zustand/middleware';
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  avatar: string | null;
-  role?: 'user' | 'admin' | 'moderator';
-}
+import { User } from '@/types';
 
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
-  token: string | undefined;
-  login: (user: User, token?: string | undefined) => void;
+  isLoading: boolean;
+  error: string | null;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (userData: Partial<User>) => Promise<void>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
 }
 
+// Mock user data
+const mockUser: User = {
+  id: '1',
+  name: 'John Doe',
+  email: 'john.doe@example.com',
+  avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80',
+  bio: 'Passionate about making our city better!',
+  phone: '+355 69 123 4567',
+  address: 'Rruga Qemal Stafa, Tirana',
+  website: 'johndoe.com',
+  createdAt: '2024-12-15T10:30:00Z',
+};
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      user: null,
-      isAuthenticated: false,
-      token: undefined,
+      user: mockUser,
+      isAuthenticated: true, // Set to true for demo purposes
+      isLoading: false,
+      error: null,
       
-      login: (user: User, token = undefined) => set({ 
-        user, 
-        isAuthenticated: true,
-        token
-      }),
+      login: async (email: string, password: string) => {
+        set({ isLoading: true, error: null });
+        
+        try {
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // For demo purposes, always succeed with mock user
+          set({ 
+            user: mockUser,
+            isAuthenticated: true,
+            isLoading: false
+          });
+        } catch (error) {
+          set({ 
+            error: 'Invalid email or password',
+            isLoading: false
+          });
+        }
+      },
       
-      logout: () => set({ 
-        user: null, 
-        isAuthenticated: false,
-        token: undefined
-      }),
+      signup: async (userData: Partial<User>) => {
+        set({ isLoading: true, error: null });
+        
+        try {
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Create a new user with the provided data and some defaults
+          const newUser: User = {
+            id: Math.random().toString(36).substring(2, 9),
+            name: userData.name || 'New User',
+            email: userData.email || 'user@example.com',
+            createdAt: new Date().toISOString(),
+            ...userData,
+          };
+          
+          set({ 
+            user: newUser,
+            isAuthenticated: true,
+            isLoading: false
+          });
+        } catch (error) {
+          set({ 
+            error: 'Failed to create account',
+            isLoading: false
+          });
+        }
+      },
       
-      updateUser: (userData: Partial<User>) => set((state) => ({
-        user: state.user ? { ...state.user, ...userData } : null
-      })),
+      logout: () => {
+        set({ 
+          user: null,
+          isAuthenticated: false
+        });
+      },
+      
+      updateUser: (userData: Partial<User>) => {
+        set((state) => ({
+          user: state.user ? { ...state.user, ...userData } : null
+        }));
+      },
     }),
     {
       name: 'auth-storage',

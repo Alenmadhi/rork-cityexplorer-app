@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Platform, Image } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { Settings, Edit, Award, AlertTriangle, Bell, LogOut, ChevronRight, MapPin, Mail, Calendar, Shield } from 'lucide-react-native';
+import { Settings, Edit, Award, AlertTriangle, Bell, LogOut, ChevronRight, MapPin, Mail, Calendar, Shield, Phone } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useAuthStore } from '@/stores/auth-store';
 import { useGamificationStore } from '@/stores/gamification-store';

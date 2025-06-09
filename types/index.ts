@@ -8,6 +8,18 @@ export interface EmergencyAlert {
   link?: string;
 }
 
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  bio?: string;
+  phone?: string;
+  address?: string;
+  website?: string;
+  createdAt: string;
+}
+
 export interface SuccessStory {
   id: string;
   title: string;

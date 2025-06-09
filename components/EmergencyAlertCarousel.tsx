@@ -54,16 +54,16 @@ export const EmergencyAlertCarousel: React.FC<EmergencyAlertCarouselProps> = ({ 
   }, [currentIndex, alerts.length]);
   
   // Create a stable reference to the viewability config
-  const viewabilityConfig = useRef({
+  const viewabilityConfig = {
     itemVisiblePercentThreshold: 50
-  }).current;
+  };
   
   // Create a stable reference to the viewability callback
-  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
+  const onViewableItemsChangedRef = useRef(({ viewableItems }: any) => {
     if (viewableItems.length > 0) {
       setCurrentIndex(viewableItems[0].index);
     }
-  }).current;
+  });
   
   const handleAlertPress = useCallback((alert: EmergencyAlert) => {
     if (alert.link) {
@@ -104,7 +104,7 @@ export const EmergencyAlertCarousel: React.FC<EmergencyAlertCarouselProps> = ({ 
         pagingEnabled
         snapToAlignment="start"
         decelerationRate="fast"
-        onViewableItemsChanged={onViewableItemsChanged}
+        onViewableItemsChanged={onViewableItemsChangedRef.current}
         viewabilityConfig={viewabilityConfig}
         initialNumToRender={1}
         maxToRenderPerBatch={2}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity, Platform, ScrollView } from 'react-native';
 import { Stack } from 'expo-router';
-import { Bell, CheckCircle, AlertTriangle, MessageCircle, Award, Calendar, Trash2 } from 'lucide-react-native';
+import { Bell, CheckCircle, AlertTriangle, MessageCircle, Award, Calendar, Trash2, Trophy } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 
 // Types
@@ -292,10 +292,14 @@ const ScrollableFilterTabs = ({
   
   return (
     <View style={styles.filtersContainer}>
-      <FlatList
-        data={filters}
-        renderItem={({ item }) => (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filtersList}
+      >
+        {filters.map((item) => (
           <TouchableOpacity
+            key={item.value}
             style={[
               styles.filterTab,
               currentFilter === item.value && styles.activeFilterTab
@@ -312,12 +316,8 @@ const ScrollableFilterTabs = ({
               {item.label}
             </Text>
           </TouchableOpacity>
-        )}
-        keyExtractor={(item) => item.value}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filtersList}
-      />
+        ))}
+      </ScrollView>
     </View>
   );
 };
