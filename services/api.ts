@@ -51,7 +51,7 @@ export async function fetchNews(): Promise<NewsItem[]> {
     }
     
     // Filter for articles that might mention Elbasan
-    const elbasanArticles = articles.filter(article => 
+    const elbasanArticles = articles.filter((article: any) => 
       article.title.toLowerCase().includes('elbasan') || 
       article.description.toLowerCase().includes('elbasan') ||
       article.content.toLowerCase().includes('elbasan')
