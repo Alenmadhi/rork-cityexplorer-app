@@ -44,12 +44,7 @@ export default function LoginScreen() {
   };
   
   const handleContinueAsGuest = async () => {
-    try {
-      await loginAsGuest();
-      // Navigation is handled in the useEffect
-    } catch (err) {
-      setError('Failed to continue as guest. Please try again.');
-    }
+    router.push('/guest');
   };
 
   return (
@@ -145,7 +140,7 @@ export default function LoginScreen() {
         
         <TouchableOpacity 
           style={styles.guestButton}
-          onPress={() => router.push('/guest')}
+          onPress={handleContinueAsGuest}
           disabled={isLoading}
         >
           <Text style={styles.guestButtonText}>Continue as Guest</Text>

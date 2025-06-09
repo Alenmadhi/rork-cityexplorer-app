@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, View, FlatList, Text } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { Stack } from 'expo-router';
 import { NewsCard } from '@/components/NewsCard';
 import { SearchBar } from '@/components/SearchBar';
@@ -33,25 +33,25 @@ export default function NewsScreen() {
   const renderCategoryButton = (category: NewsCategory | 'all') => {
     const isSelected = category === selectedCategory;
     return (
-      <Text
+      <TouchableOpacity
         key={category}
         style={[
           styles.categoryButton,
-          isSelected && styles.selectedCategoryButton,
-          { color: isSelected ? Colors.background : Colors.text }
+          isSelected && styles.selectedCategoryButton
         ]}
         onPress={() => setSelectedCategory(category)}
       >
-        {category === 'all' ? 'All' : category.charAt(0).toUpperCase() + category.slice(1)}
-      </Text>
+        <Text
+          style={[
+            styles.categoryButtonText,
+            isSelected && styles.selectedCategoryButtonText
+          ]}
+        >
+          {category === 'all' ? 'All' : category.charAt(0).toUpperCase() + category.slice(1)}
+        </Text>
+      </TouchableOpacity>
     );
   };
-
-  const renderNewsItem = useCallback(({ item }: { item: NewsItem }) => (
-    <NewsCard news={item} />
-  ), []);
-
-  const keyExtractor = useCallback((item: NewsItem) => item.id, []);
 
   if (loading && news.length === 0) {
     return <LoadingIndicator message="Loading news..." />;
@@ -72,33 +72,29 @@ export default function NewsScreen() {
           placeholder="Search news..."
         />
         
-        <View style={styles.categoriesContainer}>
-          <FlatList
-            data={categories}
-            renderItem={({ item }) => renderCategoryButton(item)}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoriesList}
-            keyExtractor={(item) => item}
-          />
-        </View>
+        <ScrollView 
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoriesContainer}
+        >
+          {categories.map(category => renderCategoryButton(category))}
+        </ScrollView>
         
         {error ? (
           <ErrorMessage message={error} onRetry={refreshNews} />
         ) : filteredNews.length > 0 ? (
-          <>
+          <ScrollView
+            contentContainerStyle={styles.newsList}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={loading} onRefresh={refreshNews} />
+            }
+          >
             {lastUpdated && <LastUpdated date={lastUpdated} />}
-            <FlatList
-              data={filteredNews}
-              renderItem={renderNewsItem}
-              keyExtractor={keyExtractor}
-              contentContainerStyle={styles.newsList}
-              showsVerticalScrollIndicator={false}
-              refreshControl={
-                <RefreshControl refreshing={loading} onRefresh={refreshNews} />
-              }
-            />
-          </>
+            {filteredNews.map(item => (
+              <NewsCard key={item.id} news={item} />
+            ))}
+          </ScrollView>
         ) : (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No news found</Text>
@@ -117,10 +113,10 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   categoriesContainer: {
-    marginBottom: 16,
-  },
-  categoriesList: {
     paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
   categoryButton: {
     paddingHorizontal: 16,
@@ -128,12 +124,20 @@ const styles = StyleSheet.create({
     marginRight: 8,
     borderRadius: 20,
     backgroundColor: Colors.card,
-    overflow: 'hidden',
-    fontSize: 14,
-    fontWeight: '500',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   selectedCategoryButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: `${Colors.primary}15`,
+    borderColor: Colors.primary,
+  },
+  categoryButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: Colors.textSecondary,
+  },
+  selectedCategoryButtonText: {
+    color: Colors.primary,
   },
   newsList: {
     paddingHorizontal: 16,

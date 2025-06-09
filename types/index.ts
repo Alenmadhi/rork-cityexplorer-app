@@ -50,6 +50,7 @@ export interface Badge {
   category: string;
   level?: number;
   points?: number;
+  unlocked?: boolean;
 }
 
 export interface Weather {
@@ -99,7 +100,7 @@ export interface Attraction {
   featured?: boolean;
 }
 
-export interface NewsArticle {
+export interface NewsItem {
   id: string;
   title: string;
   summary: string;
@@ -107,9 +108,11 @@ export interface NewsArticle {
   image: string;
   date: string;
   author: string;
-  category: string;
+  category: NewsCategory;
   featured?: boolean;
 }
+
+export type NewsCategory = 'local' | 'business' | 'culture' | 'sports' | 'politics' | 'other';
 
 export interface TouristInfo {
   id: string;

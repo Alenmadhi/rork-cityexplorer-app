@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity, Platform, ScrollView } from 'react-native';
 import { Stack } from 'expo-router';
 import { Bell, CheckCircle, AlertTriangle, MessageCircle, Award, Calendar, Trash2, Trophy } from 'lucide-react-native';
 import Colors from '@/constants/colors';
@@ -291,34 +291,32 @@ const ScrollableFilterTabs = ({
   ];
   
   return (
-    <View style={styles.filtersContainer}>
-      <FlatList
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filtersList}
-        data={filters}
-        keyExtractor={(item) => item.value}
-        renderItem={({ item }) => (
-          <TouchableOpacity
+    <ScrollView 
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.filtersList}
+    >
+      {filters.map((item) => (
+        <TouchableOpacity
+          key={item.value}
+          style={[
+            styles.filterTab,
+            currentFilter === item.value && styles.activeFilterTab
+          ]}
+          onPress={() => onFilterChange(item.value)}
+        >
+          {item.icon}
+          <Text 
             style={[
-              styles.filterTab,
-              currentFilter === item.value && styles.activeFilterTab
+              styles.filterTabText,
+              currentFilter === item.value && styles.activeFilterTabText
             ]}
-            onPress={() => onFilterChange(item.value)}
           >
-            {item.icon}
-            <Text 
-              style={[
-                styles.filterTabText,
-                currentFilter === item.value && styles.activeFilterTabText
-              ]}
-            >
-              {item.label}
-            </Text>
-          </TouchableOpacity>
-        )}
-      />
-    </View>
+            {item.label}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
   );
 };
 
@@ -356,8 +354,10 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.border,
   },
   filtersList: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 16,
     paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
   filterTab: {
     flexDirection: 'row',
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    marginHorizontal: 4,
+    marginRight: 8,
     backgroundColor: Colors.card,
     borderWidth: 1,
     borderColor: Colors.border,
