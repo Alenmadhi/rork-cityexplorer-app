@@ -33,12 +33,13 @@ export interface SuccessStory {
   location: string;
   date: string;
   featured: boolean;
-  votes?: number;
+  votes: number;
   reportedBy?: string;
   resolvedBy?: string;
   resolvedDate?: string;
   category?: string;
   comments?: Comment[] | number;
+  likes?: number; // Added to match usage in components
 }
 
 // Badge type

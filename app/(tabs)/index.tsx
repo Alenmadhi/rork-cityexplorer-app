@@ -13,6 +13,7 @@ import { SuccessStoryCard } from '@/components/SuccessStoryCard';
 import NetInfo from '@react-native-community/netinfo';
 import { WeatherCard } from '@/components/WeatherCard';
 import { mockWeather } from '@/mocks/weather';
+import { SuccessStory } from '@/types';
 
 // Define proper types for location data
 type Coordinate = {
@@ -227,7 +228,7 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
             
-            {featuredStories.map(story => (
+            {featuredStories.map((story: SuccessStory) => (
               <SuccessStoryCard 
                 key={story.id} 
                 story={story} 

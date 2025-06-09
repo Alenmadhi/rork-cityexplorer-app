@@ -19,6 +19,11 @@ export const SuccessStoryCard: React.FC<SuccessStoryCardProps> = ({ story, featu
     router.push(`/success-stories/${story.id}`);
   };
   
+  // Safely handle comments count
+  const commentsCount = typeof story.comments === 'number' 
+    ? story.comments 
+    : story.comments?.length || 0;
+  
   return (
     <TouchableOpacity 
       style={[
@@ -78,12 +83,12 @@ export const SuccessStoryCard: React.FC<SuccessStoryCardProps> = ({ story, featu
             <View style={styles.stats}>
               <View style={styles.statItem}>
                 <Heart size={16} color={Colors.primary} />
-                <Text style={styles.statText}>{story.likes || 0}</Text>
+                <Text style={styles.statText}>{story.likes || story.votes || 0}</Text>
               </View>
               
               <View style={styles.statItem}>
                 <MessageCircle size={16} color={Colors.primary} />
-                <Text style={styles.statText}>{story.comments || 0}</Text>
+                <Text style={styles.statText}>{commentsCount}</Text>
               </View>
             </View>
             

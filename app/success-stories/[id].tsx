@@ -5,6 +5,7 @@ import { Image } from 'expo-image';
 import { MapPin, Calendar, ArrowLeft, Share2, ThumbsUp, MessageCircle } from 'lucide-react-native';
 import { useSuccessStoriesStore } from '@/stores/success-stories-store';
 import Colors from '@/constants/colors';
+import { Comment } from '@/types';
 
 export default function SuccessStoryDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -33,6 +34,12 @@ export default function SuccessStoryDetailScreen() {
     };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
+  
+  // Safely handle comments
+  const storyComments = Array.isArray(story.comments) ? story.comments : [];
+  const commentsCount = typeof story.comments === 'number' 
+    ? story.comments 
+    : story.comments?.length || 0;
   
   return (
     <>
@@ -119,8 +126,23 @@ export default function SuccessStoryDetailScreen() {
           </View>
           
           <View style={styles.commentsContainer}>
-            <Text style={styles.commentsTitle}>Comments</Text>
-            <Text style={styles.noCommentsText}>No comments yet. Be the first to comment!</Text>
+            <Text style={styles.commentsTitle}>Comments ({commentsCount})</Text>
+            
+            {Array.isArray(story.comments) && story.comments.length > 0 ? (
+              story.comments.map((comment: Comment) => (
+                <View key={comment.id} style={styles.commentItem}>
+                  <View style={styles.commentHeader}>
+                    <Text style={styles.commentAuthor}>{comment.userName}</Text>
+                    <Text style={styles.commentDate}>
+                      {new Date(comment.createdAt).toLocaleDateString()}
+                    </Text>
+                  </View>
+                  <Text style={styles.commentText}>{comment.text}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.noCommentsText}>No comments yet. Be the first to comment!</Text>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -271,6 +293,33 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.text,
     marginBottom: 16,
+  },
+  commentItem: {
+    backgroundColor: `${Colors.card}80`,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  commentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  commentAuthor: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: Colors.text,
+  },
+  commentDate: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+  },
+  commentText: {
+    fontSize: 14,
+    color: Colors.text,
+    lineHeight: 20,
   },
   noCommentsText: {
     fontSize: 15,

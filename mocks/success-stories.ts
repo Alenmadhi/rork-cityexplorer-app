@@ -9,8 +9,8 @@ export const successStories: SuccessStory[] = [
     afterImage: 'https://images.unsplash.com/photo-1569880153113-76e33fc52d5f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
     date: '2023-06-20',
     location: 'Elbasan Castle, Historic District',
-    issueId: '5',
     featured: true,
+    votes: 24,
     likes: 24,
     comments: 8
   },
@@ -22,8 +22,8 @@ export const successStories: SuccessStory[] = [
     afterImage: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
     date: '2023-06-25',
     location: 'Rruga Qemal Stafa, City Center',
-    issueId: '1',
     featured: true,
+    votes: 32,
     likes: 32,
     comments: 12
   },
@@ -35,8 +35,8 @@ export const successStories: SuccessStory[] = [
     afterImage: 'https://images.unsplash.com/photo-1587613864521-9ef8dfe617cc?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
     date: '2023-06-15',
     location: 'Park near Elbasan Castle',
-    issueId: '3',
     featured: false,
+    votes: 18,
     likes: 18,
     comments: 5
   },
@@ -48,8 +48,8 @@ export const successStories: SuccessStory[] = [
     afterImage: 'https://images.unsplash.com/photo-1600359738432-965e50c4d89e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
     date: '2023-06-18',
     location: 'Bulevardi Qemal Stafa, near the bank',
-    issueId: '4',
     featured: false,
+    votes: 15,
     likes: 15,
     comments: 3
   }

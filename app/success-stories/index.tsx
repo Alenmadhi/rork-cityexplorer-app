@@ -8,7 +8,7 @@ import { SuccessStory } from '@/types';
 import Colors from '@/constants/colors';
 
 export default function SuccessStoriesScreen() {
-  const { stories, fetchStories } = useSuccessStoriesStore();
+  const { stories, fetchStories, isLoading } = useSuccessStoriesStore();
   
   React.useEffect(() => {
     fetchStories();
@@ -44,9 +44,14 @@ export default function SuccessStoriesScreen() {
         ) : (
           <View style={styles.emptyContainer}>
             <Wrench size={60} color={Colors.textSecondary} />
-            <Text style={styles.emptyTitle}>No success stories yet</Text>
+            <Text style={styles.emptyTitle}>
+              {isLoading ? 'Loading stories...' : 'No success stories yet'}
+            </Text>
             <Text style={styles.emptyMessage}>
-              Check back later for updates on resolved issues
+              {isLoading 
+                ? 'Please wait while we fetch the latest success stories'
+                : 'Check back later for updates on resolved issues'
+              }
             </Text>
           </View>
         )}
