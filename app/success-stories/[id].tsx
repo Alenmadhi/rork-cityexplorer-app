@@ -1,8 +1,8 @@
-import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Platform, TextInput } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import { MapPin, Calendar, ArrowLeft, Share2, ThumbsUp, MessageCircle } from 'lucide-react-native';
+import { MapPin, Calendar, ArrowLeft, Share2, ThumbsUp, MessageCircle, Send } from 'lucide-react-native';
 import { useSuccessStoriesStore } from '@/stores/success-stories-store';
 import Colors from '@/constants/colors';
 import { Comment } from '@/types';
@@ -11,6 +11,9 @@ export default function SuccessStoryDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { getStoryById } = useSuccessStoriesStore();
+  const [newComment, setNewComment] = useState('');
+  const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
   
   const story = getStoryById(id as string);
   
@@ -25,6 +28,13 @@ export default function SuccessStoryDetailScreen() {
     );
   }
   
+  // Initialize likes count from story if available
+  React.useEffect(() => {
+    if (story.likes !== undefined) {
+      setLikesCount(story.likes);
+    }
+  }, [story.likes]);
+  
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = { 
       weekday: 'long', 
@@ -33,6 +43,25 @@ export default function SuccessStoryDetailScreen() {
       day: 'numeric' 
     };
     return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+  
+  const handleLike = () => {
+    if (liked) {
+      setLikesCount(prev => Math.max(0, prev - 1));
+    } else {
+      setLikesCount(prev => prev + 1);
+    }
+    setLiked(!liked);
+  };
+  
+  const handleAddComment = () => {
+    if (!newComment.trim()) return;
+    
+    // In a real app, this would call an API to add the comment
+    console.log('Adding comment:', newComment);
+    
+    // Clear the input
+    setNewComment('');
   };
   
   // Safely handle comments
@@ -134,19 +163,43 @@ export default function SuccessStoryDetailScreen() {
           </View>
           
           <View style={styles.actionsContainer}>
-            <TouchableOpacity style={styles.actionButton}>
-              <ThumbsUp size={20} color={Colors.primary} />
-              <Text style={styles.actionText}>Appreciate</Text>
+            <TouchableOpacity 
+              style={[styles.actionButton, liked && styles.actionButtonActive]} 
+              onPress={handleLike}
+            >
+              <ThumbsUp size={20} color={liked ? Colors.primary : Colors.textSecondary} />
+              <Text style={[styles.actionText, liked && styles.actionTextActive]}>
+                {liked ? 'Appreciated' : 'Appreciate'} ({likesCount})
+              </Text>
             </TouchableOpacity>
             
             <TouchableOpacity style={styles.actionButton}>
-              <MessageCircle size={20} color={Colors.primary} />
-              <Text style={styles.actionText}>Comment</Text>
+              <MessageCircle size={20} color={Colors.textSecondary} />
+              <Text style={styles.actionText}>Comment ({commentsCount})</Text>
             </TouchableOpacity>
           </View>
           
           <View style={styles.commentsContainer}>
             <Text style={styles.commentsTitle}>Comments ({commentsCount})</Text>
+            
+            <View style={styles.commentInputContainer}>
+              <TextInput
+                style={styles.commentInput}
+                placeholder="Add a comment..."
+                value={newComment}
+                onChangeText={setNewComment}
+                multiline
+                placeholderTextColor={Colors.textSecondary}
+              />
+              <TouchableOpacity 
+                style={[styles.commentButton, !newComment.trim() && styles.commentButtonDisabled]}
+                onPress={handleAddComment}
+                disabled={!newComment.trim()}
+              >
+                <Send size={18} color={newComment.trim() ? '#fff' : Colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+            
             {renderComments()}
           </View>
         </View>
@@ -284,11 +337,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 8,
   },
+  actionButtonActive: {
+    backgroundColor: `${Colors.primary}15`,
+    borderRadius: 20,
+  },
   actionText: {
     marginLeft: 8,
     fontSize: 14,
-    color: Colors.primary,
+    color: Colors.textSecondary,
     fontWeight: '500',
+  },
+  actionTextActive: {
+    color: Colors.primary,
   },
   commentsContainer: {
     marginBottom: 40,
@@ -298,6 +358,35 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.text,
     marginBottom: 16,
+  },
+  commentInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  commentInput: {
+    flex: 1,
+    backgroundColor: Colors.card,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: Colors.text,
+    marginRight: 8,
+    minHeight: 48,
+  },
+  commentButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  commentButtonDisabled: {
+    backgroundColor: Colors.border,
   },
   commentItem: {
     backgroundColor: `${Colors.card}80`,

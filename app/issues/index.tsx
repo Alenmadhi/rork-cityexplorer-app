@@ -70,17 +70,24 @@ const MOCK_ISSUES: Issue[] = [
 ];
 
 type ViewMode = 'list' | 'map';
+type FilterType = 'all' | 'pending' | 'in_progress' | 'resolved';
 
 export default function IssuesScreen() {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [filter, setFilter] = useState<FilterType>('all');
+  
+  const filteredIssues = MOCK_ISSUES.filter(issue => {
+    if (filter === 'all') return true;
+    return issue.status === filter;
+  });
   
   const getStatusColor = (status: Issue['status']) => {
     switch (status) {
       case 'pending':
         return Colors.warning;
       case 'in_progress':
-        return Colors.primary; // Changed from Colors.info to Colors.primary
+        return Colors.primary;
       case 'resolved':
         return Colors.success;
       default:
@@ -198,14 +205,34 @@ export default function IssuesScreen() {
           </TouchableOpacity>
         </View>
         
-        {viewMode === 'list' ? (
-          <FlatList
-            data={MOCK_ISSUES}
-            renderItem={renderIssueItem}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.issuesList}
-            showsVerticalScrollIndicator={false}
+        {/* Filter tabs */}
+        <View style={styles.filterContainer}>
+          <ScrollableFilterTabs 
+            currentFilter={filter} 
+            onFilterChange={setFilter} 
           />
+        </View>
+        
+        {viewMode === 'list' ? (
+          <>
+            {filteredIssues.length > 0 ? (
+              <FlatList
+                data={filteredIssues}
+                renderItem={renderIssueItem}
+                keyExtractor={(item) => item.id}
+                contentContainerStyle={styles.issuesList}
+                showsVerticalScrollIndicator={false}
+              />
+            ) : (
+              <View style={styles.emptyContainer}>
+                <AlertTriangle size={48} color={Colors.textSecondary} />
+                <Text style={styles.emptyTitle}>No issues found</Text>
+                <Text style={styles.emptyMessage}>
+                  No issues match the current filter. Try changing the filter or report a new issue.
+                </Text>
+              </View>
+            )}
+          </>
         ) : (
           <View style={styles.mapContainer}>
             <View style={styles.mapPlaceholder}>
@@ -231,6 +258,74 @@ export default function IssuesScreen() {
     </>
   );
 }
+
+// Scrollable filter tabs component
+const ScrollableFilterTabs = ({ 
+  currentFilter, 
+  onFilterChange 
+}: { 
+  currentFilter: FilterType, 
+  onFilterChange: (filter: FilterType) => void 
+}) => {
+  const filters: { value: FilterType, label: string }[] = [
+    { value: 'all', label: 'All Issues' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'in_progress', label: 'In Progress' },
+    { value: 'resolved', label: 'Resolved' }
+  ];
+  
+  return (
+    <View style={filterStyles.container}>
+      {filters.map(filter => (
+        <TouchableOpacity
+          key={filter.value}
+          style={[
+            filterStyles.tab,
+            currentFilter === filter.value && filterStyles.activeTab
+          ]}
+          onPress={() => onFilterChange(filter.value)}
+        >
+          <Text 
+            style={[
+              filterStyles.tabText,
+              currentFilter === filter.value && filterStyles.activeTabText
+            ]}
+          >
+            {filter.label}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+};
+
+const filterStyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    paddingHorizontal: 8,
+  },
+  tab: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginHorizontal: 4,
+    borderRadius: 16,
+    backgroundColor: Colors.card,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  activeTab: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: Colors.text,
+  },
+  activeTabText: {
+    color: '#fff',
+  },
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -266,6 +361,10 @@ const styles = StyleSheet.create({
   },
   activeViewToggleText: {
     color: Colors.background,
+  },
+  filterContainer: {
+    paddingVertical: 8,
+    paddingHorizontal: 8,
   },
   issuesList: {
     padding: 16,
@@ -416,5 +515,23 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyMessage: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
   },
 });

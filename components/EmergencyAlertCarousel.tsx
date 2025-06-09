@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, FlatList, Dimensions, Platform } from 'react-native';
 import { AlertTriangle, ChevronUp, ChevronDown, X } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -33,7 +33,7 @@ export const EmergencyAlertCarousel: React.FC<EmergencyAlertCarouselProps> = ({ 
   }, [currentIndex, alerts.length]);
   
   // Handle manual navigation
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     const prevIndex = currentIndex === 0 ? alerts.length - 1 : currentIndex - 1;
     setCurrentIndex(prevIndex);
     flatListRef.current?.scrollToIndex({ 
@@ -41,9 +41,9 @@ export const EmergencyAlertCarousel: React.FC<EmergencyAlertCarouselProps> = ({ 
       animated: true,
       viewPosition: 0.5
     });
-  };
+  }, [currentIndex, alerts.length]);
   
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     const nextIndex = (currentIndex + 1) % alerts.length;
     setCurrentIndex(nextIndex);
     flatListRef.current?.scrollToIndex({ 
@@ -51,7 +51,7 @@ export const EmergencyAlertCarousel: React.FC<EmergencyAlertCarouselProps> = ({ 
       animated: true,
       viewPosition: 0.5
     });
-  };
+  }, [currentIndex, alerts.length]);
   
   // Create a stable reference to the viewability config
   const viewabilityConfig = useRef({
@@ -65,13 +65,13 @@ export const EmergencyAlertCarousel: React.FC<EmergencyAlertCarouselProps> = ({ 
     }
   }).current;
   
-  const handleAlertPress = (alert: EmergencyAlert) => {
+  const handleAlertPress = useCallback((alert: EmergencyAlert) => {
     if (alert.link) {
       router.push(alert.link);
     }
-  };
+  }, [router]);
   
-  const renderItem = ({ item }: { item: EmergencyAlert }) => (
+  const renderItem = useCallback(({ item }: { item: EmergencyAlert }) => (
     <TouchableOpacity
       style={[
         styles.alertCard,
@@ -89,7 +89,7 @@ export const EmergencyAlertCarousel: React.FC<EmergencyAlertCarouselProps> = ({ 
         </View>
       </View>
     </TouchableOpacity>
-  );
+  ), [handleAlertPress]);
   
   if (!alerts || alerts.length === 0) return null;
   

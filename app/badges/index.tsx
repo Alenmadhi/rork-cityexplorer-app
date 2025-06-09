@@ -17,7 +17,8 @@ export default function BadgesScreen() {
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [showBadgeModal, setShowBadgeModal] = useState(false);
   
-  const earnedBadgeIds = userAchievements.map(a => a.badgeId);
+  // Ensure userAchievements is an array before mapping
+  const earnedBadgeIds = userAchievements ? userAchievements.map(a => a.badgeId) : [];
   
   const filteredBadges = badges.filter(badge => {
     if (filter === 'all') return true;
@@ -27,6 +28,7 @@ export default function BadgesScreen() {
   });
   
   const getEarnedDate = (badgeId: string) => {
+    if (!userAchievements) return undefined;
     const achievement = userAchievements.find(a => a.badgeId === badgeId);
     return achievement?.dateEarned;
   };

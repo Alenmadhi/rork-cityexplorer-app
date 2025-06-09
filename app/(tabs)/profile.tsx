@@ -1,237 +1,226 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image, ScrollView, Alert, Platform } from 'react-native';
+import React from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Platform, Image } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { LogOut, User, Settings, Bell, HelpCircle, Shield, MapPin, Award } from 'lucide-react-native';
+import { Settings, Edit, Award, AlertTriangle, Bell, LogOut, ChevronRight, MapPin, Mail, Calendar, Shield } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useAuthStore } from '@/stores/auth-store';
 import { useGamificationStore } from '@/stores/gamification-store';
-import { BadgeCard } from '@/components/BadgeCard';
-import { NewBadgeModal } from '@/components/NewBadgeModal';
-import { Badge } from '@/types';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
-  const { badges, reportCount, neighborhoods, userStats } = useGamificationStore();
+  const { userStats, userAchievements } = useGamificationStore();
   
-  // Get earned badges
-  const earnedBadges = badges ? badges.filter(badge => badge.unlocked) : [];
+  // Calculate level progress
+  const levelProgress = userStats ? Math.min(100, (userStats.points % 100)) : 0;
   
-  const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
-  const [showBadgeModal, setShowBadgeModal] = useState(false);
+  // Format date
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+  };
   
+  // Handle logout
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: () => {
-            logout();
-            router.replace('/login');
-          },
-        },
-      ]
-    );
+    logout();
+    router.replace('/');
   };
   
-  const handleBadgePress = (badge: Badge) => {
-    // Convert the gamification store badge to the type Badge
-    const badgeData: Badge = {
-      id: badge.id,
-      name: badge.name,
-      description: badge.description,
-      icon: badge.icon,
-      criteria: badge.criteria,
-      image: badge.image
-    };
-    
-    setSelectedBadge(badgeData);
-    setShowBadgeModal(true);
-  };
-
   return (
     <>
       <Stack.Screen 
         options={{
           title: 'Profile',
           headerLargeTitle: true,
+          headerRight: () => (
+            <TouchableOpacity onPress={() => router.push('/settings')}>
+              <Settings size={24} color={Colors.text} />
+            </TouchableOpacity>
+          ),
         }} 
       />
-      <ScrollView style={styles.container}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        {/* Profile Header */}
         <View style={styles.profileHeader}>
-          <View style={styles.avatarContainer}>
-            {user?.avatar ? (
-              <Image source={{ uri: user.avatar }} style={styles.avatar} />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <User size={40} color={Colors.background} />
-              </View>
-            )}
-          </View>
-          <Text style={styles.userName}>{user?.name || 'Guest User'}</Text>
-          <Text style={styles.userEmail}>{user?.email || 'Not signed in'}</Text>
-          
-          {user ? (
-            <TouchableOpacity style={styles.editProfileButton}>
-              <Text style={styles.editProfileText}>Edit Profile</Text>
-            </TouchableOpacity>
-          ) : (
+          <View style={styles.profileImageContainer}>
+            <Image 
+              source={{ uri: user?.avatar || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80' }} 
+              style={styles.profileImage}
+            />
             <TouchableOpacity 
-              style={styles.signInButton}
-              onPress={() => router.push('/login')}
+              style={styles.editButton}
+              onPress={() => router.push('/profile/edit')}
             >
-              <Text style={styles.signInText}>Sign In</Text>
+              <Edit size={16} color="#fff" />
             </TouchableOpacity>
-          )}
+          </View>
+          
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileName}>{user?.name || 'User Name'}</Text>
+            <Text style={styles.profileBio}>{user?.bio || 'No bio provided'}</Text>
+            
+            <View style={styles.profileStats}>
+              <View style={styles.profileStat}>
+                <Text style={styles.profileStatValue}>{userStats?.level || 0}</Text>
+                <Text style={styles.profileStatLabel}>Level</Text>
+              </View>
+              
+              <View style={styles.profileStat}>
+                <Text style={styles.profileStatValue}>{userStats?.points || 0}</Text>
+                <Text style={styles.profileStatLabel}>Points</Text>
+              </View>
+              
+              <View style={styles.profileStat}>
+                <Text style={styles.profileStatValue}>{userAchievements?.length || 0}</Text>
+                <Text style={styles.profileStatLabel}>Badges</Text>
+              </View>
+            </View>
+          </View>
         </View>
         
-        {user && (
-          <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{userStats?.reportsSubmitted || 0}</Text>
-              <Text style={styles.statLabel}>Reports</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{userStats?.reportsResolved || 0}</Text>
-              <Text style={styles.statLabel}>Resolved</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{userStats?.totalUpvotesReceived || 0}</Text>
-              <Text style={styles.statLabel}>Upvotes</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{earnedBadges.length}</Text>
-              <Text style={styles.statLabel}>Badges</Text>
-            </View>
+        {/* Level Progress */}
+        <View style={styles.levelProgressContainer}>
+          <View style={styles.levelProgressHeader}>
+            <Text style={styles.levelProgressTitle}>Level {userStats?.level || 0}</Text>
+            <Text style={styles.levelProgressPoints}>{userStats?.points || 0} points</Text>
           </View>
-        )}
+          
+          <View style={styles.progressBarContainer}>
+            <View style={[styles.progressBar, { width: `${levelProgress}%` }]} />
+          </View>
+          
+          <Text style={styles.levelProgressText}>
+            {100 - (userStats?.points % 100)} points to level {(userStats?.level || 0) + 1}
+          </Text>
+        </View>
         
-        {user && (
-          <View style={styles.badgesSection}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>My Badges</Text>
-              <TouchableOpacity onPress={() => router.push('/badges')}>
-                <Text style={styles.viewAllText}>View All</Text>
-              </TouchableOpacity>
+        {/* Contact Information */}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Contact Information</Text>
+          
+          <View style={styles.infoCard}>
+            <View style={styles.infoItem}>
+              <Mail size={20} color={Colors.primary} style={styles.infoIcon} />
+              <Text style={styles.infoText}>{user?.email || 'No email provided'}</Text>
             </View>
             
-            {earnedBadges.length > 0 ? (
-              <View style={styles.badgesContainer}>
-                {earnedBadges.slice(0, 3).map(badge => (
-                  <BadgeCard 
-                    key={badge.id} 
-                    badge={{
-                      id: badge.id,
-                      name: badge.name,
-                      description: badge.description,
-                      icon: badge.icon,
-                      criteria: badge.criteria,
-                      image: badge.image
-                    }}
-                    earned={true}
-                    earnedDate={badge.unlockedAt}
-                    onPress={() => handleBadgePress(badge)}
-                  />
-                ))}
-              </View>
-            ) : (
-              <View style={styles.noBadgesContainer}>
-                <Award size={40} color={Colors.textSecondary} />
-                <Text style={styles.noBadgesText}>No badges earned yet</Text>
-                <Text style={styles.noBadgesSubtext}>Report issues to earn badges!</Text>
+            {user?.phone && (
+              <View style={styles.infoItem}>
+                <Phone size={20} color={Colors.primary} style={styles.infoIcon} />
+                <Text style={styles.infoText}>{user.phone}</Text>
               </View>
             )}
+            
+            {user?.address && (
+              <View style={styles.infoItem}>
+                <MapPin size={20} color={Colors.primary} style={styles.infoIcon} />
+                <Text style={styles.infoText}>{user.address}</Text>
+              </View>
+            )}
+            
+            <View style={styles.infoItem}>
+              <Calendar size={20} color={Colors.primary} style={styles.infoIcon} />
+              <Text style={styles.infoText}>Member since {formatDate(user?.createdAt || new Date().toISOString())}</Text>
+            </View>
           </View>
-        )}
-        
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
-          
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={styles.menuIconContainer}>
-              <User size={20} color={Colors.primary} />
-            </View>
-            <Text style={styles.menuText}>Personal Information</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={styles.menuIconContainer}>
-              <Bell size={20} color={Colors.primary} />
-            </View>
-            <Text style={styles.menuText}>Notifications</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.menuItem}
-            onPress={() => router.push('/issues')}
-          >
-            <View style={styles.menuIconContainer}>
-              <MapPin size={20} color={Colors.primary} />
-            </View>
-            <Text style={styles.menuText}>My Reported Issues</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={styles.menuIconContainer}>
-              <Settings size={20} color={Colors.primary} />
-            </View>
-            <Text style={styles.menuText}>Settings</Text>
-          </TouchableOpacity>
         </View>
         
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Support</Text>
+        {/* Activity Summary */}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Activity Summary</Text>
           
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={styles.menuIconContainer}>
-              <HelpCircle size={20} color={Colors.primary} />
+          <View style={styles.activityCard}>
+            <View style={styles.activityRow}>
+              <View style={styles.activityItem}>
+                <Text style={styles.activityValue}>{userStats?.reportsSubmitted || 0}</Text>
+                <Text style={styles.activityLabel}>Reports Submitted</Text>
+              </View>
+              
+              <View style={styles.activityItem}>
+                <Text style={styles.activityValue}>{userStats?.reportsResolved || 0}</Text>
+                <Text style={styles.activityLabel}>Reports Resolved</Text>
+              </View>
             </View>
-            <Text style={styles.menuText}>Help Center</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={styles.menuIconContainer}>
-              <Shield size={20} color={Colors.primary} />
+            
+            <View style={styles.activityRow}>
+              <View style={styles.activityItem}>
+                <Text style={styles.activityValue}>{userStats?.commentsPosted || 0}</Text>
+                <Text style={styles.activityLabel}>Comments Posted</Text>
+              </View>
+              
+              <View style={styles.activityItem}>
+                <Text style={styles.activityValue}>{userStats?.votesGiven || 0}</Text>
+                <Text style={styles.activityLabel}>Votes Given</Text>
+              </View>
             </View>
-            <Text style={styles.menuText}>Privacy Policy</Text>
-          </TouchableOpacity>
+            
+            <View style={styles.activityRow}>
+              <View style={styles.activityItem}>
+                <Text style={styles.activityValue}>{userStats?.consecutiveDays || 0}</Text>
+                <Text style={styles.activityLabel}>Day Streak</Text>
+              </View>
+              
+              <View style={styles.activityItem}>
+                <Text style={styles.activityValue}>{userAchievements?.length || 0}</Text>
+                <Text style={styles.activityLabel}>Badges Earned</Text>
+              </View>
+            </View>
+          </View>
         </View>
         
-        {user ? (
-          <TouchableOpacity 
-            style={styles.logoutButton}
-            onPress={handleLogout}
-          >
-            <LogOut size={20} color={Colors.error} style={styles.logoutIcon} />
-            <Text style={styles.logoutText}>Logout</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity 
-            style={styles.loginButton}
-            onPress={() => router.push('/login')}
-          >
-            <User size={20} color={Colors.primary} style={styles.loginIcon} />
-            <Text style={styles.loginText}>Login</Text>
-          </TouchableOpacity>
-        )}
+        {/* Quick Links */}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Quick Links</Text>
+          
+          <View style={styles.quickLinksCard}>
+            <TouchableOpacity 
+              style={styles.quickLinkItem}
+              onPress={() => router.push('/badges')}
+            >
+              <Award size={20} color={Colors.primary} style={styles.quickLinkIcon} />
+              <Text style={styles.quickLinkText}>My Badges</Text>
+              <ChevronRight size={16} color={Colors.textSecondary} />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.quickLinkItem}
+              onPress={() => router.push('/issues')}
+            >
+              <AlertTriangle size={20} color={Colors.primary} style={styles.quickLinkIcon} />
+              <Text style={styles.quickLinkText}>My Reports</Text>
+              <ChevronRight size={16} color={Colors.textSecondary} />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.quickLinkItem}
+              onPress={() => router.push('/notifications')}
+            >
+              <Bell size={20} color={Colors.primary} style={styles.quickLinkIcon} />
+              <Text style={styles.quickLinkText}>Notifications</Text>
+              <ChevronRight size={16} color={Colors.textSecondary} />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.quickLinkItem}
+              onPress={() => router.push('/settings/privacy')}
+            >
+              <Shield size={20} color={Colors.primary} style={styles.quickLinkIcon} />
+              <Text style={styles.quickLinkText}>Privacy & Security</Text>
+              <ChevronRight size={16} color={Colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+        </View>
         
-        <Text style={styles.versionText}>Version 1.0.0</Text>
+        {/* Logout Button */}
+        <TouchableOpacity 
+          style={styles.logoutButton}
+          onPress={handleLogout}
+        >
+          <LogOut size={20} color={Colors.error} />
+          <Text style={styles.logoutButtonText}>Logout</Text>
+        </TouchableOpacity>
       </ScrollView>
-      
-      {selectedBadge && (
-        <NewBadgeModal
-          badge={selectedBadge}
-          visible={showBadgeModal}
-          onClose={() => setShowBadgeModal(false)}
-        />
-      )}
     </>
   );
 }
@@ -241,142 +230,225 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  content: {
+    padding: 16,
+    paddingBottom: 40,
+  },
   profileHeader: {
-    alignItems: 'center',
-    paddingVertical: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    flexDirection: 'row',
+    marginBottom: 24,
   },
-  avatarContainer: {
-    marginBottom: 16,
+  profileImageContainer: {
+    position: 'relative',
+    marginRight: 16,
   },
-  avatar: {
+  profileImage: {
     width: 100,
     height: 100,
     borderRadius: 50,
   },
-  avatarPlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+  editButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
     backgroundColor: Colors.primary,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: Colors.background,
   },
-  userName: {
-    fontSize: 20,
+  profileInfo: {
+    flex: 1,
+  },
+  profileName: {
+    fontSize: 24,
     fontWeight: 'bold',
     color: Colors.text,
     marginBottom: 4,
   },
-  userEmail: {
+  profileBio: {
     fontSize: 14,
     color: Colors.textSecondary,
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  editProfileButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-  },
-  editProfileText: {
-    color: Colors.primary,
-    fontWeight: '500',
-  },
-  signInButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: Colors.primary,
-  },
-  signInText: {
-    color: Colors.background,
-    fontWeight: '500',
-  },
-  statsContainer: {
+  profileStats: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
   },
-  statItem: {
-    alignItems: 'center',
+  profileStat: {
+    marginRight: 16,
   },
-  statValue: {
-    fontSize: 20,
+  profileStatValue: {
+    fontSize: 18,
     fontWeight: 'bold',
     color: Colors.text,
   },
-  statLabel: {
+  profileStatLabel: {
     fontSize: 12,
     color: Colors.textSecondary,
-    marginTop: 4,
   },
-  badgesSection: {
-    paddingHorizontal: 16,
-    paddingTop: 24,
-    paddingBottom: 8,
+  levelProgressContainer: {
+    backgroundColor: Colors.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+      },
+    }),
   },
-  sectionHeader: {
+  levelProgressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  viewAllText: {
-    fontSize: 14,
-    color: Colors.primary,
-  },
-  badgesContainer: {
-    marginBottom: 16,
-  },
-  noBadgesContainer: {
-    alignItems: 'center',
-    paddingVertical: 24,
-    marginBottom: 16,
-  },
-  noBadgesText: {
+  levelProgressTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: Colors.text,
-    marginTop: 12,
-    marginBottom: 4,
   },
-  noBadgesSubtext: {
+  levelProgressPoints: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: Colors.primary,
+    fontWeight: '500',
   },
-  section: {
-    paddingHorizontal: 16,
-    paddingTop: 24,
-    paddingBottom: 8,
+  progressBarContainer: {
+    height: 8,
+    backgroundColor: `${Colors.primary}20`,
+    borderRadius: 4,
+    marginBottom: 8,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: Colors.primary,
+    borderRadius: 4,
+  },
+  levelProgressText: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    textAlign: 'right',
+  },
+  sectionContainer: {
+    marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: Colors.text,
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  menuItem: {
+  infoCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 12,
+    padding: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+      },
+    }),
+  },
+  infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    marginBottom: 12,
+  },
+  infoIcon: {
+    marginRight: 12,
+  },
+  infoText: {
+    fontSize: 14,
+    color: Colors.text,
+  },
+  activityCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 12,
+    padding: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+      },
+    }),
+  },
+  activityRow: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  activityItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  activityValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  activityLabel: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+  },
+  quickLinksCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+      },
+    }),
+  },
+  quickLinkItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
-  menuIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: `${Colors.primary}15`,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
+  quickLinkIcon: {
+    marginRight: 12,
   },
-  menuText: {
+  quickLinkText: {
+    flex: 1,
     fontSize: 16,
     color: Colors.text,
   },
@@ -384,46 +456,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 24,
-    marginBottom: 16,
+    backgroundColor: `${Colors.error}15`,
     paddingVertical: 12,
-    marginHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.error,
+    borderRadius: 8,
+    marginTop: 8,
   },
-  logoutIcon: {
-    marginRight: 8,
-  },
-  logoutText: {
+  logoutButtonText: {
     fontSize: 16,
+    fontWeight: '500',
     color: Colors.error,
-    fontWeight: '500',
-  },
-  loginButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 24,
-    marginBottom: 16,
-    paddingVertical: 12,
-    marginHorizontal: 16,
-    borderRadius: 12,
-    backgroundColor: Colors.primary,
-  },
-  loginIcon: {
-    marginRight: 8,
-    color: '#fff',
-  },
-  loginText: {
-    fontSize: 16,
-    color: '#fff',
-    fontWeight: '500',
-  },
-  versionText: {
-    textAlign: 'center',
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginBottom: 40,
+    marginLeft: 8,
   },
 });
