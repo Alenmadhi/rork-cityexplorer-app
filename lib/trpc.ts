@@ -1,6 +1,5 @@
 import { createTRPCReact } from '@trpc/react-query';
 import { createTRPCClient, httpBatchLink } from '@trpc/client';
-import Constants from 'expo-constants';
 import { useAuthStore } from '@/stores/auth-store';
 import superjson from 'superjson';
 
