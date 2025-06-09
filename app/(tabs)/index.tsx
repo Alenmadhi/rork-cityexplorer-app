@@ -14,35 +14,11 @@ import NetInfo from '@react-native-community/netinfo';
 import { WeatherCard } from '@/components/WeatherCard';
 import { mockWeather } from '@/mocks/weather';
 
-// Define proper types for react-native-maps components
-type Region = {
-  latitude: number;
-  longitude: number;
-  latitudeDelta: number;
-  longitudeDelta: number;
-};
-
+// Define proper types for location data
 type Coordinate = {
   latitude: number;
   longitude: number;
 };
-
-// Only import MapView on native platforms
-let MapViewComponent: React.ComponentType<any> | null = null;
-let MarkerComponent: React.ComponentType<any> | null = null;
-let PROVIDER_GOOGLE_VALUE: string | null = null;
-
-if (Platform.OS !== 'web') {
-  try {
-    // Dynamic import to avoid loading on web
-    const Maps = require('react-native-maps');
-    MapViewComponent = Maps.default;
-    MarkerComponent = Maps.Marker;
-    PROVIDER_GOOGLE_VALUE = Maps.PROVIDER_GOOGLE;
-  } catch (error) {
-    console.warn('react-native-maps could not be loaded', error);
-  }
-}
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -271,88 +247,51 @@ export default function HomeScreen() {
           </View>
           
           <View style={styles.mapContainer}>
-            {Platform.OS !== 'web' && MapViewComponent ? (
-              locationPermission ? (
-                <MapViewComponent
-                  style={styles.map}
-                  provider={Platform.OS === 'android' ? PROVIDER_GOOGLE_VALUE : undefined}
-                  initialRegion={{
-                    latitude: location?.coords.latitude || 41.1123,
-                    longitude: location?.coords.longitude || 20.0826,
-                    latitudeDelta: 0.01,
-                    longitudeDelta: 0.01,
+            {/* Map is replaced with a static image for all platforms to avoid native module issues */}
+            <View style={styles.mapPlaceholderContainer}>
+              <Image 
+                source={{ uri: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69c07b?q=80&w=1000&auto=format&fit=crop' }} 
+                style={styles.staticMapImage}
+                resizeMode="cover"
+              />
+              <View style={styles.mapOverlay}>
+                <MapPin size={40} color={Colors.primary} />
+                <Text style={styles.mapOverlayText}>
+                  {Platform.OS === 'web' 
+                    ? 'Interactive map available in mobile app' 
+                    : locationPermission === false 
+                      ? 'Location permission required to view map'
+                      : 'Tap to view nearby issues'}
+                </Text>
+                <TouchableOpacity 
+                  style={styles.viewMapButton}
+                  onPress={() => {
+                    if (Platform.OS !== 'web' && locationPermission === false) {
+                      // Request permission again
+                      (async () => {
+                        const { status } = await Location.requestForegroundPermissionsAsync();
+                        setLocationPermission(status === 'granted');
+                        
+                        if (status === 'granted') {
+                          const location = await Location.getCurrentPositionAsync({});
+                          setLocation(location);
+                        }
+                      })();
+                    } else {
+                      router.push('/issues');
+                    }
                   }}
                 >
-                  {/* User location marker */}
-                  {location && MarkerComponent && (
-                    <MarkerComponent
-                      coordinate={{
-                        latitude: location.coords.latitude,
-                        longitude: location.coords.longitude,
-                      }}
-                      title="Your Location"
-                      pinColor={Colors.primary}
-                    />
-                  )}
-                  
-                  {/* Issue markers */}
-                  {nearbyIssues.map(issue => (
-                    MarkerComponent && (
-                      <MarkerComponent
-                        key={issue.id}
-                        coordinate={issue.coordinates}
-                        title={issue.title}
-                        description={issue.type}
-                        pinColor={Colors.error}
-                        onPress={() => router.push(`/issues/${issue.id}`)}
-                      />
-                    )
-                  ))}
-                </MapViewComponent>
-              ) : (
-                <View style={styles.mapPlaceholderContainer}>
-                  <MapPin size={40} color={Colors.textSecondary} />
-                  <Text style={styles.mapPlaceholderText}>
-                    Location permission is required to view nearby issues
+                  <Text style={styles.viewMapButtonText}>
+                    {Platform.OS === 'web' 
+                      ? 'View Issues List' 
+                      : locationPermission === false 
+                        ? 'Grant Permission'
+                        : 'View Issues'}
                   </Text>
-                  <TouchableOpacity 
-                    style={styles.permissionButton}
-                    onPress={async () => {
-                      const { status } = await Location.requestForegroundPermissionsAsync();
-                      setLocationPermission(status === 'granted');
-                      
-                      if (status === 'granted') {
-                        const location = await Location.getCurrentPositionAsync({});
-                        setLocation(location);
-                      }
-                    }}
-                  >
-                    <Text style={styles.permissionButtonText}>Grant Permission</Text>
-                  </TouchableOpacity>
-                </View>
-              )
-            ) : (
-              // Web-specific map alternative
-              <View style={styles.mapPlaceholderContainer}>
-                <Image 
-                  source={{ uri: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69c07b?q=80&w=1000&auto=format&fit=crop' }} 
-                  style={styles.staticMapImage}
-                  resizeMode="cover"
-                />
-                <View style={styles.mapOverlay}>
-                  <MapPin size={40} color={Colors.primary} />
-                  <Text style={styles.mapOverlayText}>
-                    Interactive map available in mobile app
-                  </Text>
-                  <TouchableOpacity 
-                    style={styles.viewMapButton}
-                    onPress={() => router.push('/issues')}
-                  >
-                    <Text style={styles.viewMapButtonText}>View Issues List</Text>
-                  </TouchableOpacity>
-                </View>
+                </TouchableOpacity>
               </View>
-            )}
+            </View>
             
             <TouchableOpacity 
               style={styles.viewMapButton}
@@ -497,9 +436,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
     position: 'relative',
-  },
-  map: {
-    ...StyleSheet.absoluteFillObject,
   },
   mapPlaceholderContainer: {
     ...StyleSheet.absoluteFillObject,
