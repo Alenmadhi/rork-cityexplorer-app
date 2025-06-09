@@ -19,13 +19,14 @@ export interface SuccessStory {
   id: string;
   title: string;
   description: string;
-  before: string; // Image URL
-  after: string; // Image URL
+  beforeImage: string; // Image URL
+  afterImage: string; // Image URL
   location: string;
   date: string;
   featured: boolean;
-  likes: number;
-  comments: number;
+  likes?: number;
+  comments?: number;
+  issueId?: string;
 }
 
 // Badge type

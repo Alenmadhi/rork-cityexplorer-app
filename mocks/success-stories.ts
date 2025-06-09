@@ -10,7 +10,9 @@ export const successStories: SuccessStory[] = [
     date: '2023-06-20',
     location: 'Elbasan Castle, Historic District',
     issueId: '5',
-    featured: true
+    featured: true,
+    likes: 24,
+    comments: 8
   },
   {
     id: '2',
@@ -21,7 +23,9 @@ export const successStories: SuccessStory[] = [
     date: '2023-06-25',
     location: 'Rruga Qemal Stafa, City Center',
     issueId: '1',
-    featured: true
+    featured: true,
+    likes: 32,
+    comments: 12
   },
   {
     id: '3',
@@ -32,7 +36,9 @@ export const successStories: SuccessStory[] = [
     date: '2023-06-15',
     location: 'Park near Elbasan Castle',
     issueId: '3',
-    featured: false
+    featured: false,
+    likes: 18,
+    comments: 5
   },
   {
     id: '4',
@@ -43,6 +49,8 @@ export const successStories: SuccessStory[] = [
     date: '2023-06-18',
     location: 'Bulevardi Qemal Stafa, near the bank',
     issueId: '4',
-    featured: false
+    featured: false,
+    likes: 15,
+    comments: 3
   }
 ];

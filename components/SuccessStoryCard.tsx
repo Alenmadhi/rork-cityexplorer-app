@@ -1,88 +1,101 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
-import { Image } from 'expo-image';
-import { MapPin, Calendar, ArrowRight } from 'lucide-react-native';
+import { StyleSheet, View, Text, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SuccessStory } from '@/types';
+import { Heart, MessageCircle, ChevronRight } from 'lucide-react-native';
 import Colors from '@/constants/colors';
+import { SuccessStory } from '@/types';
 
 interface SuccessStoryCardProps {
   story: SuccessStory;
   featured?: boolean;
 }
 
-export const SuccessStoryCard: React.FC<SuccessStoryCardProps> = ({ 
-  story, 
-  featured = false 
-}) => {
+export const SuccessStoryCard: React.FC<SuccessStoryCardProps> = ({ story, featured = false }) => {
   const router = useRouter();
+  const { width } = Dimensions.get('window');
+  const imageWidth = featured ? width - 32 : width * 0.4;
   
   const handlePress = () => {
     router.push(`/success-stories/${story.id}`);
   };
   
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
-  };
-  
   return (
     <TouchableOpacity 
-      style={[styles.container, featured && styles.featuredContainer]} 
+      style={[
+        styles.container, 
+        featured && styles.featuredContainer
+      ]}
       onPress={handlePress}
-      activeOpacity={0.8}
     >
-      <View style={styles.imagesContainer}>
-        <View style={styles.imageWrapper}>
-          <Image
-            source={{ uri: story.beforeImage }}
-            style={styles.image}
-            contentFit="cover"
-          />
-          <View style={styles.imageLabel}>
-            <Text style={styles.imageLabelText}>Before</Text>
-          </View>
-        </View>
-        
-        <View style={styles.imageWrapper}>
-          <Image
-            source={{ uri: story.afterImage }}
-            style={styles.image}
-            contentFit="cover"
-          />
-          <View style={[styles.imageLabel, styles.afterLabel]}>
-            <Text style={styles.imageLabelText}>After</Text>
-          </View>
-        </View>
-      </View>
-      
-      <View style={styles.content}>
-        {featured && (
-          <View style={styles.featuredBadge}>
-            <Text style={styles.featuredText}>Fix of the Week</Text>
-          </View>
-        )}
-        
-        <Text style={styles.title} numberOfLines={2}>{story.title}</Text>
-        <Text style={styles.description} numberOfLines={2}>{story.description}</Text>
-        
-        <View style={styles.footer}>
-          <View style={styles.detailsContainer}>
-            <View style={styles.detailItem}>
-              <MapPin size={14} color={Colors.textSecondary} style={styles.detailIcon} />
-              <Text style={styles.detailText} numberOfLines={1}>{story.location}</Text>
-            </View>
-            
-            <View style={styles.detailItem}>
-              <Calendar size={14} color={Colors.textSecondary} style={styles.detailIcon} />
-              <Text style={styles.detailText}>{formatDate(story.date)}</Text>
+      <View style={[
+        styles.content,
+        featured && styles.featuredContent
+      ]}>
+        <View style={styles.imageContainer}>
+          <View style={styles.beforeAfterContainer}>
+            <Image 
+              source={{ uri: story.beforeImage }} 
+              style={[
+                styles.image,
+                { width: imageWidth }
+              ]} 
+              resizeMode="cover"
+            />
+            <View style={styles.beforeLabel}>
+              <Text style={styles.beforeAfterText}>Before</Text>
             </View>
           </View>
           
-          <View style={styles.readMoreContainer}>
-            <Text style={styles.readMoreText}>Read More</Text>
-            <ArrowRight size={14} color={Colors.primary} />
+          <View style={styles.beforeAfterContainer}>
+            <Image 
+              source={{ uri: story.afterImage }} 
+              style={[
+                styles.image,
+                { width: imageWidth }
+              ]} 
+              resizeMode="cover"
+            />
+            <View style={styles.afterLabel}>
+              <Text style={styles.beforeAfterText}>After</Text>
+            </View>
           </View>
+        </View>
+        
+        <View style={styles.textContainer}>
+          <Text style={styles.title} numberOfLines={2}>{story.title}</Text>
+          
+          <Text style={styles.location} numberOfLines={1}>
+            {story.location}
+          </Text>
+          
+          {featured && (
+            <Text style={styles.description} numberOfLines={3}>
+              {story.description}
+            </Text>
+          )}
+          
+          <View style={styles.footer}>
+            <View style={styles.stats}>
+              <View style={styles.statItem}>
+                <Heart size={16} color={Colors.primary} />
+                <Text style={styles.statText}>{story.likes || 0}</Text>
+              </View>
+              
+              <View style={styles.statItem}>
+                <MessageCircle size={16} color={Colors.primary} />
+                <Text style={styles.statText}>{story.comments || 0}</Text>
+              </View>
+            </View>
+            
+            <Text style={styles.date}>{story.date}</Text>
+          </View>
+          
+          {featured && (
+            <TouchableOpacity style={styles.viewButton} onPress={handlePress}>
+              <Text style={styles.viewButtonText}>View Details</Text>
+              <ChevronRight size={16} color={Colors.primary} />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -93,109 +106,105 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.card,
     borderRadius: 12,
-    overflow: 'hidden',
     marginBottom: 16,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 3,
-      },
-      web: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-      },
-    }),
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   featuredContainer: {
-    borderWidth: 2,
-    borderColor: Colors.primary,
+    marginBottom: 24,
   },
-  imagesContainer: {
+  content: {
     flexDirection: 'row',
-    height: 150,
+    padding: 12,
   },
-  imageWrapper: {
-    flex: 1,
+  featuredContent: {
+    flexDirection: 'column',
+  },
+  imageContainer: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  beforeAfterContainer: {
     position: 'relative',
+    marginRight: 8,
   },
   image: {
-    width: '100%',
-    height: '100%',
+    height: 120,
+    borderRadius: 8,
   },
-  imageLabel: {
+  beforeLabel: {
     position: 'absolute',
     top: 8,
     left: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
   },
   afterLabel: {
-    backgroundColor: `${Colors.success}CC`,
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
-  imageLabelText: {
+  beforeAfterText: {
     color: '#fff',
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: '500',
   },
-  content: {
-    padding: 16,
-  },
-  featuredBadge: {
-    backgroundColor: `${Colors.primary}20`,
-    alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  featuredText: {
-    color: Colors.primary,
-    fontSize: 12,
-    fontWeight: '600',
+  textContainer: {
+    flex: 1,
+    marginLeft: 12,
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: Colors.text,
+    marginBottom: 4,
+  },
+  location: {
+    fontSize: 14,
+    color: Colors.textSecondary,
     marginBottom: 8,
   },
   description: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: Colors.text,
     marginBottom: 12,
     lineHeight: 20,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
+    alignItems: 'center',
   },
-  detailsContainer: {
-    flex: 1,
+  stats: {
+    flexDirection: 'row',
   },
-  detailItem: {
+  statItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginRight: 12,
   },
-  detailIcon: {
-    marginRight: 6,
+  statText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginLeft: 4,
   },
-  detailText: {
-    fontSize: 13,
+  date: {
+    fontSize: 12,
     color: Colors.textSecondary,
   },
-  readMoreContainer: {
+  viewButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 12,
   },
-  readMoreText: {
+  viewButtonText: {
     fontSize: 14,
     color: Colors.primary,
     fontWeight: '500',

@@ -4,8 +4,10 @@ import Constants from 'expo-constants';
 import { useAuthStore } from '@/stores/auth-store';
 import superjson from 'superjson';
 
-// Mock AppRouter type since we're removing the backend
+// Define a minimal router type that satisfies the constraints
 export type AppRouter = {
+  _def: any;
+  createCaller: any;
   example: {
     hi: any;
     hello: any;
