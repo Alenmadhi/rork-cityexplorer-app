@@ -29,7 +29,7 @@ export default function LoginScreen() {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // For demo purposes, accept any credentials
-      login({ email });
+      login({ email, isGuest: false });
       
       // Navigate to main app
       router.replace('/(tabs)');

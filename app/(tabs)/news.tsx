@@ -92,7 +92,7 @@ export default function NewsScreen() {
       )}
       
       {lastUpdated && (
-        <LastUpdated date={lastUpdated} />
+        <LastUpdated date={lastUpdated.toString()} />
       )}
       
       {featuredNews.length > 0 && (

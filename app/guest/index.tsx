@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, Image, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, Image, TouchableOpacity, ScrollView, Dimensions, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MapPin, Calendar, Info, Newspaper, Camera, ArrowRight } from 'lucide-react-native';
 import Colors from '@/constants/colors';
