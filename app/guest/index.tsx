@@ -1,44 +1,28 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image, Platform, ActivityIndicator } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
-import { MapPin, Calendar, Newspaper, Info, User, ArrowRight } from 'lucide-react-native';
+import React from 'react';
+import { StyleSheet, View, Text, Image, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import { useRouter } from 'expo-router';
+import { MapPin, Calendar, Info, Newspaper, Camera, ArrowRight } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useAuthStore } from '@/stores/auth-store';
 
-export default function GuestHomeScreen() {
+const { width } = Dimensions.get('window');
+
+export default function GuestScreen() {
   const router = useRouter();
-  const { loginAsGuest, isLoading, error: authError } = useAuthStore();
-  const [error, setError] = useState<string | null>(null);
-
-  // Update error from auth store
-  React.useEffect(() => {
-    if (authError) {
-      setError(authError);
-    }
-  }, [authError]);
-
-  const handleContinueAsGuest = async () => {
-    try {
-      await loginAsGuest();
-      // After successful login, router will navigate to tabs
-      router.replace('/(tabs)');
-    } catch (err) {
-      setError('Failed to continue as guest. Please try again.');
-    }
+  const { login } = useAuthStore();
+  
+  const handleContinue = () => {
+    // Login as guest
+    login({ email: 'guest@example.com', isGuest: true });
+    router.replace('/(tabs)');
   };
-
-  const handleLogin = () => {
-    router.push('/login');
+  
+  const handleBackToLogin = () => {
+    router.replace('/(auth)/login');
   };
-
-  const handleSignup = () => {
-    router.push('/signup');
-  };
-
+  
   return (
-    <View style={styles.container}>
-      <Stack.Screen options={{ headerShown: false }} />
-      
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Image 
           source={{ uri: 'https://images.unsplash.com/photo-1578297886235-f2be6e8f3c3e?q=80&w=1000&auto=format&fit=crop' }} 
@@ -47,106 +31,100 @@ export default function GuestHomeScreen() {
         />
         <View style={styles.overlay} />
         <View style={styles.headerContent}>
-          <Text style={styles.title}>Welcome to Elbasan City</Text>
-          <Text style={styles.subtitle}>Discover, explore, and connect with your city</Text>
+          <Text style={styles.title}>Explore Elbasan</Text>
+          <Text style={styles.subtitle}>Discover the beauty and culture of Elbasan, Albania</Text>
         </View>
       </View>
       
-      <View style={styles.content}>
-        {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        )}
+      <View style={styles.featuresContainer}>
+        <Text style={styles.sectionTitle}>Available as Guest</Text>
         
-        <Text style={styles.sectionTitle}>Explore as a Guest</Text>
-        
-        <View style={styles.featuresContainer}>
-          <View style={styles.featureItem}>
+        <View style={styles.featureRow}>
+          <View style={styles.feature}>
             <View style={styles.featureIconContainer}>
               <MapPin size={24} color={Colors.primary} />
             </View>
-            <Text style={styles.featureTitle}>Discover Places</Text>
-            <Text style={styles.featureDescription}>
-              Explore attractions and landmarks around the city
-            </Text>
+            <Text style={styles.featureTitle}>Attractions</Text>
+            <Text style={styles.featureDescription}>Discover beautiful places to visit</Text>
           </View>
           
-          <View style={styles.featureItem}>
+          <View style={styles.feature}>
             <View style={styles.featureIconContainer}>
               <Calendar size={24} color={Colors.primary} />
             </View>
             <Text style={styles.featureTitle}>Events</Text>
-            <Text style={styles.featureDescription}>
-              Stay updated with local events and activities
-            </Text>
+            <Text style={styles.featureDescription}>Find upcoming events and activities</Text>
           </View>
-          
-          <View style={styles.featureItem}>
-            <View style={styles.featureIconContainer}>
-              <Newspaper size={24} color={Colors.primary} />
-            </View>
-            <Text style={styles.featureTitle}>News</Text>
-            <Text style={styles.featureDescription}>
-              Get the latest news and updates about Elbasan
-            </Text>
-          </View>
-          
-          <View style={styles.featureItem}>
+        </View>
+        
+        <View style={styles.featureRow}>
+          <View style={styles.feature}>
             <View style={styles.featureIconContainer}>
               <Info size={24} color={Colors.primary} />
             </View>
             <Text style={styles.featureTitle}>Tourist Info</Text>
-            <Text style={styles.featureDescription}>
-              Essential information for visitors and tourists
-            </Text>
+            <Text style={styles.featureDescription}>Essential information for visitors</Text>
+          </View>
+          
+          <View style={styles.feature}>
+            <View style={styles.featureIconContainer}>
+              <Newspaper size={24} color={Colors.primary} />
+            </View>
+            <Text style={styles.featureTitle}>News</Text>
+            <Text style={styles.featureDescription}>Stay updated with local news</Text>
           </View>
         </View>
         
-        <View style={styles.accountNote}>
-          <User size={20} color={Colors.textSecondary} />
-          <Text style={styles.accountNoteText}>
-            Create an account to report issues, save favorites, and more
-          </Text>
+        <Text style={styles.sectionTitle}>Create an Account for More</Text>
+        
+        <View style={styles.premiumFeature}>
+          <View style={styles.premiumFeatureContent}>
+            <View style={styles.premiumIconContainer}>
+              <Camera size={24} color={Colors.background} />
+            </View>
+            <View style={styles.premiumTextContainer}>
+              <Text style={styles.premiumTitle}>Report Issues</Text>
+              <Text style={styles.premiumDescription}>Help improve the city by reporting problems</Text>
+            </View>
+          </View>
+          <View style={styles.premiumBadge}>
+            <Text style={styles.premiumBadgeText}>Premium</Text>
+          </View>
         </View>
         
-        <TouchableOpacity 
-          style={[styles.guestButton, isLoading && styles.disabledButton]}
-          onPress={handleContinueAsGuest}
-          disabled={isLoading}
-          activeOpacity={0.8}
-        >
-          {isLoading ? (
-            <ActivityIndicator color="#fff" size="small" />
-          ) : (
-            <>
-              <Text style={styles.guestButtonText}>Continue as Guest</Text>
-              <ArrowRight size={20} color="#fff" style={styles.buttonIcon} />
-            </>
-          )}
-        </TouchableOpacity>
-        
-        <View style={styles.authButtons}>
-          <TouchableOpacity 
-            style={styles.loginButton}
-            onPress={handleLogin}
-            disabled={isLoading}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.loginButtonText}>Log In</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.signupButton}
-            onPress={handleSignup}
-            disabled={isLoading}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.signupButtonText}>Sign Up</Text>
-          </TouchableOpacity>
+        <View style={styles.premiumFeature}>
+          <View style={styles.premiumFeatureContent}>
+            <View style={styles.premiumIconContainer}>
+              <Camera size={24} color={Colors.background} />
+            </View>
+            <View style={styles.premiumTextContainer}>
+              <Text style={styles.premiumTitle}>Personalization</Text>
+              <Text style={styles.premiumDescription}>Save favorites and get personalized recommendations</Text>
+            </View>
+          </View>
+          <View style={styles.premiumBadge}>
+            <Text style={styles.premiumBadgeText}>Premium</Text>
+          </View>
         </View>
       </View>
-    </View>
+      
+      <View style={styles.buttonsContainer}>
+        <TouchableOpacity 
+          style={styles.continueButton}
+          onPress={handleContinue}
+        >
+          <Text style={styles.continueButtonText}>Continue as Guest</Text>
+          <ArrowRight size={20} color={Colors.background} />
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={handleBackToLogin}
+        >
+          <Text style={styles.backButtonText}>Back to Login</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -154,6 +132,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  content: {
+    paddingBottom: 40,
   },
   header: {
     height: 250,
@@ -165,7 +146,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   headerContent: {
     position: 'absolute',
@@ -177,48 +158,34 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#fff',
+    color: 'white',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#fff',
-    opacity: 0.9,
+    color: 'rgba(255, 255, 255, 0.9)',
   },
-  content: {
-    flex: 1,
+  featuresContainer: {
     padding: 20,
-  },
-  errorContainer: {
-    backgroundColor: `${Colors.error}20`,
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  errorText: {
-    color: Colors.error,
-    fontSize: 14,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: Colors.text,
-    marginBottom: 20,
+    marginBottom: 16,
+    marginTop: 16,
   },
-  featuresContainer: {
+  featureRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: 16,
   },
-  featureItem: {
-    width: '48%',
+  feature: {
+    width: (width - 60) / 2,
     backgroundColor: Colors.card,
     borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    alignItems: 'center',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -247,77 +214,104 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: Colors.text,
-    marginBottom: 8,
+    marginBottom: 4,
+    textAlign: 'center',
   },
   featureDescription: {
-    fontSize: 14,
+    fontSize: 12,
     color: Colors.textSecondary,
-    lineHeight: 20,
+    textAlign: 'center',
   },
-  accountNote: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: `${Colors.primary}10`,
+  premiumFeature: {
+    backgroundColor: Colors.card,
+    borderRadius: 12,
     padding: 16,
-    borderRadius: 12,
-    marginBottom: 24,
-  },
-  accountNoteText: {
-    flex: 1,
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginLeft: 12,
-  },
-  guestButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.primary,
-    paddingVertical: 16,
-    borderRadius: 12,
     marginBottom: 16,
-  },
-  disabledButton: {
-    opacity: 0.7,
-  },
-  guestButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  buttonIcon: {
-    marginLeft: 8,
-  },
-  authButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  loginButton: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    paddingVertical: 16,
-    borderRadius: 12,
     alignItems: 'center',
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: Colors.primary,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+      },
+    }),
   },
-  loginButtonText: {
+  premiumFeatureContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  premiumIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  premiumTextContainer: {
+    flex: 1,
+  },
+  premiumTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  premiumDescription: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+  },
+  premiumBadge: {
+    backgroundColor: `${Colors.primary}15`,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  premiumBadgeText: {
+    fontSize: 12,
     color: Colors.primary,
-    fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
   },
-  signupButton: {
-    flex: 1,
-    backgroundColor: Colors.secondary,
-    paddingVertical: 16,
+  buttonsContainer: {
+    padding: 20,
+  },
+  continueButton: {
+    backgroundColor: Colors.primary,
     borderRadius: 12,
+    height: 56,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
+    marginBottom: 16,
+    flexDirection: 'row',
   },
-  signupButtonText: {
-    color: '#fff',
+  continueButtonText: {
+    color: Colors.background,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    marginRight: 8,
+  },
+  backButton: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 12,
+    height: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backButtonText: {
+    color: Colors.text,
+    fontSize: 16,
+    fontWeight: '500',
   },
 });

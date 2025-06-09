@@ -1,163 +1,135 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image, Platform, ActivityIndicator } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { useRouter, Link } from 'expo-router';
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useAuthStore } from '@/stores/auth-store';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login, loginAsGuest, isAuthenticated, isLoading, error: authError } = useAuthStore();
+  const { login } = useAuthStore();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Check if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.replace('/(tabs)');
-    }
-  }, [isAuthenticated]);
-  
-  // Update error from auth store
-  useEffect(() => {
-    if (authError) {
-      setError(authError);
-    }
-  }, [authError]);
-  
   const handleLogin = async () => {
-    // Basic validation
     if (!email || !password) {
       setError('Please enter both email and password');
       return;
     }
     
+    setIsLoading(true);
+    setError(null);
+    
     try {
-      await login(email, password);
-      // Navigation is handled in the useEffect
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // For demo purposes, accept any credentials
+      login({ email });
+      
+      // Navigate to main app
+      router.replace('/(tabs)');
     } catch (err) {
-      setError('Login failed. Please try again.');
+      setError('Invalid email or password');
+    } finally {
+      setIsLoading(false);
     }
   };
   
-  const handleContinueAsGuest = async () => {
-    router.push('/guest');
+  const handleGuestAccess = () => {
+    router.push('/guest/index');
   };
-
+  
   return (
-    <View style={styles.container}>
-      <Stack.Screen options={{ title: 'Login', headerShown: false }} />
-      
-      <View style={styles.header}>
-        <Image 
-          source={{ uri: 'https://images.unsplash.com/photo-1578297886235-f2be6e8f3c3e?q=80&w=1000&auto=format&fit=crop' }} 
-          style={styles.headerImage}
-          resizeMode="cover"
-        />
-        <View style={styles.overlay} />
-        <View style={styles.headerContent}>
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Sign in to continue to Elbasan City</Text>
-        </View>
-      </View>
-      
-      <View style={styles.formContainer}>
-        {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        )}
-        
-        <View style={styles.inputContainer}>
-          <Mail size={20} color={Colors.textSecondary} style={styles.inputIcon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            value={email}
-            onChangeText={(text) => {
-              setEmail(text);
-              setError(null);
-            }}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            editable={!isLoading}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.header}>
+          <Image 
+            source={{ uri: 'https://images.unsplash.com/photo-1578297886235-f2be6e8f3c3e?q=80&w=1000&auto=format&fit=crop' }} 
+            style={styles.logo}
           />
+          <Text style={styles.title}>Welcome to Elbasan City</Text>
+          <Text style={styles.subtitle}>Sign in to continue</Text>
         </View>
         
-        <View style={styles.inputContainer}>
-          <Lock size={20} color={Colors.textSecondary} style={styles.inputIcon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            value={password}
-            onChangeText={(text) => {
-              setPassword(text);
-              setError(null);
-            }}
-            secureTextEntry={!showPassword}
-            editable={!isLoading}
-          />
-          <TouchableOpacity 
-            style={styles.passwordToggle}
-            onPress={() => setShowPassword(!showPassword)}
-            disabled={isLoading}
-          >
-            {showPassword ? (
-              <EyeOff size={20} color={Colors.textSecondary} />
-            ) : (
-              <Eye size={20} color={Colors.textSecondary} />
-            )}
-          </TouchableOpacity>
-        </View>
-        
-        <TouchableOpacity 
-          style={styles.forgotPassword}
-          disabled={isLoading}
-        >
-          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.loginButton, isLoading && styles.disabledButton]}
-          onPress={handleLogin}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator color="#fff" size="small" />
-          ) : (
-            <Text style={styles.loginButtonText}>Log In</Text>
+        <View style={styles.form}>
+          {error && (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
           )}
-        </TouchableOpacity>
-        
-        <View style={styles.orContainer}>
-          <View style={styles.divider} />
-          <Text style={styles.orText}>OR</Text>
-          <View style={styles.divider} />
-        </View>
-        
-        <TouchableOpacity 
-          style={styles.guestButton}
-          onPress={handleContinueAsGuest}
-          disabled={isLoading}
-        >
-          <Text style={styles.guestButtonText}>Continue as Guest</Text>
-          <ArrowRight size={18} color={Colors.primary} style={styles.guestButtonIcon} />
-        </TouchableOpacity>
-        
-        <View style={styles.signupContainer}>
-          <Text style={styles.signupText}>Don't have an account? </Text>
+          
+          <View style={styles.inputContainer}>
+            <Mail size={20} color={Colors.textSecondary} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor={Colors.textSecondary}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+          </View>
+          
+          <View style={styles.inputContainer}>
+            <Lock size={20} color={Colors.textSecondary} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              placeholderTextColor={Colors.textSecondary}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+            />
+            <TouchableOpacity 
+              style={styles.eyeIcon} 
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <EyeOff size={20} color={Colors.textSecondary} />
+              ) : (
+                <Eye size={20} color={Colors.textSecondary} />
+              )}
+            </TouchableOpacity>
+          </View>
+          
           <TouchableOpacity 
-            onPress={() => router.push('/signup')}
+            style={[styles.button, isLoading && styles.buttonDisabled]}
+            onPress={handleLogin}
             disabled={isLoading}
           >
-            <Text style={styles.signupLink}>Sign Up</Text>
+            <Text style={styles.buttonText}>
+              {isLoading ? 'Signing in...' : 'Sign In'}
+            </Text>
+          </TouchableOpacity>
+          
+          <View style={styles.registerContainer}>
+            <Text style={styles.registerText}>Don't have an account? </Text>
+            <Link href="/signup" asChild>
+              <TouchableOpacity>
+                <Text style={styles.registerLink}>Sign Up</Text>
+              </TouchableOpacity>
+            </Link>
+          </View>
+          
+          <TouchableOpacity 
+            style={styles.guestButton}
+            onPress={handleGuestAccess}
+          >
+            <Text style={styles.guestButtonText}>Continue as Guest</Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -166,39 +138,33 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  header: {
-    height: 200,
-    position: 'relative',
-  },
-  headerImage: {
-    width: '100%',
-    height: '100%',
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-  },
-  headerContent: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
     padding: 20,
   },
+  header: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 16,
+  },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: Colors.text,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#fff',
-    opacity: 0.9,
+    color: Colors.textSecondary,
   },
-  formContainer: {
-    flex: 1,
-    padding: 20,
+  form: {
+    width: '100%',
   },
   errorContainer: {
     backgroundColor: `${Colors.error}20`,
@@ -215,91 +181,65 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Colors.card,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: Colors.border,
     marginBottom: 16,
     paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   inputIcon: {
-    marginRight: 10,
+    marginRight: 8,
   },
   input: {
     flex: 1,
     height: 50,
-    fontSize: 16,
     color: Colors.text,
+    fontSize: 16,
   },
-  passwordToggle: {
+  eyeIcon: {
     padding: 8,
   },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginBottom: 24,
-  },
-  forgotPasswordText: {
-    color: Colors.primary,
-    fontSize: 14,
-  },
-  loginButton: {
+  button: {
     backgroundColor: Colors.primary,
-    paddingVertical: 16,
     borderRadius: 8,
+    height: 50,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
+    marginTop: 8,
   },
-  disabledButton: {
+  buttonDisabled: {
     opacity: 0.7,
   },
-  loginButtonText: {
-    color: '#fff',
+  buttonText: {
+    color: Colors.background,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
-  orContainer: {
+  registerContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
+    justifyContent: 'center',
+    marginTop: 24,
+    marginBottom: 16,
   },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: Colors.border,
-  },
-  orText: {
+  registerText: {
     color: Colors.textSecondary,
-    marginHorizontal: 16,
     fontSize: 14,
+  },
+  registerLink: {
+    color: Colors.primary,
+    fontSize: 14,
+    fontWeight: '500',
   },
   guestButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
-    paddingVertical: 16,
-    borderRadius: 8,
-    marginBottom: 24,
     borderWidth: 1,
-    borderColor: Colors.primary,
+    borderColor: Colors.border,
+    borderRadius: 8,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 8,
   },
   guestButtonText: {
-    color: Colors.primary,
+    color: Colors.text,
     fontSize: 16,
-    fontWeight: '600',
-  },
-  guestButtonIcon: {
-    marginLeft: 8,
-  },
-  signupContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  signupText: {
-    color: Colors.textSecondary,
-    fontSize: 14,
-  },
-  signupLink: {
-    color: Colors.primary,
-    fontSize: 14,
-    fontWeight: '600',
   },
 });

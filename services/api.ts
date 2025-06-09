@@ -2,18 +2,18 @@ import { Event, NewsItem, Weather, WeatherForecast } from '@/types';
 
 // Base URLs for API requests
 const WEATHER_API_URL = 'https://api.open-meteo.com/v1/forecast';
-const NEWS_API_URL = 'https://gnews.io/api/v4/search';
-const NEWS_API_KEY = '9b752ba6d1a6e1cec12bff1a8fca81e7'; // Demo key with limited requests
+const NEWS_API_URL = 'https://newsapi.org/v2/everything';
+const NEWS_API_KEY = '38d5e8e5a0a04a5c9d1a3b33c6b9d09f'; // Replace with your own API key
 
 /**
  * Fetch news related to Elbasan or Albania
- * Using GNews API to get real news about Elbasan
+ * Using NewsAPI to get real news about Elbasan
  */
 export async function fetchNews(): Promise<NewsItem[]> {
   try {
     // Search for news about Elbasan
     const response = await fetch(
-      `${NEWS_API_URL}?q=Elbasan OR Albania&lang=en&country=al&max=10&apikey=${NEWS_API_KEY}`
+      `${NEWS_API_URL}?q=Elbasan OR Albania&language=en&sortBy=publishedAt&apiKey=${NEWS_API_KEY}`
     );
     
     if (!response.ok) {
@@ -51,9 +51,9 @@ export async function fetchNews(): Promise<NewsItem[]> {
         title: article.title,
         summary: article.description,
         content: article.content || article.description,
-        image: article.image || 'https://images.unsplash.com/photo-1578297886235-f2be6e8f3c3e?q=80&w=1000&auto=format&fit=crop',
+        image: article.urlToImage || 'https://images.unsplash.com/photo-1578297886235-f2be6e8f3c3e?q=80&w=1000&auto=format&fit=crop',
         date: article.publishedAt,
-        author: article.source.name,
+        author: article.author || article.source.name,
         category,
         featured: index < 2, // First two articles are featured
         url: article.url // Add the original URL to link back to the source
