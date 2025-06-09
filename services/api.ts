@@ -1,30 +1,76 @@
-import { Event, NewsItem, Weather } from '@/types';
+import { Event, NewsItem, Weather, WeatherForecast } from '@/types';
 
 // Base URLs for API requests
 const WEATHER_API_URL = 'https://api.open-meteo.com/v1/forecast';
+const NEWS_API_URL = 'https://gnews.io/api/v4/search';
+const NEWS_API_KEY = '9b752ba6d1a6e1cec12bff1a8fca81e7'; // Demo key with limited requests
 
 /**
  * Fetch news related to Elbasan or Albania
- * Using a more reliable approach with mock data since public news APIs often have limitations
+ * Using GNews API to get real news about Elbasan
  */
 export async function fetchNews(): Promise<NewsItem[]> {
   try {
-    // Simulate network request with a delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    // Search for news about Elbasan
+    const response = await fetch(
+      `${NEWS_API_URL}?q=Elbasan OR Albania&lang=en&country=al&max=10&apikey=${NEWS_API_KEY}`
+    );
     
-    // In a real app, this would be a real API call
-    // For demo purposes, we'll use our mock data but simulate a network request
+    if (!response.ok) {
+      throw new Error(`Failed to fetch news: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (!data.articles || data.articles.length === 0) {
+      console.log('No articles found, falling back to mock data');
+      throw new Error('No articles found');
+    }
+    
+    // Map the API response to our NewsItem format
+    return data.articles.map((article: any, index: number): NewsItem => {
+      // Determine category based on content or title keywords
+      let category: 'local' | 'business' | 'culture' | 'sports' | 'politics' | 'other' = 'other';
+      
+      const content = (article.title + ' ' + article.description).toLowerCase();
+      
+      if (content.includes('business') || content.includes('economy') || content.includes('market')) {
+        category = 'business';
+      } else if (content.includes('culture') || content.includes('art') || content.includes('festival') || content.includes('heritage')) {
+        category = 'culture';
+      } else if (content.includes('sport') || content.includes('football') || content.includes('match')) {
+        category = 'sports';
+      } else if (content.includes('politic') || content.includes('government') || content.includes('minister') || content.includes('parliament')) {
+        category = 'politics';
+      } else if (content.includes('elbasan') || content.includes('local')) {
+        category = 'local';
+      }
+      
+      return {
+        id: `${index + 1}`,
+        title: article.title,
+        summary: article.description,
+        content: article.content || article.description,
+        image: article.image || 'https://images.unsplash.com/photo-1578297886235-f2be6e8f3c3e?q=80&w=1000&auto=format&fit=crop',
+        date: article.publishedAt,
+        author: article.source.name,
+        category,
+        featured: index < 2, // First two articles are featured
+        url: article.url // Add the original URL to link back to the source
+      };
+    });
+  } catch (error) {
+    console.error('Error fetching news:', error);
+    
+    // Fall back to mock data
     const mockNews = require('@/mocks/news').news;
     
     // Randomize which news items are "featured" to simulate changing content
     return mockNews.map((item: NewsItem) => ({
       ...item,
-      isFeatured: Math.random() > 0.7, // 30% chance of being featured
+      featured: Math.random() > 0.7, // 30% chance of being featured
       date: randomizeDate(item.date) // Make dates appear more recent
     }));
-  } catch (error) {
-    console.error('Error fetching news:', error);
-    throw new Error('Failed to fetch news');
   }
 }
 
@@ -77,14 +123,42 @@ export async function fetchWeather(): Promise<Weather> {
       icon = 'sun';
     }
     
+    // Create forecast data
+    const forecast: WeatherForecast[] = [];
+    
+    if (data.daily && data.daily.temperature_2m_max && data.daily.temperature_2m_min) {
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const today = new Date().getDay();
+      
+      for (let i = 0; i < Math.min(data.daily.temperature_2m_max.length, 5); i++) {
+        const dayIndex = (today + i) % 7;
+        const dayName = i === 0 ? 'Today' : days[dayIndex];
+        
+        forecast.push({
+          day: dayName,
+          temperature: {
+            min: Math.round(data.daily.temperature_2m_min[i]),
+            max: Math.round(data.daily.temperature_2m_max[i])
+          },
+          condition: getConditionFromTemp(
+            (data.daily.temperature_2m_max[i] + data.daily.temperature_2m_min[i]) / 2
+          ),
+          icon: getIconFromTemp(
+            (data.daily.temperature_2m_max[i] + data.daily.temperature_2m_min[i]) / 2
+          )
+        });
+      }
+    }
+    
     return {
       temperature: Math.round(temp),
       condition,
       icon,
-      high: Math.round(data.daily?.temperature_2m_max?.[0] || temp + 5),
-      low: Math.round(data.daily?.temperature_2m_min?.[0] || temp - 5),
       humidity: data.current?.relative_humidity_2m || 50,
       windSpeed: Math.round(data.current?.wind_speed_10m || 5),
+      location: 'Elbasan, Albania',
+      forecast,
+      lastUpdated: new Date().toISOString()
     };
   } catch (error) {
     console.error('Error fetching weather:', error);
@@ -93,12 +167,47 @@ export async function fetchWeather(): Promise<Weather> {
       temperature: 28,
       condition: 'Sunny',
       icon: 'sun',
-      high: 32,
-      low: 22,
       humidity: 45,
       windSpeed: 6,
+      location: 'Elbasan, Albania',
+      forecast: [
+        {
+          day: 'Today',
+          temperature: { min: 22, max: 32 },
+          condition: 'Sunny',
+          icon: 'sun'
+        },
+        {
+          day: 'Tomorrow',
+          temperature: { min: 21, max: 30 },
+          condition: 'Partly Cloudy',
+          icon: 'cloud-sun'
+        },
+        {
+          day: 'Wednesday',
+          temperature: { min: 20, max: 29 },
+          condition: 'Sunny',
+          icon: 'sun'
+        }
+      ],
+      lastUpdated: new Date().toISOString()
     };
   }
+}
+
+// Helper function to determine weather condition from temperature
+function getConditionFromTemp(temp: number): string {
+  if (temp < 10) return 'Cold';
+  if (temp < 20) return 'Mild';
+  if (temp < 30) return 'Warm';
+  return 'Hot';
+}
+
+// Helper function to determine weather icon from temperature
+function getIconFromTemp(temp: number): string {
+  if (temp < 10) return 'cloud';
+  if (temp < 20) return 'cloud-sun';
+  return 'sun';
 }
 
 /**
@@ -118,7 +227,7 @@ export async function fetchEvents(): Promise<Event[]> {
       // Randomize which events are "featured" to simulate changing content
       const updatedEvents = events.map((event: Event) => ({
         ...event,
-        isFeatured: Math.random() > 0.7 // 30% chance of being featured
+        featured: Math.random() > 0.7 // 30% chance of being featured
       }));
       
       resolve(updatedEvents);

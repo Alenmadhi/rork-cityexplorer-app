@@ -1,91 +1,147 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
-import { Image } from 'expo-image';
-import { Heart, Clock } from 'lucide-react-native';
+import { StyleSheet, View, Text, Image, TouchableOpacity, Linking, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { NewsItem } from '@/types';
+import { Calendar, ExternalLink } from 'lucide-react-native';
 import Colors from '@/constants/colors';
-import { useFavoritesStore } from '@/stores/favorites-store';
+import { NewsItem } from '@/types';
 
 interface NewsCardProps {
   news: NewsItem;
-  isFeatured?: boolean;
+  featured?: boolean;
 }
 
-export const NewsCard: React.FC<NewsCardProps> = ({ news, isFeatured = false }) => {
+export default function NewsCard({ news, featured = false }: NewsCardProps) {
   const router = useRouter();
-  const { isFavoriteNews, addFavoriteNews, removeFavoriteNews } = useFavoritesStore();
-  const isFavorite = isFavoriteNews(news.id);
-
-  const handlePress = () => {
-    router.push(`/news/${news.id}`);
-  };
-
-  const toggleFavorite = () => {
-    if (isFavorite) {
-      removeFavoriteNews(news.id);
-    } else {
-      addFavoriteNews(news.id);
-    }
-  };
-
+  
+  // Format date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
     
-    if (diffDays === 0) {
-      return 'Today';
-    } else if (diffDays === 1) {
+    if (diffInDays === 0) {
+      // Today - show time
+      return `Today at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    } else if (diffInDays === 1) {
+      // Yesterday
       return 'Yesterday';
-    } else if (diffDays < 7) {
-      return `${diffDays} days ago`;
+    } else if (diffInDays < 7) {
+      // Within a week
+      return `${diffInDays} days ago`;
     } else {
+      // More than a week
       return date.toLocaleDateString();
     }
   };
-
+  
+  // Get category color
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'local':
+        return Colors.primary;
+      case 'business':
+        return Colors.success;
+      case 'culture':
+        return Colors.warning;
+      case 'sports':
+        return '#FF6B6B';
+      case 'politics':
+        return '#6B66FF';
+      default:
+        return Colors.textSecondary;
+    }
+  };
+  
+  // Handle card press
+  const handlePress = () => {
+    router.push(`/news/${news.id}`);
+  };
+  
+  // Handle external link press
+  const handleExternalLink = async () => {
+    if (news.url) {
+      const canOpen = await Linking.canOpenURL(news.url);
+      if (canOpen) {
+        await Linking.openURL(news.url);
+      }
+    }
+  };
+  
   return (
     <TouchableOpacity 
-      style={[styles.container, isFeatured && styles.featuredContainer]} 
+      style={[
+        styles.container,
+        featured && styles.featuredContainer
+      ]}
       onPress={handlePress}
       activeOpacity={0.8}
     >
+      <Image 
+        source={{ uri: news.image }} 
+        style={[
+          styles.image,
+          featured && styles.featuredImage
+        ]}
+        resizeMode="cover"
+      />
+      
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.category}>{news.category.toUpperCase()}</Text>
+          <View 
+            style={[
+              styles.categoryBadge,
+              { backgroundColor: `${getCategoryColor(news.category)}20` }
+            ]}
+          >
+            <Text 
+              style={[
+                styles.categoryText,
+                { color: getCategoryColor(news.category) }
+              ]}
+            >
+              {news.category.charAt(0).toUpperCase() + news.category.slice(1)}
+            </Text>
+          </View>
+          
+          {news.url && (
+            <TouchableOpacity 
+              style={styles.externalLinkButton}
+              onPress={handleExternalLink}
+            >
+              <ExternalLink size={16} color={Colors.primary} />
+            </TouchableOpacity>
+          )}
+        </View>
+        
+        <Text 
+          style={[
+            styles.title,
+            featured && styles.featuredTitle
+          ]}
+          numberOfLines={2}
+        >
+          {news.title}
+        </Text>
+        
+        <Text 
+          style={styles.summary}
+          numberOfLines={featured ? 3 : 2}
+        >
+          {news.summary}
+        </Text>
+        
+        <View style={styles.footer}>
           <View style={styles.dateContainer}>
-            <Clock size={12} color={Colors.textSecondary} />
+            <Calendar size={14} color={Colors.textSecondary} />
             <Text style={styles.date}>{formatDate(news.date)}</Text>
           </View>
-        </View>
-        <Text style={styles.title} numberOfLines={2}>{news.title}</Text>
-        <Text style={styles.summary} numberOfLines={2}>{news.summary}</Text>
-        <View style={styles.footer}>
-          <Text style={styles.source}>{news.source}</Text>
+          
+          <Text style={styles.author}>{news.author}</Text>
         </View>
       </View>
-      <Image
-        source={{ uri: news.image }}
-        style={styles.image}
-        contentFit="cover"
-        transition={200}
-      />
-      <TouchableOpacity 
-        style={styles.favoriteButton} 
-        onPress={toggleFavorite}
-        hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
-      >
-        <Heart 
-          size={20} 
-          color={isFavorite ? Colors.secondary : Colors.textSecondary} 
-          fill={isFavorite ? Colors.secondary : 'none'} 
-        />
-      </TouchableOpacity>
     </TouchableOpacity>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -93,7 +149,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     marginBottom: 16,
-    flexDirection: 'row',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -102,7 +157,7 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
       },
       android: {
-        elevation: 3,
+        elevation: 2,
       },
       web: {
         boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
@@ -112,74 +167,66 @@ const styles = StyleSheet.create({
   featuredContainer: {
     marginBottom: 24,
   },
+  image: {
+    width: '100%',
+    height: 160,
+  },
+  featuredImage: {
+    height: 200,
+  },
   content: {
     padding: 16,
-    flex: 1,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
   },
-  category: {
-    fontSize: 12,
-    color: Colors.primary,
-    fontWeight: '600',
+  categoryBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
-  dateContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  date: {
+  categoryText: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    fontWeight: '500',
+  },
+  externalLinkButton: {
+    padding: 4,
   },
   title: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 8,
     color: Colors.text,
+    marginBottom: 8,
+  },
+  featuredTitle: {
+    fontSize: 18,
   },
   summary: {
     fontSize: 14,
     color: Colors.textSecondary,
     marginBottom: 12,
+    lineHeight: 20,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  source: {
-    fontSize: 13,
-    fontWeight: '500',
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  date: {
+    fontSize: 12,
     color: Colors.textSecondary,
+    marginLeft: 4,
   },
-  image: {
-    width: 100,
-    height: '100%',
-  },
-  favoriteButton: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 16,
-    padding: 6,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-      },
-      android: {
-        elevation: 2,
-      },
-      web: {
-        boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.2)',
-      },
-    }),
+  author: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    fontStyle: 'italic',
   },
 });

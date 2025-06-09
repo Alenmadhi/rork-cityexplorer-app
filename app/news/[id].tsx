@@ -1,134 +1,215 @@
-import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Platform } from 'react-native';
-import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
-import { Image } from 'expo-image';
-import { Heart, Calendar, ArrowLeft, Share2, ExternalLink } from 'lucide-react-native';
-import { useNews } from '@/hooks/useNews';
-import { LoadingIndicator } from '@/components/LoadingIndicator';
-import { ErrorMessage } from '@/components/ErrorMessage';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Linking, Platform } from 'react-native';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Calendar, ArrowLeft, Share2, ExternalLink, Bookmark, BookmarkCheck } from 'lucide-react-native';
 import Colors from '@/constants/colors';
+import { NewsItem } from '@/types';
 import { useFavoritesStore } from '@/stores/favorites-store';
+import LoadingIndicator from '@/components/LoadingIndicator';
+import ErrorMessage from '@/components/ErrorMessage';
 
 export default function NewsDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { news, loading, error, refreshNews } = useNews();
-  const { isFavoriteNews, addFavoriteNews, removeFavoriteNews } = useFavoritesStore();
+  const { favorites, toggleFavorite, isFavorite } = useFavoritesStore();
   
-  if (loading) {
-    return <LoadingIndicator message="Loading article..." />;
-  }
+  const [news, setNews] = useState<NewsItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
-  if (error) {
-    return <ErrorMessage message={error} onRetry={refreshNews} />;
-  }
+  // Check if news is in favorites
+  const isNewsFavorite = news ? isFavorite('news', news.id) : false;
   
-  const newsItem = news.find(n => n.id === id);
-  
-  if (!newsItem) {
-    return (
-      <View style={styles.notFoundContainer}>
-        <Text style={styles.notFoundText}>News article not found</Text>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>Go Back</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  const isFavorite = isFavoriteNews(newsItem.id);
-
-  const toggleFavorite = () => {
-    if (isFavorite) {
-      removeFavoriteNews(newsItem.id);
-    } else {
-      addFavoriteNews(newsItem.id);
+  // Fetch news details
+  useEffect(() => {
+    const fetchNewsDetails = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        // In a real app, this would be an API call
+        // For demo purposes, we'll use our mock data
+        const mockNews = require('@/mocks/news').news;
+        const foundNews = mockNews.find((item: NewsItem) => item.id === id);
+        
+        if (foundNews) {
+          setNews(foundNews);
+        } else {
+          setError('News not found');
+        }
+      } catch (err) {
+        console.error('Error fetching news details:', err);
+        setError('Failed to load news details');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (id) {
+      fetchNewsDetails();
     }
-  };
-
+  }, [id]);
+  
+  // Format date
   const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { 
-      weekday: 'long', 
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString(undefined, { 
       year: 'numeric', 
       month: 'long', 
-      day: 'numeric' 
-    };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
-
+  
+  // Get category color
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'local':
+        return Colors.primary;
+      case 'business':
+        return Colors.success;
+      case 'culture':
+        return Colors.warning;
+      case 'sports':
+        return '#FF6B6B';
+      case 'politics':
+        return '#6B66FF';
+      default:
+        return Colors.textSecondary;
+    }
+  };
+  
+  // Handle share
+  const handleShare = async () => {
+    if (!news) return;
+    
+    try {
+      await Share.share({
+        message: `Check out this news: ${news.title}`,
+        url: news.url || `https://elbasan-city-app.com/news/${news.id}`,
+      });
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
+  };
+  
+  // Handle toggle favorite
+  const handleToggleFavorite = () => {
+    if (!news) return;
+    
+    toggleFavorite('news', news);
+  };
+  
+  // Handle external link
+  const handleExternalLink = async () => {
+    if (news?.url) {
+      const canOpen = await Linking.canOpenURL(news.url);
+      if (canOpen) {
+        await Linking.openURL(news.url);
+      }
+    }
+  };
+  
+  if (loading) {
+    return <LoadingIndicator />;
+  }
+  
+  if (error || !news) {
+    return <ErrorMessage message={error || 'News not found'} />;
+  }
+  
   return (
     <>
       <Stack.Screen 
         options={{
           title: '',
-          headerTransparent: true,
           headerLeft: () => (
-            <TouchableOpacity 
-              style={styles.headerButton} 
-              onPress={() => router.back()}
-            >
-              <ArrowLeft size={24} color="#fff" />
+            <TouchableOpacity onPress={() => router.back()}>
+              <ArrowLeft size={24} color={Colors.text} />
             </TouchableOpacity>
           ),
           headerRight: () => (
-            <View style={styles.headerRightContainer}>
-              <TouchableOpacity style={styles.headerButton}>
-                <Share2 size={24} color="#fff" />
-              </TouchableOpacity>
+            <View style={styles.headerActions}>
+              {news.url && (
+                <TouchableOpacity 
+                  style={styles.headerAction}
+                  onPress={handleExternalLink}
+                >
+                  <ExternalLink size={24} color={Colors.primary} />
+                </TouchableOpacity>
+              )}
+              
               <TouchableOpacity 
-                style={styles.headerButton} 
-                onPress={toggleFavorite}
+                style={styles.headerAction}
+                onPress={handleShare}
               >
-                <Heart 
-                  size={24} 
-                  color="#fff" 
-                  fill={isFavorite ? "#fff" : "none"} 
-                />
+                <Share2 size={24} color={Colors.text} />
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.headerAction}
+                onPress={handleToggleFavorite}
+              >
+                {isNewsFavorite ? (
+                  <BookmarkCheck size={24} color={Colors.primary} />
+                ) : (
+                  <Bookmark size={24} color={Colors.text} />
+                )}
               </TouchableOpacity>
             </View>
           ),
         }} 
       />
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: newsItem.image }}
-            style={styles.image}
-            contentFit="cover"
-          />
-          <View style={styles.overlay} />
-        </View>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Image 
+          source={{ uri: news.image }} 
+          style={styles.image}
+          resizeMode="cover"
+        />
         
-        <View style={styles.contentContainer}>
-          <View style={styles.headerContainer}>
-            <View style={styles.categoryContainer}>
-              <Text style={styles.category}>{newsItem.category.toUpperCase()}</Text>
+        <View style={styles.articleContainer}>
+          <View style={styles.header}>
+            <View 
+              style={[
+                styles.categoryBadge,
+                { backgroundColor: `${getCategoryColor(news.category)}20` }
+              ]}
+            >
+              <Text 
+                style={[
+                  styles.categoryText,
+                  { color: getCategoryColor(news.category) }
+                ]}
+              >
+                {news.category.charAt(0).toUpperCase() + news.category.slice(1)}
+              </Text>
             </View>
             
             <View style={styles.dateContainer}>
-              <Calendar size={16} color={Colors.textSecondary} />
-              <Text style={styles.date}>{formatDate(newsItem.date)}</Text>
+              <Calendar size={14} color={Colors.textSecondary} />
+              <Text style={styles.date}>{formatDate(news.date)}</Text>
             </View>
           </View>
           
-          <Text style={styles.title}>{newsItem.title}</Text>
-          <Text style={styles.summary}>{newsItem.summary}</Text>
+          <Text style={styles.title}>{news.title}</Text>
           
-          <View style={styles.sourceContainer}>
-            <Text style={styles.sourceLabel}>Source:</Text>
-            <Text style={styles.source}>{newsItem.source}</Text>
-          </View>
+          <Text style={styles.author}>By {news.author}</Text>
           
-          <View style={styles.contentTextContainer}>
-            <Text style={styles.contentText}>{newsItem.content}</Text>
-          </View>
-        </View>
-        
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button}>
-            <ExternalLink size={18} color="#fff" style={styles.buttonIcon} />
-            <Text style={styles.buttonText}>Read Full Article</Text>
-          </TouchableOpacity>
+          <Text style={styles.summary}>{news.summary}</Text>
+          
+          <Text style={styles.content}>{news.content}</Text>
+          
+          {news.url && (
+            <TouchableOpacity 
+              style={styles.sourceButton}
+              onPress={handleExternalLink}
+            >
+              <Text style={styles.sourceButtonText}>Read full article</Text>
+              <ExternalLink size={16} color={Colors.primary} style={styles.sourceButtonIcon} />
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </>
@@ -140,86 +221,58 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  notFoundContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+  content: {
+    paddingBottom: 40,
   },
-  notFoundText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 20,
+  headerActions: {
+    flexDirection: 'row',
   },
-  backButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: Colors.primary,
-    borderRadius: 8,
-  },
-  backButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  imageContainer: {
-    height: 250,
-    width: '100%',
-    position: 'relative',
+  headerAction: {
+    marginLeft: 16,
   },
   image: {
     width: '100%',
-    height: '100%',
+    height: 250,
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  articleContainer: {
+    padding: 16,
   },
-  headerButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 4,
-  },
-  headerRightContainer: {
-    flexDirection: 'row',
-  },
-  contentContainer: {
-    padding: 20,
-  },
-  headerContainer: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
   },
-  categoryContainer: {
-    backgroundColor: `${Colors.primary}20`,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+  categoryBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
-  category: {
-    color: Colors.primary,
-    fontWeight: '600',
-    fontSize: 14,
+  categoryText: {
+    fontSize: 12,
+    fontWeight: '500',
   },
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
   },
   date: {
-    fontSize: 14,
+    fontSize: 12,
     color: Colors.textSecondary,
+    marginLeft: 4,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: Colors.text,
-    marginBottom: 12,
+    marginBottom: 8,
+    lineHeight: 32,
+  },
+  author: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginBottom: 16,
+    fontStyle: 'italic',
   },
   summary: {
     fontSize: 16,
@@ -228,46 +281,27 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     lineHeight: 24,
   },
-  sourceContainer: {
-    flexDirection: 'row',
+  content: {
+    fontSize: 16,
+    color: Colors.text,
+    lineHeight: 24,
     marginBottom: 24,
   },
-  sourceLabel: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginRight: 4,
+  sourceButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: `${Colors.primary}15`,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
   },
-  source: {
-    fontSize: 14,
+  sourceButtonText: {
+    fontSize: 16,
     fontWeight: '500',
     color: Colors.primary,
   },
-  contentTextContainer: {
-    marginBottom: 24,
-  },
-  contentText: {
-    fontSize: 16,
-    lineHeight: 26,
-    color: Colors.text,
-  },
-  buttonContainer: {
-    padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
-  },
-  button: {
-    backgroundColor: Colors.primary,
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  buttonIcon: {
-    marginRight: 8,
+  sourceButtonIcon: {
+    marginLeft: 8,
   },
 });

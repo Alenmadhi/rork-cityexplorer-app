@@ -110,6 +110,7 @@ export interface NewsItem {
   author: string;
   category: NewsCategory;
   featured?: boolean;
+  url?: string; // Added URL to link back to the original news source
 }
 
 export type NewsCategory = 'local' | 'business' | 'culture' | 'sports' | 'politics' | 'other';

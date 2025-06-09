@@ -44,10 +44,10 @@ export function useNews() {
   useEffect(() => {
     loadNews();
     
-    // Set up periodic refresh every 30 minutes
+    // Set up periodic refresh every 15 minutes
     const refreshInterval = setInterval(() => {
       loadNews();
-    }, 30 * 60 * 1000);
+    }, 15 * 60 * 1000);
     
     return () => clearInterval(refreshInterval);
   }, []);
