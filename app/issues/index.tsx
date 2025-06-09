@@ -80,7 +80,7 @@ export default function IssuesScreen() {
       case 'pending':
         return Colors.warning;
       case 'in_progress':
-        return Colors.info;
+        return Colors.primary; // Changed from Colors.info to Colors.primary
       case 'resolved':
         return Colors.success;
       default:
