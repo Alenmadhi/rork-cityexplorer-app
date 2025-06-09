@@ -38,7 +38,7 @@ export default function SuccessStoryDetailScreen() {
   // Safely handle comments
   const commentsCount = typeof story.comments === 'number' 
     ? story.comments 
-    : story.comments?.length || 0;
+    : Array.isArray(story.comments) ? story.comments.length : 0;
   
   // Render comments only if they are an array
   const renderComments = () => {

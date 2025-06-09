@@ -22,7 +22,7 @@ export const SuccessStoryCard: React.FC<SuccessStoryCardProps> = ({ story, featu
   // Safely handle comments count
   const commentsCount = typeof story.comments === 'number' 
     ? story.comments 
-    : story.comments?.length || 0;
+    : Array.isArray(story.comments) ? story.comments.length : 0;
   
   return (
     <TouchableOpacity 

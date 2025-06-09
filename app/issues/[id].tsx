@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Platform, TextInput } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { MapPin, Calendar, ArrowLeft, MessageCircle, ThumbsUp, Share2, AlertTriangle } from 'lucide-react-native';

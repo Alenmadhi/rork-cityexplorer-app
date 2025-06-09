@@ -4,7 +4,7 @@ const Colors = {
   success: '#2ecc71',
   warning: '#f39c12',
   error: '#e74c3c',
-  info: '#3498db', // Added missing info color
+  info: '#3498db', // Added info color
   background: '#f8f9fa',
   card: '#ffffff',
   text: '#212529',
