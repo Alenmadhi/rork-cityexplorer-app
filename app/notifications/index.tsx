@@ -130,7 +130,7 @@ export default function NotificationsScreen() {
       case 'issue_update':
         return <CheckCircle size={24} color={Colors.success} />;
       case 'comment':
-        return <MessageCircle size={24} color={Colors.info} />;
+        return <MessageCircle size={24} color={Colors.primary} />;
       case 'badge':
         return <Award size={24} color={Colors.primary} />;
       case 'challenge':

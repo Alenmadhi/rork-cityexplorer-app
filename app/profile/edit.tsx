@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, Platform, Image } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { Camera, X, Check, MapPin, Mail, Phone, Globe, User, ChevronLeft } from 'lucide-react-native';
+import { Camera, X, Check, MapPin, Mail, Phone, Globe, User as UserIcon, ChevronLeft } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useAuthStore } from '@/stores/auth-store';
-import { User } from '@/types';
+import type { User } from '@/types';
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -46,14 +46,12 @@ export default function EditProfileScreen() {
         name,
         email,
         bio,
+        phone,
+        address,
+        website,
         avatar,
         createdAt: user.createdAt || new Date().toISOString(),
       };
-      
-      // Only add optional fields if they have values
-      if (phone) updatedUser.phone = phone;
-      if (address) updatedUser.address = address;
-      if (website) updatedUser.website = website;
       
       updateUser(updatedUser);
       router.back();
@@ -109,7 +107,7 @@ export default function EditProfileScreen() {
           <View style={styles.formGroup}>
             <Text style={styles.label}>Full Name</Text>
             <View style={styles.inputContainer}>
-              <User size={20} color={Colors.textSecondary} style={styles.inputIcon} />
+              <UserIcon size={20} color={Colors.textSecondary} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 value={name}
