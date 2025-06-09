@@ -1,30 +1,38 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Image, Platform, ActivityIndicator } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { MapPin, Calendar, Newspaper, Info, User } from 'lucide-react-native';
+import { MapPin, Calendar, Newspaper, Info, User, ArrowRight } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useAuthStore } from '@/stores/auth-store';
 
 export default function GuestHomeScreen() {
   const router = useRouter();
-  const { login } = useAuthStore();
+  const { loginAsGuest, isLoading, error: authError } = useAuthStore();
+  const [error, setError] = useState<string | null>(null);
 
-  const handleContinueAsGuest = () => {
-    // Create a guest user
-    const guestUser = {
-      id: 'guest-' + Date.now(),
-      name: 'Guest User',
-      email: '',
-      avatar: null
-    };
-    
-    // Login as guest
-    login(guestUser);
-    
-    // Navigate to home after a short delay to ensure state is updated
-    setTimeout(() => {
+  // Update error from auth store
+  React.useEffect(() => {
+    if (authError) {
+      setError(authError);
+    }
+  }, [authError]);
+
+  const handleContinueAsGuest = async () => {
+    try {
+      await loginAsGuest();
+      // After successful login, router will navigate to tabs
       router.replace('/(tabs)');
-    }, 300);
+    } catch (err) {
+      setError('Failed to continue as guest. Please try again.');
+    }
+  };
+
+  const handleLogin = () => {
+    router.push('/login');
+  };
+
+  const handleSignup = () => {
+    router.push('/signup');
   };
 
   return (
@@ -45,6 +53,12 @@ export default function GuestHomeScreen() {
       </View>
       
       <View style={styles.content}>
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        )}
+        
         <Text style={styles.sectionTitle}>Explore as a Guest</Text>
         
         <View style={styles.featuresContainer}>
@@ -97,17 +111,26 @@ export default function GuestHomeScreen() {
         </View>
         
         <TouchableOpacity 
-          style={styles.guestButton}
+          style={[styles.guestButton, isLoading && styles.disabledButton]}
           onPress={handleContinueAsGuest}
+          disabled={isLoading}
           activeOpacity={0.8}
         >
-          <Text style={styles.guestButtonText}>Continue as Guest</Text>
+          {isLoading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <>
+              <Text style={styles.guestButtonText}>Continue as Guest</Text>
+              <ArrowRight size={20} color="#fff" style={styles.buttonIcon} />
+            </>
+          )}
         </TouchableOpacity>
         
         <View style={styles.authButtons}>
           <TouchableOpacity 
             style={styles.loginButton}
-            onPress={() => router.push('/login')}
+            onPress={handleLogin}
+            disabled={isLoading}
             activeOpacity={0.8}
           >
             <Text style={styles.loginButtonText}>Log In</Text>
@@ -115,7 +138,8 @@ export default function GuestHomeScreen() {
           
           <TouchableOpacity 
             style={styles.signupButton}
-            onPress={() => router.push('/signup')}
+            onPress={handleSignup}
+            disabled={isLoading}
             activeOpacity={0.8}
           >
             <Text style={styles.signupButtonText}>Sign Up</Text>
@@ -164,6 +188,16 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
+  },
+  errorContainer: {
+    backgroundColor: `${Colors.error}20`,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  errorText: {
+    color: Colors.error,
+    fontSize: 14,
   },
   sectionTitle: {
     fontSize: 20,
@@ -235,16 +269,24 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   guestButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: Colors.primary,
     paddingVertical: 16,
     borderRadius: 12,
-    alignItems: 'center',
     marginBottom: 16,
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
   guestButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  buttonIcon: {
+    marginLeft: 8,
   },
   authButtons: {
     flexDirection: 'row',

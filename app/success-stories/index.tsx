@@ -12,7 +12,7 @@ export default function SuccessStoriesScreen() {
   
   React.useEffect(() => {
     fetchStories();
-  }, []);
+  }, [fetchStories]);
   
   const renderStory = ({ item }: { item: SuccessStory }) => (
     <SuccessStoryCard story={item} featured={item.featured} />

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity, Platform, Image } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { Award, Calendar, CheckCircle, Clock, Users, ChevronRight, Filter } from 'lucide-react-native';
+import { Award, Calendar, CheckCircle, Clock, Users, ChevronRight, Filter, Trophy } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 
 // Types
@@ -251,7 +251,7 @@ export default function ChallengesScreen() {
           
           {item.reward.badge && (
             <View style={styles.rewardItem}>
-              <CheckCircle size={16} color={Colors.success} />
+              <Trophy size={16} color={Colors.success} />
               <Text style={styles.rewardText}>{item.reward.badge} badge</Text>
             </View>
           )}

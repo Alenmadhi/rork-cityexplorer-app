@@ -1,44 +1,55 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image, Platform, ActivityIndicator } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useAuthStore } from '@/stores/auth-store';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login } = useAuthStore();
+  const { login, loginAsGuest, isAuthenticated, isLoading, error: authError } = useAuthStore();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const handleLogin = () => {
+  // Check if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/(tabs)');
+    }
+  }, [isAuthenticated]);
+  
+  // Update error from auth store
+  useEffect(() => {
+    if (authError) {
+      setError(authError);
+    }
+  }, [authError]);
+  
+  const handleLogin = async () => {
     // Basic validation
     if (!email || !password) {
       setError('Please enter both email and password');
       return;
     }
     
-    // In a real app, you would make an API call to authenticate
-    // For demo purposes, we'll just simulate a successful login
-    const mockUser = {
-      id: '1',
-      email: email,
-      name: 'John Doe',
-      avatar: null
-    };
-    
-    // Login the user
-    login(mockUser);
-    
-    // Navigate to home
-    router.replace('/(tabs)');
+    try {
+      await login(email, password);
+      // Navigation is handled in the useEffect
+    } catch (err) {
+      setError('Login failed. Please try again.');
+    }
   };
   
-  const handleContinueAsGuest = () => {
-    router.push('/guest');
+  const handleContinueAsGuest = async () => {
+    try {
+      await loginAsGuest();
+      // Navigation is handled in the useEffect
+    } catch (err) {
+      setError('Failed to continue as guest. Please try again.');
+    }
   };
 
   return (
@@ -71,9 +82,13 @@ export default function LoginScreen() {
             style={styles.input}
             placeholder="Email"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              setError(null);
+            }}
             autoCapitalize="none"
             keyboardType="email-address"
+            editable={!isLoading}
           />
         </View>
         
@@ -83,12 +98,17 @@ export default function LoginScreen() {
             style={styles.input}
             placeholder="Password"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              setError(null);
+            }}
             secureTextEntry={!showPassword}
+            editable={!isLoading}
           />
           <TouchableOpacity 
             style={styles.passwordToggle}
             onPress={() => setShowPassword(!showPassword)}
+            disabled={isLoading}
           >
             {showPassword ? (
               <EyeOff size={20} color={Colors.textSecondary} />
@@ -98,15 +118,23 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
         
-        <TouchableOpacity style={styles.forgotPassword}>
+        <TouchableOpacity 
+          style={styles.forgotPassword}
+          disabled={isLoading}
+        >
           <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
-          style={styles.loginButton}
+          style={[styles.loginButton, isLoading && styles.disabledButton]}
           onPress={handleLogin}
+          disabled={isLoading}
         >
-          <Text style={styles.loginButtonText}>Log In</Text>
+          {isLoading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text style={styles.loginButtonText}>Log In</Text>
+          )}
         </TouchableOpacity>
         
         <View style={styles.orContainer}>
@@ -117,14 +145,19 @@ export default function LoginScreen() {
         
         <TouchableOpacity 
           style={styles.guestButton}
-          onPress={handleContinueAsGuest}
+          onPress={() => router.push('/guest')}
+          disabled={isLoading}
         >
           <Text style={styles.guestButtonText}>Continue as Guest</Text>
+          <ArrowRight size={18} color={Colors.primary} style={styles.guestButtonIcon} />
         </TouchableOpacity>
         
         <View style={styles.signupContainer}>
           <Text style={styles.signupText}>Don't have an account? </Text>
-          <TouchableOpacity onPress={() => router.push('/signup')}>
+          <TouchableOpacity 
+            onPress={() => router.push('/signup')}
+            disabled={isLoading}
+          >
             <Text style={styles.signupLink}>Sign Up</Text>
           </TouchableOpacity>
         </View>
@@ -219,6 +252,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
+  disabledButton: {
+    opacity: 0.7,
+  },
   loginButtonText: {
     color: '#fff',
     fontSize: 16,
@@ -240,10 +276,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   guestButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: 'transparent',
     paddingVertical: 16,
     borderRadius: 8,
-    alignItems: 'center',
     marginBottom: 24,
     borderWidth: 1,
     borderColor: Colors.primary,
@@ -252,6 +290,9 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontSize: 16,
     fontWeight: '600',
+  },
+  guestButtonIcon: {
+    marginLeft: 8,
   },
   signupContainer: {
     flexDirection: 'row',

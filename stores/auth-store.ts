@@ -8,7 +8,9 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  isGuest: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginAsGuest: () => Promise<void>;
   signup: (userData: Partial<User>) => Promise<void>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
@@ -30,10 +32,11 @@ const mockUser: User = {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      user: mockUser,
-      isAuthenticated: true, // Set to true for demo purposes
+      user: null,
+      isAuthenticated: false,
       isLoading: false,
       error: null,
+      isGuest: false,
       
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
@@ -46,11 +49,41 @@ export const useAuthStore = create<AuthState>()(
           set({ 
             user: mockUser,
             isAuthenticated: true,
-            isLoading: false
+            isLoading: false,
+            isGuest: false
           });
         } catch (error) {
           set({ 
             error: 'Invalid email or password',
+            isLoading: false
+          });
+        }
+      },
+      
+      loginAsGuest: async () => {
+        set({ isLoading: true, error: null });
+        
+        try {
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Create a guest user
+          const guestUser: User = {
+            id: `guest-${Date.now()}`,
+            name: 'Guest User',
+            email: 'guest@example.com',
+            createdAt: new Date().toISOString(),
+          };
+          
+          set({ 
+            user: guestUser,
+            isAuthenticated: true,
+            isLoading: false,
+            isGuest: true
+          });
+        } catch (error) {
+          set({ 
+            error: 'Failed to continue as guest',
             isLoading: false
           });
         }
@@ -75,7 +108,8 @@ export const useAuthStore = create<AuthState>()(
           set({ 
             user: newUser,
             isAuthenticated: true,
-            isLoading: false
+            isLoading: false,
+            isGuest: false
           });
         } catch (error) {
           set({ 
@@ -88,7 +122,8 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         set({ 
           user: null,
-          isAuthenticated: false
+          isAuthenticated: false,
+          isGuest: false
         });
       },
       

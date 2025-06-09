@@ -1,108 +1,64 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useFonts } from "expo-font";
-import { Stack, useRouter, useSegments } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
-import { useEffect, useRef } from "react";
-import { useAuthStore } from "@/stores/auth-store";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Stack } from 'expo-router';
+import { useEffect } from 'react';
+import { useColorScheme } from 'react-native';
+import { useAuthStore } from '@/stores/auth-store';
 
-import { ErrorBoundary } from "./error-boundary";
-
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: "(tabs)",
-};
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-
-// Create a client
-const queryClient = new QueryClient();
+import { ThemeProvider } from '@/context/theme-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    ...FontAwesome.font,
-  });
-
-  useEffect(() => {
-    if (error) {
-      console.error(error);
-      throw error;
-    }
-  }, [error]);
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
-
+  const colorScheme = useColorScheme();
+  
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider value={colorScheme === 'dark' ? 'dark' : 'light'}>
         <AuthProvider>
           <RootLayoutNav />
         </AuthProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, user } = useAuthStore();
-  const segments = useSegments();
-  const router = useRouter();
-  const isMounted = useRef(false);
-  const initialCheckDone = useRef(false);
+  const { isAuthenticated, isLoading } = useAuthStore();
 
-  useEffect(() => {
-    // Skip the first render to prevent navigation before mounting
-    if (!isMounted.current) {
-      isMounted.current = true;
-      return;
-    }
-
-    // Skip the initial check to prevent immediate navigation
-    if (!initialCheckDone.current) {
-      initialCheckDone.current = true;
-      return;
-    }
-
-    const inAuthGroup = segments[0] === "(auth)";
-    const inGuestPath = segments[0] === "guest";
-    
-    // If the user is not authenticated and not in the auth group or guest path, redirect to login
-    if (!isAuthenticated && !inAuthGroup && !inGuestPath && !user?.id) {
-      // Use setTimeout to ensure navigation happens after component is mounted
-      setTimeout(() => {
-        router.replace("/guest");
-      }, 100);
-    } else if (isAuthenticated && inAuthGroup) {
-      // If the user is authenticated and in the auth group, redirect to home
-      setTimeout(() => {
-        router.replace("/(tabs)");
-      }, 100);
-    }
-  }, [isAuthenticated, segments, user, router]);
+  // You can add additional auth logic here if needed
+  // For example, refreshing tokens, checking auth status, etc.
 
   return <>{children}</>;
 }
 
 function RootLayoutNav() {
+  const { isAuthenticated } = useAuthStore();
+
   return (
-    <Stack
-      screenOptions={{
-        headerBackTitle: "Back",
-      }}
-    >
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="guest" options={{ headerShown: false }} />
-      <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+    <Stack screenOptions={{ headerShown: false }}>
+      {isAuthenticated ? (
+        <>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="badges/index" options={{ presentation: 'card' }} />
+          <Stack.Screen name="notifications/index" options={{ presentation: 'card' }} />
+          <Stack.Screen name="profile/edit" options={{ presentation: 'card' }} />
+          <Stack.Screen name="success-stories/index" options={{ presentation: 'card' }} />
+          <Stack.Screen name="success-stories/[id]" options={{ presentation: 'card' }} />
+          <Stack.Screen name="challenges/index" options={{ presentation: 'card' }} />
+          <Stack.Screen name="challenges/[id]" options={{ presentation: 'card' }} />
+          <Stack.Screen name="issues/index" options={{ presentation: 'card' }} />
+          <Stack.Screen name="issues/[id]" options={{ presentation: 'card' }} />
+          <Stack.Screen name="settings/index" options={{ presentation: 'card' }} />
+          <Stack.Screen name="settings/privacy" options={{ presentation: 'card' }} />
+          <Stack.Screen name="offline-reports/index" options={{ presentation: 'card' }} />
+          <Stack.Screen name="qr-scanner/index" options={{ presentation: 'card' }} />
+          <Stack.Screen name="leaderboard/index" options={{ presentation: 'card' }} />
+        </>
+      ) : (
+        <>
+          <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)/signup" options={{ headerShown: false }} />
+          <Stack.Screen name="guest/index" options={{ headerShown: false }} />
+        </>
+      )}
     </Stack>
   );
 }
