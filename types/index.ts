@@ -14,6 +14,15 @@ export interface EmergencyAlert {
   updatedAt?: string;
 }
 
+// Comment type
+export interface Comment {
+  id: string;
+  userId: string;
+  userName: string;
+  text: string;
+  createdAt: string;
+}
+
 // Success Story type
 export interface SuccessStory {
   id: string;
@@ -24,9 +33,12 @@ export interface SuccessStory {
   location: string;
   date: string;
   featured: boolean;
-  likes?: number;
-  comments?: number;
-  issueId?: string;
+  votes?: number;
+  reportedBy?: string;
+  resolvedBy?: string;
+  resolvedDate?: string;
+  category?: string;
+  comments?: Comment[] | number;
 }
 
 // Badge type
@@ -151,15 +163,6 @@ export interface Issue {
   votes: number;
   comments: number | Comment[];
   updates?: Update[];
-}
-
-// Comment type
-export interface Comment {
-  id: string;
-  userId: string;
-  userName: string;
-  text: string;
-  createdAt: string;
 }
 
 // Update type
