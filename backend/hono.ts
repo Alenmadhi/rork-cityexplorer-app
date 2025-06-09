@@ -5,8 +5,18 @@ import { appRouter } from "./trpc/app-router";
 import { createContext } from "./trpc/create-context";
 import { jwt } from "hono/jwt";
 
+// Define the environment with JWT
+type Variables = {
+  jwtPayload: {
+    sub: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+};
+
 // app will be mounted at /api
-const app = new Hono();
+const app = new Hono<{ Variables: Variables }>();
 
 // Enable CORS for all routes
 app.use("*", cors());
@@ -101,7 +111,7 @@ app.post("/auth/login", async (c) => {
       name: "Admin User",
       email: email,
       role: "admin",
-    });
+    }, { secret: JWT_SECRET });
     
     return c.json({
       success: true,
@@ -119,7 +129,7 @@ app.post("/auth/login", async (c) => {
       name: "Test User",
       email: email,
       role: "user",
-    });
+    }, { secret: JWT_SECRET });
     
     return c.json({
       success: true,
@@ -146,7 +156,7 @@ app.post("/auth/signup", async (c) => {
     name: name,
     email: email,
     role: "user",
-  });
+  }, { secret: JWT_SECRET });
   
   return c.json({
     success: true,

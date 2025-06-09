@@ -3,6 +3,7 @@ import { createTRPCClient, httpBatchLink } from '@trpc/client';
 import Constants from 'expo-constants';
 import type { AppRouter } from '@/backend/trpc/app-router';
 import { useAuthStore } from '@/stores/auth-store';
+import superjson from 'superjson';
 
 // Get the API URL from the manifest extra
 const getBaseUrl = () => {
@@ -28,6 +29,7 @@ export const trpcClient = createTRPCClient<AppRouter>({
           Authorization: token ? `Bearer ${token}` : '',
         };
       },
+      transformer: superjson,
     }),
   ],
 });

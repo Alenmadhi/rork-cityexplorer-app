@@ -70,6 +70,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    // Skip the initial check to prevent immediate navigation
     if (!initialCheckDone.current) {
       initialCheckDone.current = true;
       return;
@@ -83,14 +84,14 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       // Use setTimeout to ensure navigation happens after component is mounted
       setTimeout(() => {
         router.replace("/guest");
-      }, 0);
+      }, 100);
     } else if (isAuthenticated && inAuthGroup) {
       // If the user is authenticated and in the auth group, redirect to home
       setTimeout(() => {
         router.replace("/(tabs)");
-      }, 0);
+      }, 100);
     }
-  }, [isAuthenticated, segments, user]);
+  }, [isAuthenticated, segments, user, router]);
 
   return <>{children}</>;
 }
