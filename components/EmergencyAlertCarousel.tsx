@@ -53,12 +53,13 @@ export const EmergencyAlertCarousel: React.FC<EmergencyAlertCarouselProps> = ({ 
     });
   };
   
-  // Create a stable reference to the viewability config and callback
-  const viewabilityConfig = React.useRef({
+  // Create a stable reference to the viewability config
+  const viewabilityConfig = useRef({
     itemVisiblePercentThreshold: 50
   }).current;
   
-  const onViewableItemsChanged = React.useRef(({ viewableItems }: any) => {
+  // Create a stable reference to the viewability callback
+  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
     if (viewableItems.length > 0) {
       setCurrentIndex(viewableItems[0].index);
     }

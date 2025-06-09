@@ -143,7 +143,7 @@ export default function OfflineReportsScreen() {
       
       <View style={styles.reportMeta}>
         <Text style={styles.reportLocation}>{item.location}</Text>
-        <Text style={styles.reportDate}>{new Date(item.date).toLocaleDateString()}</Text>
+        <Text style={styles.reportDate}>{new Date(item.reportedDate).toLocaleDateString()}</Text>
       </View>
       
       <View style={styles.actionButtons}>

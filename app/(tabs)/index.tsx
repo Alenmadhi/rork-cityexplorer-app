@@ -13,7 +13,6 @@ import { SuccessStoryCard } from '@/components/SuccessStoryCard';
 import NetInfo from '@react-native-community/netinfo';
 import { WeatherCard } from '@/components/WeatherCard';
 import { mockWeather } from '@/mocks/weather';
-import { SuccessStory } from '@/types';
 
 // Define proper types for location data
 type Coordinate = {
@@ -111,7 +110,7 @@ export default function HomeScreen() {
   // Get active alerts
   const activeAlerts = alerts ? alerts.filter(alert => alert.active) : [];
   
-  // Get featured success stories
+  // Get featured success stories - ensure type safety
   const featuredStories = stories ? stories.filter(story => story.featured).slice(0, 1) : [];
   
   // Get earned badges count
@@ -296,7 +295,7 @@ export default function HomeScreen() {
             
             <TouchableOpacity 
               style={styles.viewMapButton}
-              onPress={() => router.push('/issues/map')}
+              onPress={() => router.push('/issues')}
             >
               <MapPin size={16} color="#fff" />
               <Text style={styles.viewMapText}>View Full Map</Text>
