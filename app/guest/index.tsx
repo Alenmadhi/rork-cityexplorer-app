@@ -11,9 +11,9 @@ export default function GuestScreen() {
   const router = useRouter();
   const { login } = useAuthStore();
   
-  const handleContinue = () => {
+  const handleContinue = async () => {
     // Login as guest
-    login({ email: 'guest@example.com', isGuest: true });
+    await login({ email: 'guest@example.com', password: '', isGuest: true });
     router.replace('/(tabs)');
   };
   

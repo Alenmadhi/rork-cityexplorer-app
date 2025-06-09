@@ -9,7 +9,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   isGuest: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (credentials: { email: string; password?: string; isGuest: boolean }) => Promise<void>;
   loginAsGuest: () => Promise<void>;
   signup: (userData: Partial<User>) => Promise<void>;
   logout: () => void;
@@ -38,7 +38,7 @@ export const useAuthStore = create<AuthState>()(
       error: null,
       isGuest: false,
       
-      login: async (email: string, password: string) => {
+      login: async (credentials: { email: string; password?: string; isGuest: boolean }) => {
         set({ isLoading: true, error: null });
         
         try {
@@ -50,7 +50,7 @@ export const useAuthStore = create<AuthState>()(
             user: mockUser,
             isAuthenticated: true,
             isLoading: false,
-            isGuest: false
+            isGuest: credentials.isGuest
           });
         } catch (error) {
           set({ 

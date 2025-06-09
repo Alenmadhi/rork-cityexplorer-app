@@ -1,35 +1,34 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 
-type ThemeType = 'light' | 'dark';
+type Theme = 'light' | 'dark';
 
-type ThemeContextType = {
-  theme: ThemeType;
-  setTheme: (theme: ThemeType) => void;
+interface ThemeContextType {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
-};
+}
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ 
   children, 
-  value = 'light' 
+  value: initialTheme 
 }: { 
   children: React.ReactNode;
-  value?: ThemeType;
+  value?: Theme;
 }) {
-  const colorScheme = useColorScheme();
-  const [theme, setTheme] = useState<ThemeType>(value);
+  const deviceTheme = useColorScheme() as Theme;
+  const [theme, setTheme] = useState<Theme>(initialTheme || deviceTheme || 'light');
 
   useEffect(() => {
-    // Update theme when system preference changes
-    if (colorScheme) {
-      setTheme(colorScheme as ThemeType);
+    if (initialTheme) {
+      setTheme(initialTheme);
     }
-  }, [colorScheme]);
+  }, [initialTheme]);
 
   const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
   };
 
   return (

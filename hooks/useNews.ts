@@ -1,62 +1,53 @@
-import { useState, useEffect } from 'react';
-import { NewsItem } from '@/types';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchNews } from '@/services/api';
-import { news as mockNews } from '@/mocks/news';
+import { NewsItem } from '@/types';
 
 export function useNews() {
-  const [news, setNews] = useState<NewsItem[]>(mockNews);
+  const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
-  const loadNews = async (useMockOnFailure = true) => {
+  const loadNews = useCallback(async () => {
     setLoading(true);
     setError(null);
     
     try {
-      const fetchedNews = await fetchNews();
-      
-      if (fetchedNews && fetchedNews.length > 0) {
-        setNews(fetchedNews);
-        setLastUpdated(new Date());
-      } else if (useMockOnFailure) {
-        // Fall back to mock data if API returns empty results
-        setNews(mockNews);
-        setError("Couldn't fetch live news. Showing sample news instead.");
-      } else {
-        setError("No news available at this time.");
-      }
+      const newsData = await fetchNews();
+      setNews(newsData);
+      setLastUpdated(new Date().toISOString());
     } catch (err) {
       console.error('Error in useNews hook:', err);
-      
-      if (useMockOnFailure) {
-        // Fall back to mock data on error
-        setNews(mockNews);
-        setError("Couldn't connect to news service. Showing sample news instead.");
-      } else {
-        setError("Failed to load news. Please check your connection and try again.");
-      }
+      setError('Failed to load news. Please try again later.');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  const refreshNews = useCallback(async () => {
+    setError(null);
+    
+    try {
+      const newsData = await fetchNews();
+      setNews(newsData);
+      setLastUpdated(new Date().toISOString());
+      return true;
+    } catch (err) {
+      console.error('Error refreshing news:', err);
+      setError('Failed to refresh news. Please try again later.');
+      return false;
+    }
+  }, []);
 
   useEffect(() => {
     loadNews();
-    
-    // Set up periodic refresh every 15 minutes
-    const refreshInterval = setInterval(() => {
-      loadNews();
-    }, 15 * 60 * 1000);
-    
-    return () => clearInterval(refreshInterval);
-  }, []);
+  }, [loadNews]);
 
   return {
     news,
     loading,
     error,
     lastUpdated,
-    refreshNews: () => loadNews(true),
+    refreshNews,
   };
 }

@@ -2,33 +2,66 @@ import { Event, NewsItem, Weather, WeatherForecast } from '@/types';
 
 // Base URLs for API requests
 const WEATHER_API_URL = 'https://api.open-meteo.com/v1/forecast';
-const NEWS_API_URL = 'https://newsapi.org/v2/everything';
-const NEWS_API_KEY = '38d5e8e5a0a04a5c9d1a3b33c6b9d09f'; // Replace with your own API key
+const RSS_PROXY_URL = 'https://api.rss2json.com/v1/api.json';
+const RSS_API_KEY = 'ykxgxvmtdcwzwolhno9mgpnsjqokzlwfcbejqlgj'; // Free API key for RSS2JSON
 
 /**
  * Fetch news related to Elbasan or Albania
- * Using NewsAPI to get real news about Elbasan
+ * Using RSS feeds to get real news about Elbasan/Albania
  */
 export async function fetchNews(): Promise<NewsItem[]> {
   try {
-    // Search for news about Elbasan
-    const response = await fetch(
-      `${NEWS_API_URL}?q=Elbasan OR Albania&language=en&sortBy=publishedAt&apiKey=${NEWS_API_KEY}`
+    // Try multiple RSS sources for Albanian news
+    const rssSources = [
+      'https://www.albaniandailynews.com/index.php?idm=1&mod=rss',  // Albanian Daily News
+      'https://exit.al/en/feed/',                                   // Exit News Albania
+      'https://www.tiranatimes.com/?feed=rss2',                     // Tirana Times
+      'https://www.gazetatema.net/feed/'                            // Gazeta Tema
+    ];
+    
+    // Try each source until we get results
+    let articles = [];
+    let sourceIndex = 0;
+    
+    while (articles.length === 0 && sourceIndex < rssSources.length) {
+      try {
+        const response = await fetch(
+          `${RSS_PROXY_URL}?rss_url=${encodeURIComponent(rssSources[sourceIndex])}&api_key=${RSS_API_KEY}`
+        );
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch news: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.items && data.items.length > 0) {
+          articles = data.items;
+          break;
+        }
+      } catch (error) {
+        console.log(`Error with source ${sourceIndex}:`, error);
+      }
+      
+      sourceIndex++;
+    }
+    
+    if (articles.length === 0) {
+      throw new Error('No articles found in any source');
+    }
+    
+    // Filter for articles that might mention Elbasan
+    const elbasanArticles = articles.filter(article => 
+      article.title.toLowerCase().includes('elbasan') || 
+      article.description.toLowerCase().includes('elbasan') ||
+      article.content.toLowerCase().includes('elbasan')
     );
     
-    if (!response.ok) {
-      throw new Error(`Failed to fetch news: ${response.status}`);
-    }
+    // Use Elbasan-specific articles if available, otherwise use all Albanian news
+    const finalArticles = elbasanArticles.length > 0 ? elbasanArticles : articles;
     
-    const data = await response.json();
-    
-    if (!data.articles || data.articles.length === 0) {
-      console.log('No articles found, falling back to mock data');
-      throw new Error('No articles found');
-    }
-    
-    // Map the API response to our NewsItem format
-    return data.articles.map((article: any, index: number): NewsItem => {
+    // Map the RSS response to our NewsItem format
+    return finalArticles.map((article: any, index: number): NewsItem => {
       // Determine category based on content or title keywords
       let category: 'local' | 'business' | 'culture' | 'sports' | 'politics' | 'other' = 'other';
       
@@ -49,14 +82,14 @@ export async function fetchNews(): Promise<NewsItem[]> {
       return {
         id: `${index + 1}`,
         title: article.title,
-        summary: article.description,
+        summary: article.description || article.content.substring(0, 150) + '...',
         content: article.content || article.description,
-        image: article.urlToImage || 'https://images.unsplash.com/photo-1578297886235-f2be6e8f3c3e?q=80&w=1000&auto=format&fit=crop',
-        date: article.publishedAt,
-        author: article.author || article.source.name,
+        image: article.enclosure?.link || article.thumbnail || 'https://images.unsplash.com/photo-1578297886235-f2be6e8f3c3e?q=80&w=1000&auto=format&fit=crop',
+        date: article.pubDate || new Date().toISOString(),
+        author: article.author || 'Albanian News',
         category,
         featured: index < 2, // First two articles are featured
-        url: article.url // Add the original URL to link back to the source
+        url: article.link // Add the original URL to link back to the source
       };
     });
   } catch (error) {

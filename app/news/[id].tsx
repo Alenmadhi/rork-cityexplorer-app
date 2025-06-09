@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Linking, Platform, Share } from 'react-native';
+import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Linking, Platform, Share as RNShare } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Calendar, ArrowLeft, Share2, ExternalLink, Bookmark, BookmarkCheck } from 'lucide-react-native';
 import Colors from '@/constants/colors';
@@ -86,7 +86,7 @@ export default function NewsDetailScreen() {
     if (!news) return;
     
     try {
-      await Share.share({
+      await RNShare.share({
         message: `Check out this news: ${news.title}`,
         url: news.url || `https://elbasan-city-app.com/news/${news.id}`,
       });

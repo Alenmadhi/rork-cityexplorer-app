@@ -51,6 +51,7 @@ function RootLayoutNav() {
           <Stack.Screen name="offline-reports/index" options={{ presentation: 'card' }} />
           <Stack.Screen name="qr-scanner/index" options={{ presentation: 'card' }} />
           <Stack.Screen name="leaderboard/index" options={{ presentation: 'card' }} />
+          <Stack.Screen name="news/[id]" options={{ presentation: 'card' }} />
         </>
       ) : (
         <>
