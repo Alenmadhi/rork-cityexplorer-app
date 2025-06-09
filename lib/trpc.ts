@@ -1,20 +1,60 @@
 import { createTRPCReact } from '@trpc/react-query';
 import { createTRPCClient, httpBatchLink } from '@trpc/client';
 import Constants from 'expo-constants';
-import type { AppRouter } from '@/backend/trpc/app-router';
 import { useAuthStore } from '@/stores/auth-store';
 import superjson from 'superjson';
 
+// Mock AppRouter type since we're removing the backend
+export type AppRouter = {
+  example: {
+    hi: any;
+    hello: any;
+  };
+  auth: {
+    signup: any;
+    login: any;
+    me: any;
+  };
+  alerts: {
+    getAll: any;
+    getById: any;
+    create: any;
+    update: any;
+    delete: any;
+  };
+  events: {
+    getAll: any;
+    getById: any;
+    create: any;
+    update: any;
+    delete: any;
+  };
+  issues: {
+    getAll: any;
+    getById: any;
+    create: any;
+    vote: any;
+    comment: any;
+    updateStatus: any;
+  };
+  services: {
+    getAll: any;
+    getById: any;
+    getSchedule: any;
+    applyForPermit: any;
+    getPermitStatus: any;
+  };
+  admin: {
+    getDashboardStats: any;
+    getUsersList: any;
+    updateUserRole: any;
+  };
+};
+
 // Get the API URL from the manifest extra
 const getBaseUrl = () => {
-  // If in development, use the localhost URL
-  if (__DEV__) {
-    const localhost = Constants.expoConfig?.hostUri?.split(':')[0] || 'localhost';
-    return `http://${localhost}:3000/api`;
-  }
-  
-  // In production, use the deployed API URL
-  return 'https://your-production-api.com/api';
+  // Since we're removing the backend, we'll just return a mock URL
+  return 'https://mock-api.example.com/api';
 };
 
 // Create a tRPC client

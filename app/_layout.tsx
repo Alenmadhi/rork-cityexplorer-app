@@ -3,10 +3,8 @@ import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useRef } from "react";
-import { Platform } from "react-native";
 import { useAuthStore } from "@/stores/auth-store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { trpc, trpcClient } from "@/lib/trpc";
 
 import { ErrorBoundary } from "./error-boundary";
 
@@ -45,13 +43,11 @@ export default function RootLayout() {
 
   return (
     <ErrorBoundary>
-      <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <RootLayoutNav />
-          </AuthProvider>
-        </QueryClientProvider>
-      </trpc.Provider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <RootLayoutNav />
+        </AuthProvider>
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 }
