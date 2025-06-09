@@ -6,12 +6,12 @@ import Colors from '@/constants/colors';
 import { useNews } from '@/hooks/useNews';
 import { NewsItem, NewsCategory } from '@/types';
 import NewsCard from '@/components/NewsCard';
-import SearchBar from '@/components/SearchBar';
-import SectionHeader from '@/components/SectionHeader';
-import LoadingIndicator from '@/components/LoadingIndicator';
-import ErrorMessage from '@/components/ErrorMessage';
-import EmptyState from '@/components/EmptyState';
-import LastUpdated from '@/components/LastUpdated';
+import { SearchBar } from '@/components/SearchBar';
+import { SectionHeader } from '@/components/SectionHeader';
+import { LoadingIndicator } from '@/components/LoadingIndicator';
+import { ErrorMessage } from '@/components/ErrorMessage';
+import { EmptyState } from '@/components/EmptyState';
+import { LastUpdated } from '@/components/LastUpdated';
 
 export default function NewsScreen() {
   const { news, loading, error, lastUpdated, refreshNews } = useNews();

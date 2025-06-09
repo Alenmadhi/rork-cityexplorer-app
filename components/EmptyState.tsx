@@ -1,21 +1,33 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { RefreshCw } from 'lucide-react-native';
+import { RefreshCw, Newspaper } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 
 interface EmptyStateProps {
   title: string;
   message: string;
   onRefresh?: () => void;
+  icon?: string;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({ 
   title, 
   message, 
-  onRefresh 
+  onRefresh,
+  icon
 }) => {
+  const renderIcon = () => {
+    if (icon === 'newspaper') {
+      return <Newspaper size={48} color={Colors.textSecondary} style={styles.icon} />;
+    }
+    
+    // Add more icons as needed
+    return null;
+  };
+  
   return (
     <View style={styles.container}>
+      {renderIcon()}
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.message}>{message}</Text>
       
@@ -35,6 +47,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
+  },
+  icon: {
+    marginBottom: 16,
+    opacity: 0.6,
   },
   title: {
     fontSize: 18,

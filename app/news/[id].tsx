@@ -1,24 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Linking, Platform } from 'react-native';
+import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Linking, Platform, Share as RNShare } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Calendar, ArrowLeft, Share2, ExternalLink, Bookmark, BookmarkCheck } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { NewsItem } from '@/types';
 import { useFavoritesStore } from '@/stores/favorites-store';
-import LoadingIndicator from '@/components/LoadingIndicator';
-import ErrorMessage from '@/components/ErrorMessage';
+import { LoadingIndicator } from '@/components/LoadingIndicator';
+import { ErrorMessage } from '@/components/ErrorMessage';
 
 export default function NewsDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { favorites, toggleFavorite, isFavorite } = useFavoritesStore();
+  const { addFavoriteNews, removeFavoriteNews, isFavoriteNews } = useFavoritesStore();
   
   const [news, setNews] = useState<NewsItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   // Check if news is in favorites
-  const isNewsFavorite = news ? isFavorite('news', news.id) : false;
+  const isNewsFavorite = news ? isFavoriteNews(news.id) : false;
   
   // Fetch news details
   useEffect(() => {
@@ -86,7 +86,7 @@ export default function NewsDetailScreen() {
     if (!news) return;
     
     try {
-      await Share.share({
+      await RNShare.share({
         message: `Check out this news: ${news.title}`,
         url: news.url || `https://elbasan-city-app.com/news/${news.id}`,
       });
@@ -99,7 +99,11 @@ export default function NewsDetailScreen() {
   const handleToggleFavorite = () => {
     if (!news) return;
     
-    toggleFavorite('news', news);
+    if (isNewsFavorite) {
+      removeFavoriteNews(news.id);
+    } else {
+      addFavoriteNews(news.id);
+    }
   };
   
   // Handle external link
@@ -162,7 +166,7 @@ export default function NewsDetailScreen() {
           ),
         }} 
       />
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <Image 
           source={{ uri: news.image }} 
           style={styles.image}
@@ -199,7 +203,7 @@ export default function NewsDetailScreen() {
           
           <Text style={styles.summary}>{news.summary}</Text>
           
-          <Text style={styles.content}>{news.content}</Text>
+          <Text style={styles.contentText}>{news.content}</Text>
           
           {news.url && (
             <TouchableOpacity 
@@ -221,7 +225,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  content: {
+  contentContainer: {
     paddingBottom: 40,
   },
   headerActions: {
@@ -281,7 +285,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     lineHeight: 24,
   },
-  content: {
+  contentText: {
     fontSize: 16,
     color: Colors.text,
     lineHeight: 24,
