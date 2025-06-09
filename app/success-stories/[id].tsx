@@ -36,10 +36,30 @@ export default function SuccessStoryDetailScreen() {
   };
   
   // Safely handle comments
-  const storyComments = Array.isArray(story.comments) ? story.comments : [];
   const commentsCount = typeof story.comments === 'number' 
     ? story.comments 
     : story.comments?.length || 0;
+  
+  // Render comments only if they are an array
+  const renderComments = () => {
+    if (Array.isArray(story.comments) && story.comments.length > 0) {
+      return story.comments.map((comment: Comment) => (
+        <View key={comment.id} style={styles.commentItem}>
+          <View style={styles.commentHeader}>
+            <Text style={styles.commentAuthor}>{comment.userName}</Text>
+            <Text style={styles.commentDate}>
+              {new Date(comment.createdAt).toLocaleDateString()}
+            </Text>
+          </View>
+          <Text style={styles.commentText}>{comment.text}</Text>
+        </View>
+      ));
+    } else {
+      return (
+        <Text style={styles.noCommentsText}>No comments yet. Be the first to comment!</Text>
+      );
+    }
+  };
   
   return (
     <>
@@ -127,22 +147,7 @@ export default function SuccessStoryDetailScreen() {
           
           <View style={styles.commentsContainer}>
             <Text style={styles.commentsTitle}>Comments ({commentsCount})</Text>
-            
-            {Array.isArray(story.comments) && story.comments.length > 0 ? (
-              story.comments.map((comment: Comment) => (
-                <View key={comment.id} style={styles.commentItem}>
-                  <View style={styles.commentHeader}>
-                    <Text style={styles.commentAuthor}>{comment.userName}</Text>
-                    <Text style={styles.commentDate}>
-                      {new Date(comment.createdAt).toLocaleDateString()}
-                    </Text>
-                  </View>
-                  <Text style={styles.commentText}>{comment.text}</Text>
-                </View>
-              ))
-            ) : (
-              <Text style={styles.noCommentsText}>No comments yet. Be the first to comment!</Text>
-            )}
+            {renderComments()}
           </View>
         </View>
       </ScrollView>

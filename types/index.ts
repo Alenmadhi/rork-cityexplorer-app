@@ -39,7 +39,7 @@ export interface SuccessStory {
   resolvedDate?: string;
   category?: string;
   comments?: Comment[] | number;
-  likes?: number; // Added to match usage in components
+  likes?: number;
 }
 
 // Badge type
@@ -134,6 +134,22 @@ export interface News {
   category: string;
   isFavorite?: boolean;
 }
+
+// News Item type (for useNews hook)
+export interface NewsItem {
+  id: string;
+  title: string;
+  summary: string;
+  content: string;
+  image: string;
+  date: string;
+  source: string;
+  category: NewsCategory;
+  isFavorite?: boolean;
+}
+
+// News Category type
+export type NewsCategory = 'local' | 'business' | 'culture' | 'sports' | 'politics' | 'other';
 
 // Tourist Info type
 export interface TouristInfo {

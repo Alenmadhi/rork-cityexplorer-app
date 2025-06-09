@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Platform, Image } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { AlertTriangle, Camera, WifiOff, Award, MapPin, Wrench } from 'lucide-react-native';
@@ -228,7 +228,7 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
             
-            {featuredStories.map((story: SuccessStory) => (
+            {featuredStories.map((story) => (
               <SuccessStoryCard 
                 key={story.id} 
                 story={story} 

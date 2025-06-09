@@ -79,6 +79,7 @@ export default function NewsScreen() {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoriesList}
+            keyExtractor={(item) => item}
           />
         </View>
         
