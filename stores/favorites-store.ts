@@ -1,13 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { NewsItem } from '@/types';
 
 interface FavoritesState {
   eventIds: string[];
   attractionIds: string[];
   newsIds: string[];
-  favorites: string[]; // Legacy support
   addFavoriteEvent: (id: string) => void;
   removeFavoriteEvent: (id: string) => void;
   addFavoriteAttraction: (id: string) => void;
@@ -17,8 +15,6 @@ interface FavoritesState {
   isFavoriteEvent: (id: string) => boolean;
   isFavoriteAttraction: (id: string) => boolean;
   isFavoriteNews: (id: string) => boolean;
-  isFavorite: (id: string) => boolean; // Legacy support
-  toggleFavorite: (id: string) => void; // Legacy support
 }
 
 export const useFavoritesStore = create<FavoritesState>()(
@@ -27,7 +23,6 @@ export const useFavoritesStore = create<FavoritesState>()(
       eventIds: [],
       attractionIds: [],
       newsIds: [],
-      favorites: [], // Legacy support
       
       addFavoriteEvent: (id: string) => 
         set((state) => ({
@@ -62,30 +57,6 @@ export const useFavoritesStore = create<FavoritesState>()(
       isFavoriteEvent: (id: string) => get().eventIds.includes(id),
       isFavoriteAttraction: (id: string) => get().attractionIds.includes(id),
       isFavoriteNews: (id: string) => get().newsIds.includes(id),
-      
-      // Legacy support methods
-      isFavorite: (id: string) => 
-        get().eventIds.includes(id) || 
-        get().attractionIds.includes(id) || 
-        get().newsIds.includes(id) ||
-        get().favorites.includes(id),
-      
-      toggleFavorite: (id: string) => {
-        const state = get();
-        
-        // Check if it's a news item
-        if (state.newsIds.includes(id)) {
-          set({
-            newsIds: state.newsIds.filter(newsId => newsId !== id)
-          });
-          return;
-        }
-        
-        // If not found in news, add it to news favorites
-        set({
-          newsIds: [...state.newsIds, id]
-        });
-      }
     }),
     {
       name: 'favorites-storage',
