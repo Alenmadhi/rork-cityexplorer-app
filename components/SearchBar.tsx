@@ -4,61 +4,59 @@ import { Search, X } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 
 interface SearchBarProps {
+  value?: string;
   placeholder?: string;
-  value: string;
-  onChangeText: (text: string) => void;
+  onChangeText?: (text: string) => void;
   onClear?: () => void;
   onSubmit?: () => void;
-  autoFocus?: boolean;
 }
 
 export function SearchBar({ 
+  value = '', 
   placeholder = 'Search...', 
-  value, 
-  onChangeText, 
-  onClear, 
-  onSubmit,
-  autoFocus = false
+  onChangeText = () => {}, 
+  onClear = () => {}, 
+  onSubmit = () => {} 
 }: SearchBarProps) {
   return (
     <View style={styles.container}>
-      <Search size={20} color={Colors.textSecondary} style={styles.searchIcon} />
-      
-      <TextInput
-        style={styles.input}
-        placeholder={placeholder}
-        placeholderTextColor={Colors.textSecondary}
-        value={value}
-        onChangeText={onChangeText}
-        onSubmitEditing={onSubmit}
-        returnKeyType="search"
-        clearButtonMode="while-editing"
-        autoCapitalize="none"
-        autoCorrect={false}
-        autoFocus={autoFocus}
-      />
-      
-      {value.length > 0 && onClear && Platform.OS !== 'ios' && (
-        <TouchableOpacity 
-          style={styles.clearButton}
-          onPress={onClear}
-        >
-          <X size={16} color={Colors.textSecondary} />
-        </TouchableOpacity>
-      )}
+      <View style={styles.searchContainer}>
+        <Search size={20} color={Colors.textSecondary} style={styles.searchIcon} />
+        <TextInput
+          style={styles.input}
+          placeholder={placeholder}
+          placeholderTextColor={Colors.textSecondary}
+          value={value}
+          onChangeText={onChangeText}
+          onSubmitEditing={onSubmit}
+          returnKeyType="search"
+        />
+        {value.length > 0 && (
+          <TouchableOpacity onPress={() => {
+            onChangeText('');
+            onClear();
+          }}>
+            <X size={20} color={Colors.textSecondary} />
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: Colors.background,
+  },
+  searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.card,
-    borderRadius: 8,
+    borderRadius: 12,
     paddingHorizontal: 12,
-    height: 48,
+    paddingVertical: Platform.OS === 'ios' ? 10 : 0,
     borderWidth: 1,
     borderColor: Colors.border,
   },
@@ -67,11 +65,8 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    height: '100%',
     fontSize: 16,
     color: Colors.text,
-  },
-  clearButton: {
-    padding: 4,
+    paddingVertical: Platform.OS === 'ios' ? 0 : 8,
   },
 });

@@ -1,35 +1,45 @@
 import { Weather } from '@/types';
 
-// Mock weather data for Elbasan, Albania
 export const mockWeather: Weather = {
+  location: 'Elbasan, Albania',
   temperature: 28,
   condition: 'Sunny',
   icon: 'sun',
+  windSpeed: 12,
   humidity: 45,
-  windSpeed: 6,
-  location: 'Elbasan, Albania',
+  lastUpdated: new Date().toISOString(),
   forecast: [
     {
       day: 'Today',
-      temperature: { min: 22, max: 32 },
-      condition: 'Sunny',
-      icon: 'sun'
+      icon: 'sun',
+      temperature: {
+        min: 22,
+        max: 30
+      }
     },
     {
       day: 'Tomorrow',
-      temperature: { min: 21, max: 30 },
-      condition: 'Partly Cloudy',
-      icon: 'cloud-sun'
+      icon: 'cloud-sun',
+      temperature: {
+        min: 20,
+        max: 28
+      }
     },
     {
-      day: 'Wednesday',
-      temperature: { min: 20, max: 29 },
-      condition: 'Sunny',
-      icon: 'sun'
+      day: 'Wed',
+      icon: 'cloud',
+      temperature: {
+        min: 19,
+        max: 26
+      }
+    },
+    {
+      day: 'Thu',
+      icon: 'cloud-rain',
+      temperature: {
+        min: 18,
+        max: 24
+      }
     }
-  ],
-  lastUpdated: new Date().toISOString()
+  ]
 };
-
-// Export for backward compatibility
-export const weatherData = mockWeather;
