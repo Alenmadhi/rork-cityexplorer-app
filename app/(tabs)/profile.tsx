@@ -1,15 +1,23 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Platform, Image } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { Settings, Edit, Award, AlertTriangle, Bell, LogOut, ChevronRight, MapPin, Mail, Calendar, Shield, Phone } from 'lucide-react-native';
+import { Settings, Edit, Award, AlertTriangle, Bell, LogOut, ChevronRight, MapPin, Mail, Calendar, Shield, Phone, Trophy, Target } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useAuthStore } from '@/stores/auth-store';
 import { useGamificationStore } from '@/stores/gamification-store';
+import { useChallengesStore } from '@/stores/challenges-store';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
-  const { userStats, userAchievements } = useGamificationStore();
+  const { userStats, userAchievements, checkForNewBadges } = useGamificationStore();
+  const { availableChallenges, completedChallenges, fetchChallenges } = useChallengesStore();
+  
+  useEffect(() => {
+    // Check for new badges when profile is viewed
+    checkForNewBadges();
+    fetchChallenges();
+  }, [checkForNewBadges, fetchChallenges]);
   
   // Calculate level progress
   const levelProgress = userStats ? Math.min(100, (userStats.points % 100)) : 0;
@@ -26,6 +34,12 @@ export default function ProfileScreen() {
     logout();
     router.replace('/(auth)/login');
   };
+  
+  // Get active challenges count
+  const activeChallengesCount = availableChallenges.filter(c => !c.completed).length;
+  
+  // Get completed but unclaimed challenges count
+  const unclaimedChallengesCount = availableChallenges.filter(c => c.completed && !c.claimed).length;
   
   return (
     <>
@@ -94,6 +108,46 @@ export default function ProfileScreen() {
             {100 - (userStats?.points % 100)} points to level {(userStats?.level || 0) + 1}
           </Text>
         </View>
+        
+        {/* Challenges Summary */}
+        <TouchableOpacity 
+          style={styles.challengesSummaryContainer}
+          onPress={() => router.push('/challenges')}
+        >
+          <View style={styles.challengesSummaryHeader}>
+            <View style={styles.challengesSummaryTitle}>
+              <Target size={20} color={Colors.primary} />
+              <Text style={styles.challengesSummaryTitleText}>Challenges</Text>
+            </View>
+            <ChevronRight size={20} color={Colors.textSecondary} />
+          </View>
+          
+          <View style={styles.challengesStats}>
+            <View style={styles.challengeStat}>
+              <Text style={styles.challengeStatValue}>{activeChallengesCount}</Text>
+              <Text style={styles.challengeStatLabel}>Active</Text>
+            </View>
+            
+            <View style={styles.challengeStat}>
+              <Text style={styles.challengeStatValue}>{unclaimedChallengesCount}</Text>
+              <Text style={styles.challengeStatLabel}>To Claim</Text>
+            </View>
+            
+            <View style={styles.challengeStat}>
+              <Text style={styles.challengeStatValue}>{completedChallenges.length}</Text>
+              <Text style={styles.challengeStatLabel}>Completed</Text>
+            </View>
+          </View>
+          
+          {unclaimedChallengesCount > 0 && (
+            <View style={styles.unclaimedBanner}>
+              <Trophy size={16} color="#fff" />
+              <Text style={styles.unclaimedBannerText}>
+                You have {unclaimedChallengesCount} reward{unclaimedChallengesCount !== 1 ? 's' : ''} to claim!
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
         
         {/* Contact Information */}
         <View style={styles.sectionContainer}>
@@ -189,6 +243,15 @@ export default function ProfileScreen() {
             >
               <AlertTriangle size={20} color={Colors.primary} style={styles.quickLinkIcon} />
               <Text style={styles.quickLinkText}>My Reports</Text>
+              <ChevronRight size={16} color={Colors.textSecondary} />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.quickLinkItem}
+              onPress={() => router.push('/leaderboard')}
+            >
+              <Trophy size={20} color={Colors.primary} style={styles.quickLinkIcon} />
+              <Text style={styles.quickLinkText}>Leaderboard</Text>
               <ChevronRight size={16} color={Colors.textSecondary} />
             </TouchableOpacity>
             
@@ -340,6 +403,72 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textSecondary,
     textAlign: 'right',
+  },
+  challengesSummaryContainer: {
+    backgroundColor: Colors.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+      },
+    }),
+  },
+  challengesSummaryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  challengesSummaryTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  challengesSummaryTitleText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginLeft: 8,
+  },
+  challengesStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 16,
+  },
+  challengeStat: {
+    alignItems: 'center',
+  },
+  challengeStatValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.text,
+  },
+  challengeStatLabel: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+  },
+  unclaimedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.primary,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  unclaimedBannerText: {
+    color: '#fff',
+    fontWeight: '600',
+    marginLeft: 8,
   },
   sectionContainer: {
     marginBottom: 24,

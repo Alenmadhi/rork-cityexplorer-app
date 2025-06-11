@@ -9,7 +9,9 @@ import { useAlertsStore } from '@/stores/alerts-store';
 import { useSuccessStoriesStore } from '@/stores/success-stories-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { useGamificationStore } from '@/stores/gamification-store';
+import { useChallengesStore } from '@/stores/challenges-store';
 import { SuccessStoryCard } from '@/components/SuccessStoryCard';
+import { DailyChallengeWidget } from '@/components/DailyChallengeWidget';
 import NetInfo from '@react-native-community/netinfo';
 import { WeatherCard } from '@/components/WeatherCard';
 import { mockWeather } from '@/mocks/weather';
@@ -26,7 +28,8 @@ export default function HomeScreen() {
   const { alerts, fetchAlerts } = useAlertsStore();
   const { stories, fetchStories } = useSuccessStoriesStore();
   const { user } = useAuthStore();
-  const { badges, userStats } = useGamificationStore();
+  const { userStats } = useGamificationStore();
+  const { fetchChallenges } = useChallengesStore();
   
   const [isConnected, setIsConnected] = useState<boolean | null>(true);
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
@@ -37,6 +40,7 @@ export default function HomeScreen() {
   useEffect(() => {
     fetchAlerts();
     fetchStories();
+    fetchChallenges();
     fetchNearbyIssues();
     
     // Subscribe to network state updates
@@ -115,7 +119,7 @@ export default function HomeScreen() {
   const featuredStories: SuccessStory[] = stories ? stories.filter(story => story.featured).slice(0, 1) : [];
   
   // Get earned badges count
-  const earnedBadgesCount = badges ? badges.filter(badge => badge.unlocked).length : 0;
+  const earnedBadgesCount = userStats ? userStats.userAchievements.length : 0;
 
   return (
     <>
@@ -143,6 +147,9 @@ export default function HomeScreen() {
         
         {/* Weather Card */}
         <WeatherCard weather={weather} onRefresh={refreshWeather} />
+        
+        {/* Daily Challenge Widget */}
+        <DailyChallengeWidget />
         
         {/* Quick Actions */}
         <View style={styles.quickActionsContainer}>
@@ -181,12 +188,12 @@ export default function HomeScreen() {
             
             <TouchableOpacity 
               style={styles.quickActionButton}
-              onPress={() => router.push('/badges')}
+              onPress={() => router.push('/challenges')}
             >
               <View style={[styles.quickActionIcon, { backgroundColor: `${Colors.success}20` }]}>
                 <Award size={24} color={Colors.success} />
               </View>
-              <Text style={styles.quickActionText}>My Badges</Text>
+              <Text style={styles.quickActionText}>Challenges</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -215,6 +222,13 @@ export default function HomeScreen() {
                 <Text style={styles.statLabel}>Resolved</Text>
               </View>
             </View>
+            
+            <TouchableOpacity 
+              style={styles.leaderboardButton}
+              onPress={() => router.push('/leaderboard')}
+            >
+              <Text style={styles.leaderboardButtonText}>View Leaderboard</Text>
+            </TouchableOpacity>
           </View>
         )}
         
@@ -399,6 +413,7 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    marginBottom: 16,
   },
   statItem: {
     alignItems: 'center',
@@ -413,6 +428,17 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 12,
     color: Colors.textSecondary,
+  },
+  leaderboardButton: {
+    backgroundColor: `${Colors.primary}15`,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  leaderboardButtonText: {
+    color: Colors.primary,
+    fontWeight: '600',
+    fontSize: 14,
   },
   successStoriesContainer: {
     marginBottom: 24,

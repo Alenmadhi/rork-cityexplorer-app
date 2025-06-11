@@ -1,352 +1,393 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, Platform, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity, RefreshControl, Platform } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { Award, Calendar, CheckCircle, Clock, Users, ChevronRight, Filter, Trophy } from 'lucide-react-native';
+import { Award, CheckCircle, Clock, Calendar, ChevronRight, RefreshCw, AlertTriangle } from 'lucide-react-native';
 import Colors from '@/constants/colors';
-
-// Types
-interface Challenge {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  startDate: string;
-  endDate: string;
-  participants: number;
-  reward: {
-    points: number;
-    badge?: string;
-  };
-  status: 'active' | 'upcoming' | 'completed';
-  progress?: number; // 0-100
-  category: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-}
-
-type FilterType = 'all' | 'active' | 'upcoming' | 'completed';
-
-// Mock data
-const MOCK_CHALLENGES: Challenge[] = [
-  {
-    id: '1',
-    title: 'Clean City Challenge',
-    description: 'Report at least 5 trash-related issues in your neighborhood.',
-    image: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    startDate: '2025-06-01',
-    endDate: '2025-06-15',
-    participants: 128,
-    reward: {
-      points: 200,
-      badge: 'Environmental Guardian'
-    },
-    status: 'active',
-    progress: 60,
-    category: 'Environment',
-    difficulty: 'medium'
-  },
-  {
-    id: '2',
-    title: 'Street Light Patrol',
-    description: 'Find and report 3 broken street lights in the city.',
-    image: 'https://images.unsplash.com/photo-1617919759916-0642e3e3e1f1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    startDate: '2025-06-05',
-    endDate: '2025-06-20',
-    participants: 76,
-    reward: {
-      points: 150,
-      badge: 'Night Guardian'
-    },
-    status: 'active',
-    progress: 33,
-    category: 'Safety',
-    difficulty: 'easy'
-  },
-  {
-    id: '3',
-    title: 'Pothole Hunter',
-    description: 'Report 3 potholes in need of repair.',
-    image: 'https://images.unsplash.com/photo-1592840062661-a5a7f78e2056?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    startDate: '2025-06-10',
-    endDate: '2025-06-25',
-    participants: 92,
-    reward: {
-      points: 180
-    },
-    status: 'upcoming',
-    category: 'Infrastructure',
-    difficulty: 'medium'
-  },
-  {
-    id: '4',
-    title: 'Graffiti Cleanup',
-    description: 'Help identify 5 locations with unwanted graffiti.',
-    image: 'https://images.unsplash.com/photo-1572969095242-fa6a7da5b6d9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    startDate: '2025-05-15',
-    endDate: '2025-05-30',
-    participants: 64,
-    reward: {
-      points: 150,
-      badge: 'City Beautifier'
-    },
-    status: 'completed',
-    progress: 100,
-    category: 'Beautification',
-    difficulty: 'easy'
-  },
-  {
-    id: '5',
-    title: 'Water Leak Detector',
-    description: 'Find and report 2 water leaks in public areas.',
-    image: 'https://images.unsplash.com/photo-1584677626646-7c8f83690304?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    startDate: '2025-05-20',
-    endDate: '2025-06-05',
-    participants: 43,
-    reward: {
-      points: 120
-    },
-    status: 'completed',
-    progress: 100,
-    category: 'Environment',
-    difficulty: 'medium'
-  },
-  {
-    id: '6',
-    title: 'Accessibility Advocate',
-    description: 'Report 3 locations that need accessibility improvements.',
-    image: 'https://images.unsplash.com/photo-1517239320384-c29cd4c75a85?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    startDate: '2025-06-15',
-    endDate: '2025-07-15',
-    participants: 38,
-    reward: {
-      points: 250,
-      badge: 'Inclusion Champion'
-    },
-    status: 'upcoming',
-    category: 'Accessibility',
-    difficulty: 'hard'
-  },
-];
+import { useChallengesStore, UserChallenge } from '@/stores/challenges-store';
+import { useGamificationStore } from '@/stores/gamification-store';
 
 export default function ChallengesScreen() {
   const router = useRouter();
-  const [filter, setFilter] = useState<FilterType>('all');
-  const [showFilterOptions, setShowFilterOptions] = useState(false);
+  const { 
+    availableChallenges, 
+    completedChallenges, 
+    fetchChallenges, 
+    claimChallengeReward,
+    isLoading,
+    refreshDailyChallenges
+  } = useChallengesStore();
+  const { userStats } = useGamificationStore();
   
-  // Filter challenges
-  const filteredChallenges = MOCK_CHALLENGES.filter(challenge => {
-    if (filter === 'all') return true;
-    return challenge.status === filter;
-  });
+  const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'available' | 'completed'>('available');
   
-  // Format date
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
+  useEffect(() => {
+    fetchChallenges();
+  }, [fetchChallenges]);
+  
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchChallenges();
+    setRefreshing(false);
   };
   
-  // Get status color
-  const getStatusColor = (status: Challenge['status']) => {
-    switch (status) {
-      case 'active':
-        return Colors.primary;
-      case 'upcoming':
-        return Colors.warning;
-      case 'completed':
-        return Colors.success;
-      default:
-        return Colors.textSecondary;
-    }
+  const handleRefreshDailyChallenges = async () => {
+    setRefreshing(true);
+    await refreshDailyChallenges();
+    setRefreshing(false);
   };
   
-  // Get status text
-  const getStatusText = (status: Challenge['status']) => {
-    switch (status) {
-      case 'active':
-        return 'Active';
-      case 'upcoming':
-        return 'Upcoming';
-      case 'completed':
-        return 'Completed';
-      default:
-        return 'Unknown';
-    }
-  };
+  // Filter challenges by type
+  const dailyChallenges = availableChallenges.filter(c => c.type === 'daily');
+  const weeklyChallenges = availableChallenges.filter(c => c.type === 'weekly');
+  const monthlyChallenges = availableChallenges.filter(c => c.type === 'monthly');
+  const oneTimeChallenges = availableChallenges.filter(c => c.type === 'one-time');
   
-  // Get difficulty color
-  const getDifficultyColor = (difficulty: Challenge['difficulty']) => {
-    switch (difficulty) {
-      case 'easy':
-        return Colors.success;
-      case 'medium':
-        return Colors.warning;
-      case 'hard':
-        return Colors.error;
-      default:
-        return Colors.textSecondary;
+  // Format time remaining
+  const formatTimeRemaining = (expiresAt?: string) => {
+    if (!expiresAt) return 'No expiration';
+    
+    const now = new Date();
+    const expiry = new Date(expiresAt);
+    const diffMs = expiry.getTime() - now.getTime();
+    
+    if (diffMs <= 0) return 'Expired';
+    
+    const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (diffHrs > 24) {
+      const diffDays = Math.floor(diffHrs / 24);
+      return `${diffDays} day${diffDays !== 1 ? 's' : ''} left`;
     }
+    
+    if (diffHrs > 0) {
+      return `${diffHrs} hr${diffHrs !== 1 ? 's' : ''} ${diffMins} min${diffMins !== 1 ? 's' : ''} left`;
+    }
+    
+    return `${diffMins} min${diffMins !== 1 ? 's' : ''} left`;
   };
   
   // Render challenge item
-  const renderChallengeItem = ({ item }: { item: Challenge }) => (
-    <TouchableOpacity 
-      style={styles.challengeCard}
-      onPress={() => router.push(`/challenges/${item.id}`)}
-    >
-      <Image 
-        source={{ uri: item.image }} 
-        style={styles.challengeImage}
-      />
-      
-      <View style={styles.challengeContent}>
+  const renderChallengeItem = ({ item }: { item: UserChallenge }) => {
+    const isCompleted = item.completed;
+    const isClaimed = item.claimed;
+    const progress = Math.min(item.progress / item.requirements.count, 1);
+    const timeRemaining = formatTimeRemaining(item.expiresAt);
+    const isExpired = item.expiresAt && new Date(item.expiresAt) < new Date();
+    
+    return (
+      <View style={styles.challengeCard}>
         <View style={styles.challengeHeader}>
-          <View style={[styles.statusBadge, { backgroundColor: `${getStatusColor(item.status)}20` }]}>
-            <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
-              {getStatusText(item.status)}
-            </Text>
+          <View style={[styles.categoryBadge, getCategoryStyle(item.category)]}>
+            <Text style={styles.categoryText}>{formatCategory(item.category)}</Text>
           </View>
           
-          <View style={[styles.difficultyBadge, { backgroundColor: `${getDifficultyColor(item.difficulty)}20` }]}>
-            <Text style={[styles.difficultyText, { color: getDifficultyColor(item.difficulty) }]}>
-              {item.difficulty.charAt(0).toUpperCase() + item.difficulty.slice(1)}
-            </Text>
+          <View style={[styles.typeBadge, getTypeStyle(item.type)]}>
+            <Text style={styles.typeText}>{formatType(item.type)}</Text>
           </View>
         </View>
         
         <Text style={styles.challengeTitle}>{item.title}</Text>
-        <Text style={styles.challengeDescription} numberOfLines={2}>{item.description}</Text>
+        <Text style={styles.challengeDescription}>{item.description}</Text>
         
-        <View style={styles.challengeDetails}>
-          <View style={styles.detailItem}>
-            <Calendar size={14} color={Colors.textSecondary} style={styles.detailIcon} />
-            <Text style={styles.detailText}>
-              {formatDate(item.startDate)} - {formatDate(item.endDate)}
-            </Text>
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBarBackground}>
+            <View style={[styles.progressBar, { width: `${progress * 100}%` }]} />
           </View>
-          
-          <View style={styles.detailItem}>
-            <Users size={14} color={Colors.textSecondary} style={styles.detailIcon} />
-            <Text style={styles.detailText}>{item.participants} participants</Text>
-          </View>
+          <Text style={styles.progressText}>
+            {item.progress} / {item.requirements.count}
+          </Text>
         </View>
         
-        {item.status === 'active' && item.progress !== undefined && (
-          <View style={styles.progressContainer}>
-            <View style={styles.progressBar}>
-              <View 
-                style={[
-                  styles.progressFill, 
-                  { width: `${item.progress}%` }
-                ]} 
-              />
-            </View>
-            <Text style={styles.progressText}>{item.progress}% complete</Text>
-          </View>
-        )}
-        
-        <View style={styles.rewardContainer}>
-          <View style={styles.rewardItem}>
+        <View style={styles.challengeFooter}>
+          <View style={styles.rewardContainer}>
             <Award size={16} color={Colors.primary} />
-            <Text style={styles.rewardText}>{item.reward.points} points</Text>
+            <Text style={styles.rewardText}>{item.points} points</Text>
           </View>
           
-          {item.reward.badge && (
-            <View style={styles.rewardItem}>
-              <Trophy size={16} color={Colors.success} />
-              <Text style={styles.rewardText}>{item.reward.badge} badge</Text>
+          {item.expiresAt && !isCompleted && !isExpired && (
+            <View style={styles.timeContainer}>
+              <Clock size={16} color={timeRemaining.includes('min') ? Colors.warning : Colors.textSecondary} />
+              <Text style={[
+                styles.timeText, 
+                timeRemaining.includes('min') && { color: Colors.warning }
+              ]}>
+                {timeRemaining}
+              </Text>
+            </View>
+          )}
+          
+          {isExpired && !isCompleted && (
+            <View style={styles.timeContainer}>
+              <AlertTriangle size={16} color={Colors.error} />
+              <Text style={[styles.timeText, { color: Colors.error }]}>
+                Expired
+              </Text>
+            </View>
+          )}
+          
+          {isCompleted && !isClaimed && activeTab === 'available' && (
+            <TouchableOpacity 
+              style={styles.claimButton}
+              onPress={() => claimChallengeReward(item.id)}
+            >
+              <Text style={styles.claimButtonText}>Claim Reward</Text>
+            </TouchableOpacity>
+          )}
+          
+          {isCompleted && isClaimed && (
+            <View style={styles.completedContainer}>
+              <CheckCircle size={16} color={Colors.success} />
+              <Text style={styles.completedText}>Completed</Text>
             </View>
           )}
         </View>
-        
-        <View style={styles.cardFooter}>
-          <Text style={styles.viewDetailsText}>View Challenge</Text>
-          <ChevronRight size={16} color={Colors.primary} />
-        </View>
       </View>
-    </TouchableOpacity>
+    );
+  };
+  
+  // Helper functions for styling
+  const getCategoryStyle = (category: string) => {
+    switch (category) {
+      case 'reporting':
+        return { backgroundColor: `${Colors.primary}20` };
+      case 'engagement':
+        return { backgroundColor: `${Colors.secondary}20` };
+      case 'exploration':
+        return { backgroundColor: `${Colors.success}20` };
+      case 'community':
+        return { backgroundColor: `${Colors.warning}20` };
+      default:
+        return { backgroundColor: `${Colors.primary}20` };
+    }
+  };
+  
+  const getTypeStyle = (type: string) => {
+    switch (type) {
+      case 'daily':
+        return { backgroundColor: `${Colors.info}20` };
+      case 'weekly':
+        return { backgroundColor: `${Colors.success}20` };
+      case 'monthly':
+        return { backgroundColor: `${Colors.warning}20` };
+      case 'one-time':
+        return { backgroundColor: `${Colors.secondary}20` };
+      default:
+        return { backgroundColor: `${Colors.info}20` };
+    }
+  };
+  
+  const formatCategory = (category: string) => {
+    switch (category) {
+      case 'reporting':
+        return 'Reporting';
+      case 'engagement':
+        return 'Engagement';
+      case 'exploration':
+        return 'Exploration';
+      case 'community':
+        return 'Community';
+      default:
+        return category;
+    }
+  };
+  
+  const formatType = (type: string) => {
+    switch (type) {
+      case 'daily':
+        return 'Daily';
+      case 'weekly':
+        return 'Weekly';
+      case 'monthly':
+        return 'Monthly';
+      case 'one-time':
+        return 'One-time';
+      default:
+        return type;
+    }
+  };
+  
+  // Render section header
+  const renderSectionHeader = (title: string, count: number) => (
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <Text style={styles.sectionCount}>{count}</Text>
+    </View>
+  );
+  
+  // Render available challenges
+  const renderAvailableChallenges = () => (
+    <FlatList
+      data={[]}
+      renderItem={() => null}
+      ListHeaderComponent={() => (
+        <>
+          {/* User Stats Summary */}
+          <View style={styles.statsCard}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{userStats?.points || 0}</Text>
+              <Text style={styles.statLabel}>Total Points</Text>
+            </View>
+            
+            <View style={styles.statDivider} />
+            
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>
+                {completedChallenges.length}
+              </Text>
+              <Text style={styles.statLabel}>Completed</Text>
+            </View>
+            
+            <View style={styles.statDivider} />
+            
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>
+                {availableChallenges.filter(c => c.completed && !c.claimed).length}
+              </Text>
+              <Text style={styles.statLabel}>To Claim</Text>
+            </View>
+          </View>
+          
+          {/* Daily Challenges */}
+          {dailyChallenges.length > 0 && (
+            <>
+              <View style={styles.sectionHeaderContainer}>
+                {renderSectionHeader('Daily Challenges', dailyChallenges.length)}
+                
+                <TouchableOpacity 
+                  style={styles.refreshButton}
+                  onPress={handleRefreshDailyChallenges}
+                >
+                  <RefreshCw size={16} color={Colors.primary} />
+                  <Text style={styles.refreshButtonText}>Refresh</Text>
+                </TouchableOpacity>
+              </View>
+              
+              {dailyChallenges.map(challenge => (
+                <React.Fragment key={challenge.id}>
+                  {renderChallengeItem({ item: challenge })}
+                </React.Fragment>
+              ))}
+            </>
+          )}
+          
+          {/* Weekly Challenges */}
+          {weeklyChallenges.length > 0 && (
+            <>
+              {renderSectionHeader('Weekly Challenges', weeklyChallenges.length)}
+              
+              {weeklyChallenges.map(challenge => (
+                <React.Fragment key={challenge.id}>
+                  {renderChallengeItem({ item: challenge })}
+                </React.Fragment>
+              ))}
+            </>
+          )}
+          
+          {/* Monthly Challenges */}
+          {monthlyChallenges.length > 0 && (
+            <>
+              {renderSectionHeader('Monthly Challenges', monthlyChallenges.length)}
+              
+              {monthlyChallenges.map(challenge => (
+                <React.Fragment key={challenge.id}>
+                  {renderChallengeItem({ item: challenge })}
+                </React.Fragment>
+              ))}
+            </>
+          )}
+          
+          {/* One-time Challenges */}
+          {oneTimeChallenges.length > 0 && (
+            <>
+              {renderSectionHeader('One-time Challenges', oneTimeChallenges.length)}
+              
+              {oneTimeChallenges.map(challenge => (
+                <React.Fragment key={challenge.id}>
+                  {renderChallengeItem({ item: challenge })}
+                </React.Fragment>
+              ))}
+            </>
+          )}
+          
+          {availableChallenges.length === 0 && (
+            <View style={styles.emptyContainer}>
+              <Calendar size={60} color={Colors.textSecondary} />
+              <Text style={styles.emptyTitle}>No Available Challenges</Text>
+              <Text style={styles.emptyMessage}>
+                Check back later for new challenges or pull down to refresh
+              </Text>
+            </View>
+          )}
+        </>
+      )}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      contentContainerStyle={styles.listContent}
+    />
+  );
+  
+  // Render completed challenges
+  const renderCompletedChallenges = () => (
+    <FlatList
+      data={completedChallenges}
+      renderItem={renderChallengeItem}
+      keyExtractor={(item) => item.id}
+      ListEmptyComponent={() => (
+        <View style={styles.emptyContainer}>
+          <CheckCircle size={60} color={Colors.textSecondary} />
+          <Text style={styles.emptyTitle}>No Completed Challenges</Text>
+          <Text style={styles.emptyMessage}>
+            Complete challenges to see them here
+          </Text>
+        </View>
+      )}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      contentContainerStyle={styles.listContent}
+    />
   );
   
   return (
     <>
       <Stack.Screen 
         options={{
-          title: 'Community Challenges',
+          title: 'Challenges',
           headerLargeTitle: true,
         }} 
       />
       <View style={styles.container}>
-        {/* Filter */}
-        <View style={styles.filterContainer}>
-          <View style={styles.filterHeader}>
-            <Text style={styles.filterTitle}>Challenges</Text>
-            
-            <TouchableOpacity 
-              style={styles.filterButton}
-              onPress={() => setShowFilterOptions(!showFilterOptions)}
-            >
-              <Filter size={16} color={Colors.text} />
-              <Text style={styles.filterButtonText}>Filter</Text>
-            </TouchableOpacity>
-          </View>
+        {/* Tab Selector */}
+        <View style={styles.tabContainer}>
+          <TouchableOpacity 
+            style={[styles.tabButton, activeTab === 'available' && styles.activeTabButton]}
+            onPress={() => setActiveTab('available')}
+          >
+            <Text style={[styles.tabText, activeTab === 'available' && styles.activeTabText]}>
+              Available
+            </Text>
+          </TouchableOpacity>
           
-          {showFilterOptions && (
-            <View style={styles.filterOptions}>
-              <TouchableOpacity 
-                style={[styles.filterOption, filter === 'all' && styles.activeFilterOption]}
-                onPress={() => setFilter('all')}
-              >
-                <Text style={[styles.filterOptionText, filter === 'all' && styles.activeFilterOptionText]}>
-                  All Challenges
-                </Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.filterOption, filter === 'active' && styles.activeFilterOption]}
-                onPress={() => setFilter('active')}
-              >
-                <Text style={[styles.filterOptionText, filter === 'active' && styles.activeFilterOptionText]}>
-                  Active
-                </Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.filterOption, filter === 'upcoming' && styles.activeFilterOption]}
-                onPress={() => setFilter('upcoming')}
-              >
-                <Text style={[styles.filterOptionText, filter === 'upcoming' && styles.activeFilterOptionText]}>
-                  Upcoming
-                </Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.filterOption, filter === 'completed' && styles.activeFilterOption]}
-                onPress={() => setFilter('completed')}
-              >
-                <Text style={[styles.filterOptionText, filter === 'completed' && styles.activeFilterOptionText]}>
-                  Completed
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          <TouchableOpacity 
+            style={[styles.tabButton, activeTab === 'completed' && styles.activeTabButton]}
+            onPress={() => setActiveTab('completed')}
+          >
+            <Text style={[styles.tabText, activeTab === 'completed' && styles.activeTabText]}>
+              Completed
+            </Text>
+            {completedChallenges.length > 0 && (
+              <View style={styles.badgeCount}>
+                <Text style={styles.badgeCountText}>{completedChallenges.length}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
         </View>
         
-        {/* Challenge List */}
-        {filteredChallenges.length > 0 ? (
-          <FlatList
-            data={filteredChallenges}
-            renderItem={renderChallengeItem}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.challengesList}
-            showsVerticalScrollIndicator={false}
-          />
-        ) : (
-          <View style={styles.emptyContainer}>
-            <Award size={48} color={Colors.textSecondary} />
-            <Text style={styles.emptyTitle}>No challenges found</Text>
-            <Text style={styles.emptyMessage}>
-              There are no challenges matching your current filter. Try changing the filter or check back later.
-            </Text>
-          </View>
-        )}
+        {/* Challenge Lists */}
+        {activeTab === 'available' ? renderAvailableChallenges() : renderCompletedChallenges()}
       </View>
     </>
   );
@@ -357,70 +398,56 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  filterContainer: {
-    padding: 16,
+  tabContainer: {
+    flexDirection: 'row',
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+    backgroundColor: Colors.card,
   },
-  filterHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  tabButton: {
+    flex: 1,
+    paddingVertical: 16,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
-  filterTitle: {
+  activeTabButton: {
+    borderBottomWidth: 2,
+    borderBottomColor: Colors.primary,
+  },
+  tabText: {
     fontSize: 16,
+    color: Colors.textSecondary,
+    fontWeight: '500',
+  },
+  activeTabText: {
+    color: Colors.primary,
     fontWeight: 'bold',
-    color: Colors.text,
   },
-  filterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.card,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  filterButtonText: {
-    fontSize: 14,
-    color: Colors.text,
-    marginLeft: 4,
-  },
-  filterOptions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 12,
-  },
-  filterOption: {
-    backgroundColor: Colors.card,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-    marginRight: 8,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  activeFilterOption: {
+  badgeCount: {
     backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 6,
   },
-  filterOptionText: {
-    fontSize: 14,
-    color: Colors.text,
-  },
-  activeFilterOptionText: {
+  badgeCountText: {
     color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
-  challengesList: {
+  listContent: {
     padding: 16,
+    paddingBottom: 40,
   },
-  challengeCard: {
+  statsCard: {
+    flexDirection: 'row',
     backgroundColor: Colors.card,
     borderRadius: 12,
-    marginBottom: 16,
-    overflow: 'hidden',
+    padding: 16,
+    marginBottom: 24,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -429,45 +456,121 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
       },
       android: {
-        elevation: 3,
+        elevation: 2,
       },
       web: {
         boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
       },
     }),
   },
-  challengeImage: {
-    width: '100%',
-    height: 160,
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
   },
-  challengeContent: {
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: Colors.border,
+    marginHorizontal: 8,
+  },
+  sectionHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.text,
+  },
+  sectionCount: {
+    fontSize: 14,
+    color: Colors.primary,
+    fontWeight: '500',
+    marginLeft: 8,
+    backgroundColor: `${Colors.primary}15`,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  refreshButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: `${Colors.primary}15`,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  refreshButtonText: {
+    fontSize: 12,
+    color: Colors.primary,
+    fontWeight: '500',
+    marginLeft: 4,
+  },
+  challengeCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 12,
     padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+      },
+    }),
   },
   challengeHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     marginBottom: 12,
   },
-  statusBadge: {
-    paddingHorizontal: 10,
+  categoryBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 8,
+  },
+  categoryText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: Colors.primary,
+  },
+  typeBadge: {
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
-  statusText: {
+  typeText: {
     fontSize: 12,
     fontWeight: '500',
-  },
-  difficultyBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  difficultyText: {
-    fontSize: 12,
-    fontWeight: '500',
+    color: Colors.info,
   },
   challengeTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: Colors.text,
     marginBottom: 8,
@@ -475,35 +578,19 @@ const styles = StyleSheet.create({
   challengeDescription: {
     fontSize: 14,
     color: Colors.textSecondary,
-    marginBottom: 12,
-    lineHeight: 20,
-  },
-  challengeDetails: {
-    marginBottom: 12,
-  },
-  detailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  detailIcon: {
-    marginRight: 6,
-  },
-  detailText: {
-    fontSize: 13,
-    color: Colors.textSecondary,
+    marginBottom: 16,
   },
   progressContainer: {
-    marginBottom: 12,
+    marginBottom: 16,
   },
-  progressBar: {
+  progressBarBackground: {
     height: 8,
     backgroundColor: `${Colors.primary}20`,
     borderRadius: 4,
-    marginBottom: 4,
+    marginBottom: 8,
     overflow: 'hidden',
   },
-  progressFill: {
+  progressBar: {
     height: '100%',
     backgroundColor: Colors.primary,
     borderRadius: 4,
@@ -513,39 +600,55 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'right',
   },
+  challengeFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   rewardContainer: {
     flexDirection: 'row',
-    marginBottom: 12,
-  },
-  rewardItem: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 16,
   },
   rewardText: {
-    fontSize: 13,
-    color: Colors.text,
-    marginLeft: 6,
-    fontWeight: '500',
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
-  },
-  viewDetailsText: {
     fontSize: 14,
     color: Colors.primary,
-    marginRight: 4,
+    fontWeight: '500',
+    marginLeft: 6,
+  },
+  timeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  timeText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginLeft: 6,
+  },
+  claimButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+  },
+  claimButtonText: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: '500',
+  },
+  completedContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  completedText: {
+    fontSize: 14,
+    color: Colors.success,
+    fontWeight: '500',
+    marginLeft: 6,
   },
   emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    justifyContent: 'center',
+    padding: 40,
   },
   emptyTitle: {
     fontSize: 18,
