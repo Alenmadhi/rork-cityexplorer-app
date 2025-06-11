@@ -143,7 +143,7 @@ export const tours: Tour[] = [
         order: 2,
         localTips: [
           'The best saffron can be found at the stall with the blue awning',
-          'Ask vendors for cooking tips - they're usually happy to share',
+          'Ask vendors for cooking tips - they are usually happy to share',
           'Morning is the best time to visit for the freshest produce'
         ]
       },
