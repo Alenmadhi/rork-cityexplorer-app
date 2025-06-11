@@ -54,15 +54,25 @@ export default function NewsCard({ news, featured = false }: NewsCardProps) {
   
   // Handle card press
   const handlePress = () => {
-    router.push(`/news/${news.id}`);
+    if (news.url) {
+      handleExternalLink();
+    } else {
+      router.push(`/news/${news.id}`);
+    }
   };
   
   // Handle external link press
   const handleExternalLink = async () => {
     if (news.url) {
-      const canOpen = await Linking.canOpenURL(news.url);
-      if (canOpen) {
-        await Linking.openURL(news.url);
+      try {
+        const canOpen = await Linking.canOpenURL(news.url);
+        if (canOpen) {
+          await Linking.openURL(news.url);
+        } else {
+          console.warn('Cannot open URL:', news.url);
+        }
+      } catch (error) {
+        console.error('Error opening URL:', error);
       }
     }
   };

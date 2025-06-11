@@ -1,66 +1,45 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Linking, Platform, Share } from 'react-native';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { Calendar, ArrowLeft, Share2, ExternalLink, Bookmark, BookmarkCheck } from 'lucide-react-native';
+import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Linking, ActivityIndicator, Platform } from 'react-native';
+import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
+import { Calendar, Clock, ArrowLeft, ExternalLink, Share2 } from 'lucide-react-native';
 import Colors from '@/constants/colors';
+import { useNews } from '@/hooks/useNews';
 import { NewsItem } from '@/types';
-import { useFavoritesStore } from '@/stores/favorites-store';
-import { LoadingIndicator } from '@/components/LoadingIndicator';
 import { ErrorMessage } from '@/components/ErrorMessage';
 
 export default function NewsDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams();
   const router = useRouter();
-  const { addFavoriteNews, removeFavoriteNews, isFavoriteNews } = useFavoritesStore();
-  
-  const [news, setNews] = useState<NewsItem | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { news, loading } = useNews();
+  const [newsItem, setNewsItem] = useState<NewsItem | null>(null);
   const [error, setError] = useState<string | null>(null);
   
-  // Check if news is in favorites
-  const isNewsFavorite = news ? isFavoriteNews(news.id) : false;
-  
-  // Fetch news details
   useEffect(() => {
-    const fetchNewsDetails = async () => {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        // In a real app, this would be an API call
-        // For demo purposes, we'll use our mock data
-        const mockNews = require('@/mocks/news').news;
-        const foundNews = mockNews.find((item: NewsItem) => item.id === id);
-        
-        if (foundNews) {
-          setNews(foundNews);
-        } else {
-          setError('News not found');
-        }
-      } catch (err) {
-        console.error('Error fetching news details:', err);
-        setError('Failed to load news details');
-      } finally {
-        setLoading(false);
+    if (news.length > 0 && id) {
+      const item = news.find(item => item.id === id);
+      if (item) {
+        setNewsItem(item);
+      } else {
+        setError('News article not found');
       }
-    };
-    
-    if (id) {
-      fetchNewsDetails();
     }
-  }, [id]);
+  }, [news, id]);
   
   // Format date
   const formatDate = (dateString: string) => {
-    if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, { 
-      year: 'numeric', 
-      month: 'long', 
+    return date.toLocaleDateString(undefined, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
     });
+  };
+  
+  // Format time
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
   
   // Get category color
@@ -81,47 +60,66 @@ export default function NewsDetailScreen() {
     }
   };
   
+  // Handle external link press
+  const handleExternalLink = async () => {
+    if (newsItem?.url) {
+      try {
+        const canOpen = await Linking.canOpenURL(newsItem.url);
+        if (canOpen) {
+          await Linking.openURL(newsItem.url);
+        } else {
+          console.warn('Cannot open URL:', newsItem.url);
+        }
+      } catch (error) {
+        console.error('Error opening URL:', error);
+      }
+    }
+  };
+  
   // Handle share
   const handleShare = async () => {
-    if (!news) return;
-    
-    try {
-      await Share.share({
-        message: `Check out this news: ${news.title}`,
-        url: news.url || `https://elbasan-city-app.com/news/${news.id}`,
-      });
-    } catch (error) {
-      console.error('Error sharing:', error);
-    }
-  };
-  
-  // Handle toggle favorite
-  const handleToggleFavorite = () => {
-    if (!news) return;
-    
-    if (isNewsFavorite) {
-      removeFavoriteNews(news.id);
-    } else {
-      addFavoriteNews(news.id);
-    }
-  };
-  
-  // Handle external link
-  const handleExternalLink = async () => {
-    if (news?.url) {
-      const canOpen = await Linking.canOpenURL(news.url);
-      if (canOpen) {
-        await Linking.openURL(news.url);
+    if (newsItem) {
+      try {
+        const shareOptions = {
+          title: newsItem.title,
+          message: `${newsItem.title}\n\n${newsItem.summary}\n\n${newsItem.url || 'Elbasan City App'}`,
+          url: newsItem.url,
+        };
+        
+        if (Platform.OS === 'web') {
+          if (navigator.share) {
+            await navigator.share({
+              title: shareOptions.title,
+              text: shareOptions.message,
+              url: shareOptions.url,
+            });
+          } else {
+            console.log('Web share not supported');
+          }
+        } else {
+          const { Share } = require('react-native');
+          await Share.share(shareOptions);
+        }
+      } catch (error) {
+        console.error('Error sharing:', error);
       }
     }
   };
   
   if (loading) {
-    return <LoadingIndicator />;
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
   }
   
-  if (error || !news) {
-    return <ErrorMessage message={error || 'News not found'} />;
+  if (error) {
+    return <ErrorMessage message={error} />;
+  }
+  
+  if (!newsItem) {
+    return <ErrorMessage message="News article not found" />;
   }
   
   return (
@@ -130,88 +128,74 @@ export default function NewsDetailScreen() {
         options={{
           title: '',
           headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
               <ArrowLeft size={24} color={Colors.text} />
             </TouchableOpacity>
           ),
           headerRight: () => (
-            <View style={styles.headerActions}>
-              {news.url && (
-                <TouchableOpacity 
-                  style={styles.headerAction}
-                  onPress={handleExternalLink}
-                >
+            <View style={styles.headerButtons}>
+              {newsItem.url && (
+                <TouchableOpacity onPress={handleExternalLink} style={styles.headerButton}>
                   <ExternalLink size={24} color={Colors.primary} />
                 </TouchableOpacity>
               )}
-              
-              <TouchableOpacity 
-                style={styles.headerAction}
-                onPress={handleShare}
-              >
-                <Share2 size={24} color={Colors.text} />
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.headerAction}
-                onPress={handleToggleFavorite}
-              >
-                {isNewsFavorite ? (
-                  <BookmarkCheck size={24} color={Colors.primary} />
-                ) : (
-                  <Bookmark size={24} color={Colors.text} />
-                )}
+              <TouchableOpacity onPress={handleShare} style={styles.headerButton}>
+                <Share2 size={24} color={Colors.primary} />
               </TouchableOpacity>
             </View>
           ),
         }} 
       />
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Image 
-          source={{ uri: news.image }} 
+          source={{ uri: newsItem.image }} 
           style={styles.image}
           resizeMode="cover"
         />
         
         <View style={styles.articleContainer}>
-          <View style={styles.header}>
-            <View 
+          <View 
+            style={[
+              styles.categoryBadge,
+              { backgroundColor: `${getCategoryColor(newsItem.category)}20` }
+            ]}
+          >
+            <Text 
               style={[
-                styles.categoryBadge,
-                { backgroundColor: `${getCategoryColor(news.category)}20` }
+                styles.categoryText,
+                { color: getCategoryColor(newsItem.category) }
               ]}
             >
-              <Text 
-                style={[
-                  styles.categoryText,
-                  { color: getCategoryColor(news.category) }
-                ]}
-              >
-                {news.category.charAt(0).toUpperCase() + news.category.slice(1)}
-              </Text>
+              {newsItem.category.charAt(0).toUpperCase() + newsItem.category.slice(1)}
+            </Text>
+          </View>
+          
+          <Text style={styles.title}>{newsItem.title}</Text>
+          
+          <View style={styles.metaContainer}>
+            <View style={styles.metaItem}>
+              <Calendar size={16} color={Colors.textSecondary} />
+              <Text style={styles.metaText}>{formatDate(newsItem.date)}</Text>
             </View>
             
-            <View style={styles.dateContainer}>
-              <Calendar size={14} color={Colors.textSecondary} />
-              <Text style={styles.date}>{formatDate(news.date)}</Text>
+            <View style={styles.metaItem}>
+              <Clock size={16} color={Colors.textSecondary} />
+              <Text style={styles.metaText}>{formatTime(newsItem.date)}</Text>
             </View>
           </View>
           
-          <Text style={styles.title}>{news.title}</Text>
+          <Text style={styles.author}>By {newsItem.author}</Text>
           
-          <Text style={styles.author}>By {news.author}</Text>
+          <Text style={styles.content}>{newsItem.content}</Text>
           
-          <Text style={styles.summary}>{news.summary}</Text>
-          
-          <Text style={styles.contentText}>{news.content}</Text>
-          
-          {news.url && (
+          {newsItem.url && (
             <TouchableOpacity 
               style={styles.sourceButton}
               onPress={handleExternalLink}
             >
               <Text style={styles.sourceButtonText}>Read full article</Text>
-              <ExternalLink size={16} color={Colors.primary} style={styles.sourceButtonIcon} />
+              <ExternalLink size={16} color={Colors.primary} />
             </TouchableOpacity>
           )}
         </View>
@@ -225,71 +209,73 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  contentContainer: {
+  content: {
     paddingBottom: 40,
   },
-  headerActions: {
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backButton: {
+    padding: 8,
+  },
+  headerButtons: {
     flexDirection: 'row',
   },
-  headerAction: {
-    marginLeft: 16,
+  headerButton: {
+    padding: 8,
+    marginLeft: 8,
   },
   image: {
     width: '100%',
     height: 250,
   },
   articleContainer: {
-    padding: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
+    padding: 20,
   },
   categoryBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 4,
+    marginBottom: 12,
   },
   categoryText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '500',
-  },
-  dateContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  date: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginLeft: 4,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: Colors.text,
-    marginBottom: 8,
+    marginBottom: 16,
     lineHeight: 32,
   },
-  author: {
+  metaContainer: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  metaText: {
     fontSize: 14,
     color: Colors.textSecondary,
-    marginBottom: 16,
+    marginLeft: 6,
+  },
+  author: {
+    fontSize: 16,
     fontStyle: 'italic',
-  },
-  summary: {
-    fontSize: 16,
-    fontWeight: '500',
     color: Colors.text,
-    marginBottom: 16,
-    lineHeight: 24,
-  },
-  contentText: {
-    fontSize: 16,
-    color: Colors.text,
-    lineHeight: 24,
     marginBottom: 24,
+  },
+  content: {
+    fontSize: 16,
+    color: Colors.text,
+    lineHeight: 24,
   },
   sourceButton: {
     flexDirection: 'row',
@@ -299,13 +285,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
+    marginTop: 24,
   },
   sourceButtonText: {
     fontSize: 16,
     fontWeight: '500',
     color: Colors.primary,
-  },
-  sourceButtonIcon: {
-    marginLeft: 8,
+    marginRight: 8,
   },
 });

@@ -2,96 +2,46 @@ import { Event, NewsItem, Weather, WeatherForecast } from '@/types';
 
 // Base URLs for API requests
 const WEATHER_API_URL = 'https://api.open-meteo.com/v1/forecast';
-const RSS_PROXY_URL = 'https://api.rss2json.com/v1/api.json';
-const RSS_API_KEY = 'ykxgxvmtdcwzwolhno9mgpnsjqokzlwfcbejqlgj'; // Free API key for RSS2JSON
+const GNEWS_API_URL = 'https://gnews.io/api/v4/search';
+const GNEWS_API_KEY = '9b6a64b2c5e7a9d8e3f1c4b7a0d2e5f8'; // Replace with your actual API key
 
 /**
  * Fetch news related to Elbasan or Albania
- * Using RSS feeds to get real news about Elbasan/Albania
+ * Using GNews API to get real news about Elbasan/Albania
  */
 export async function fetchNews(): Promise<NewsItem[]> {
   try {
-    // Try multiple RSS sources for Albanian news
-    const rssSources = [
-      'https://www.albaniandailynews.com/index.php?idm=1&mod=rss',  // Albanian Daily News
-      'https://exit.al/en/feed/',                                   // Exit News Albania
-      'https://www.tiranatimes.com/?feed=rss2',                     // Tirana Times
-      'https://www.gazetatema.net/feed/'                            // Gazeta Tema
-    ];
-    
-    // Try each source until we get results
-    let articles = [];
-    let sourceIndex = 0;
-    
-    while (articles.length === 0 && sourceIndex < rssSources.length) {
-      try {
-        const response = await fetch(
-          `${RSS_PROXY_URL}?rss_url=${encodeURIComponent(rssSources[sourceIndex])}&api_key=${RSS_API_KEY}`
-        );
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch news: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.items && data.items.length > 0) {
-          articles = data.items;
-          break;
-        }
-      } catch (error) {
-        console.log(`Error with source ${sourceIndex}:`, error);
-      }
-      
-      sourceIndex++;
-    }
-    
-    if (articles.length === 0) {
-      throw new Error('No articles found in any source');
-    }
-    
-    // Filter for articles that might mention Elbasan
-    const elbasanArticles = articles.filter((article: any) => 
-      article.title.toLowerCase().includes('elbasan') || 
-      article.description.toLowerCase().includes('elbasan') ||
-      article.content.toLowerCase().includes('elbasan')
+    // Try to fetch news about Elbasan from GNews API
+    const response = await fetch(
+      `${GNEWS_API_URL}?q=Elbasan&lang=en&country=al&max=10&apikey=${GNEWS_API_KEY}`
     );
     
-    // Use Elbasan-specific articles if available, otherwise use all Albanian news
-    const finalArticles = elbasanArticles.length > 0 ? elbasanArticles : articles;
+    if (!response.ok) {
+      throw new Error(`Failed to fetch news: ${response.status}`);
+    }
     
-    // Map the RSS response to our NewsItem format
-    return finalArticles.map((article: any, index: number): NewsItem => {
-      // Determine category based on content or title keywords
-      let category: 'local' | 'business' | 'culture' | 'sports' | 'politics' | 'other' = 'other';
+    const data = await response.json();
+    
+    if (!data.articles || data.articles.length === 0) {
+      // If no Elbasan-specific news, try Albania news
+      const albaniaResponse = await fetch(
+        `${GNEWS_API_URL}?q=Albania&lang=en&country=al&max=10&apikey=${GNEWS_API_KEY}`
+      );
       
-      const content = (article.title + ' ' + article.description).toLowerCase();
-      
-      if (content.includes('business') || content.includes('economy') || content.includes('market')) {
-        category = 'business';
-      } else if (content.includes('culture') || content.includes('art') || content.includes('festival') || content.includes('heritage')) {
-        category = 'culture';
-      } else if (content.includes('sport') || content.includes('football') || content.includes('match')) {
-        category = 'sports';
-      } else if (content.includes('politic') || content.includes('government') || content.includes('minister') || content.includes('parliament')) {
-        category = 'politics';
-      } else if (content.includes('elbasan') || content.includes('local')) {
-        category = 'local';
+      if (!albaniaResponse.ok) {
+        throw new Error(`Failed to fetch Albania news: ${albaniaResponse.status}`);
       }
       
-      return {
-        id: `${index + 1}`,
-        title: article.title,
-        summary: article.description || article.content.substring(0, 150) + '...',
-        content: article.content || article.description,
-        image: article.enclosure?.link || article.thumbnail || 'https://images.unsplash.com/photo-1578297886235-f2be6e8f3c3e?q=80&w=1000&auto=format&fit=crop',
-        date: article.pubDate || new Date().toISOString(),
-        author: article.author || 'Albanian News',
-        category,
-        featured: index < 2, // First two articles are featured
-        url: article.link // Add the original URL to link back to the source
-      };
-    });
+      const albaniaData = await albaniaResponse.json();
+      
+      if (!albaniaData.articles || albaniaData.articles.length === 0) {
+        throw new Error('No articles found in any source');
+      }
+      
+      return mapArticlesToNewsItems(albaniaData.articles);
+    }
+    
+    return mapArticlesToNewsItems(data.articles);
   } catch (error) {
     console.error('Error fetching news:', error);
     
@@ -105,6 +55,43 @@ export async function fetchNews(): Promise<NewsItem[]> {
       date: randomizeDate(item.date) // Make dates appear more recent
     }));
   }
+}
+
+/**
+ * Map GNews API articles to our NewsItem format
+ */
+function mapArticlesToNewsItems(articles: any[]): NewsItem[] {
+  return articles.map((article: any, index: number): NewsItem => {
+    // Determine category based on content or title keywords
+    let category: 'local' | 'business' | 'culture' | 'sports' | 'politics' | 'other' = 'other';
+    
+    const content = (article.title + ' ' + article.description).toLowerCase();
+    
+    if (content.includes('business') || content.includes('economy') || content.includes('market')) {
+      category = 'business';
+    } else if (content.includes('culture') || content.includes('art') || content.includes('festival') || content.includes('heritage')) {
+      category = 'culture';
+    } else if (content.includes('sport') || content.includes('football') || content.includes('match')) {
+      category = 'sports';
+    } else if (content.includes('politic') || content.includes('government') || content.includes('minister') || content.includes('parliament')) {
+      category = 'politics';
+    } else if (content.includes('elbasan') || content.includes('local')) {
+      category = 'local';
+    }
+    
+    return {
+      id: `${index + 1}`,
+      title: article.title,
+      summary: article.description || article.content || 'No description available',
+      content: article.content || article.description || 'No content available',
+      image: article.image || 'https://images.unsplash.com/photo-1578297886235-f2be6e8f3c3e?q=80&w=1000&auto=format&fit=crop',
+      date: article.publishedAt || new Date().toISOString(),
+      author: article.source?.name || 'News Source',
+      category,
+      featured: index < 2, // First two articles are featured
+      url: article.url // Add the original URL to link back to the source
+    };
+  });
 }
 
 /**
