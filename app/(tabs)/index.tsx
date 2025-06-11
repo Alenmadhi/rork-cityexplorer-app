@@ -81,31 +81,47 @@ export default function HomeScreen() {
   }, []);
   
   useEffect(() => {
-    // Fetch data
-    fetchAlerts();
-    fetchStories();
-    fetchChallenges();
-    fetchNearbyIssues();
+    let isMounted = true;
+    
+    // Fetch data only if component is mounted
+    const fetchData = async () => {
+      if (isMounted) {
+        fetchAlerts();
+        fetchStories();
+        fetchChallenges();
+        fetchNearbyIssues();
+      }
+    };
+    
+    fetchData();
     
     // Subscribe to network state updates
     const unsubscribe = NetInfo.addEventListener(state => {
-      setIsConnected(state.isConnected);
+      if (isMounted) {
+        setIsConnected(state.isConnected);
+      }
     });
     
     // Request location permission
     (async () => {
-      if (Platform.OS !== 'web') {
+      if (Platform.OS !== 'web' && isMounted) {
         const { status } = await Location.requestForegroundPermissionsAsync();
-        setLocationPermission(status === 'granted');
-        
-        if (status === 'granted') {
-          const location = await Location.getCurrentPositionAsync({});
-          setLocation(location);
+        if (isMounted) {
+          setLocationPermission(status === 'granted');
+          
+          if (status === 'granted') {
+            const locationData = await Location.getCurrentPositionAsync({});
+            if (isMounted) {
+              setLocation(locationData);
+            }
+          }
         }
       }
     })();
     
+    // Cleanup function to prevent state updates after unmount
     return () => {
+      isMounted = false;
       unsubscribe();
     };
   }, [fetchAlerts, fetchStories, fetchChallenges, fetchNearbyIssues]);
@@ -149,7 +165,7 @@ export default function HomeScreen() {
           <View style={styles.offlineBanner}>
             <WifiOff size={20} color="#fff" />
             <Text style={styles.offlineText}>
-              You're offline. Reports will be saved locally.
+              You are offline. Reports will be saved locally.
             </Text>
           </View>
         )}

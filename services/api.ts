@@ -4,7 +4,7 @@ import { news as mockNews } from '@/mocks/news';
 // Base URLs for API requests
 const WEATHER_API_URL = 'https://api.open-meteo.com/v1/forecast';
 const GNEWS_API_URL = 'https://gnews.io/api/v4/search';
-// Note: This API key might be expired or invalid, so we'll handle errors gracefully
+// Using a free API key - this may have limited requests
 const GNEWS_API_KEY = '5f916c6339a945be8b6abc1b6264385a';
 
 /**
@@ -16,9 +16,9 @@ export async function fetchNews(): Promise<NewsItem[]> {
   try {
     console.log('Fetching news from GNews API...');
     
-    // Try to fetch news about Elbasan from GNews API
+    // Try to fetch news about Elbasan from GNews API with Albanian language
     const response = await fetch(
-      `${GNEWS_API_URL}?q=Elbasan&lang=en&country=al&max=10&token=${GNEWS_API_KEY}`
+      `${GNEWS_API_URL}?q=Elbasan&lang=sq&country=al&max=10&token=${GNEWS_API_KEY}`
     );
     
     if (!response.ok) {
@@ -33,7 +33,7 @@ export async function fetchNews(): Promise<NewsItem[]> {
       
       // If no Elbasan-specific news, try Albania news
       const albaniaResponse = await fetch(
-        `${GNEWS_API_URL}?q=Albania&lang=en&country=al&max=10&token=${GNEWS_API_KEY}`
+        `${GNEWS_API_URL}?q=Albania&lang=sq&country=al&max=10&token=${GNEWS_API_KEY}`
       );
       
       if (!albaniaResponse.ok) {

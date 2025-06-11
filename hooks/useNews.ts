@@ -4,7 +4,7 @@ import { NewsItem } from '@/types';
 import { news as mockNews } from '@/mocks/news';
 
 export function useNews() {
-  const [news, setNews] = useState<NewsItem[]>([]);
+  const [news, setNews] = useState<NewsItem[]>(mockNews);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
