@@ -21,7 +21,7 @@ export default function NewsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   
   // Filter news based on search query and category
-  const filteredNews = news.filter(item => {
+  const filteredNews = news ? news.filter(item => {
     const matchesSearch = 
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -30,7 +30,7 @@ export default function NewsScreen() {
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
     
     return matchesSearch && matchesCategory;
-  });
+  }) : [];
   
   // Get featured news
   const featuredNews = filteredNews.filter(item => item.featured);

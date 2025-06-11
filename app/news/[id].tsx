@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Linking, ActivityIndicator, Platform } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { Calendar, Clock, ArrowLeft, ExternalLink, Share2 } from 'lucide-react-native';
-import { Share } from 'react-native';
+import { Share as RNShare } from 'react-native';
 import Colors from '@/constants/colors';
 import { useNews } from '@/hooks/useNews';
 import { NewsItem } from '@/types';
@@ -16,7 +16,7 @@ export default function NewsDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
-    if (news.length > 0 && id) {
+    if (news && news.length > 0 && id) {
       const item = news.find(item => item.id === id);
       if (item) {
         setNewsItem(item);
@@ -102,7 +102,7 @@ ${newsItem.url || 'Elbasan City App'}`,
             console.log('Web share not supported');
           }
         } else {
-          await Share.share(shareOptions);
+          await RNShare.share(shareOptions);
         }
       } catch (error) {
         console.error('Error sharing:', error);

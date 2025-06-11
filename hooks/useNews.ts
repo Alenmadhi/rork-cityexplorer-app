@@ -14,7 +14,7 @@ export function useNews() {
     
     try {
       const newsData = await fetchNews();
-      setNews(newsData);
+      setNews(newsData || []);
       setLastUpdated(new Date());
     } catch (err) {
       console.error('Error in useNews hook:', err);
@@ -29,7 +29,7 @@ export function useNews() {
     
     try {
       const newsData = await fetchNews();
-      setNews(newsData);
+      setNews(newsData || []);
       setLastUpdated(new Date());
       return true;
     } catch (err) {

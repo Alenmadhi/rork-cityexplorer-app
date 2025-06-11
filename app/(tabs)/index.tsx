@@ -131,7 +131,7 @@ export default function HomeScreen() {
       />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         {/* Emergency Alerts Carousel */}
-        {activeAlerts.length > 0 && (
+        {activeAlerts && activeAlerts.length > 0 && (
           <EmergencyAlertCarousel alerts={activeAlerts} />
         )}
         
@@ -199,7 +199,7 @@ export default function HomeScreen() {
         </View>
         
         {/* User Stats */}
-        {user && (
+        {user && userStats && (
           <View style={styles.statsCard}>
             <Text style={styles.statsTitle}>Your Contribution</Text>
             
@@ -233,7 +233,7 @@ export default function HomeScreen() {
         )}
         
         {/* Success Story Spotlight */}
-        {featuredStories.length > 0 && (
+        {featuredStories && featuredStories.length > 0 && (
           <View style={styles.successStoriesContainer}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Fix of the Week</Text>
