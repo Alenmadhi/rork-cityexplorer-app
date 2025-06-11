@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, Image, TouchableOpacity, Linking, Platform, Share as RNShare } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, Image, TouchableOpacity, Linking, Platform } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { MapPin, Clock, Star, Phone, Mail, Globe, Tag, Calendar, Navigation, Share2, ArrowLeft } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { shops } from '@/mocks/shops';
 import { Shop } from '@/types';
+import * as Sharing from 'expo-sharing';
 
 export default function ShopDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -99,10 +100,18 @@ Address: ${shop.address}`;
 Special Offer: ${shop.promotion.title} - ${shop.promotion.description}`);
     }
     
-    RNShare.share({
-      message: finalMessage,
-      title: shop.name
-    });
+    if (Platform.OS === 'web') {
+      if (navigator.share) {
+        navigator.share({
+          title: shop.name,
+          text: finalMessage
+        }).catch(error => console.log('Error sharing', error));
+      } else {
+        console.log('Web sharing not supported');
+      }
+    } else {
+      Sharing.shareAsync(finalMessage);
+    }
   };
   
   // Calculate days remaining for the promotion

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, View, FlatList, Text, RefreshControl } from 'react-native';
+import { StyleSheet, View, FlatList, Text, RefreshControl, TouchableOpacity } from 'react-native';
 import { Stack } from 'expo-router';
 import { EventCard } from '@/components/EventCard';
 import { SearchBar } from '@/components/SearchBar';
