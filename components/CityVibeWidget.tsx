@@ -97,16 +97,16 @@ export default function CityVibeWidget() {
   }, []);
   
   // Get gradient colors based on vibe
-  const getGradientColors = (vibe: CityVibe) => {
+  const getGradientColors = (vibe: CityVibe): string[] => {
     switch (vibe) {
       case 'positive':
-        return ['#34D399', '#10B981'] as [string, string];
+        return ['#34D399', '#10B981'];
       case 'neutral':
-        return ['#60A5FA', '#3B82F6'] as [string, string];
+        return ['#60A5FA', '#3B82F6'];
       case 'negative':
-        return ['#F87171', '#EF4444'] as [string, string];
+        return ['#F87171', '#EF4444'];
       default:
-        return ['#60A5FA', '#3B82F6'] as [string, string];
+        return ['#60A5FA', '#3B82F6'];
     }
   };
   

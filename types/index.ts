@@ -1,157 +1,25 @@
-export interface EmergencyAlert {
-  id: string;
-  title: string;
-  message: string;
-  type: 'info' | 'warning' | 'danger';
-  active: boolean;
-  date: string;
-  link?: string;
-}
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-  bio?: string;
-  phone?: string;
-  address?: string;
-  website?: string;
-  createdAt: string;
-}
-
-export interface SuccessStory {
-  id: string;
-  title: string;
-  description: string;
-  beforeImage: string;
-  afterImage: string;
-  location: string;
-  date: string;
-  featured?: boolean;
-  likes?: number;
-  votes?: number;
-  comments?: Comment[] | number;
-}
-
-export interface Comment {
-  id: string;
-  userId: string;
-  userName: string;
-  text: string;
-  createdAt: string;
-}
-
-export interface Badge {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  category: string;
-  level?: number;
-  points?: number;
-  unlocked?: boolean;
-}
-
-export interface Weather {
-  temperature: number;
-  condition: string;
-  icon: string;
-  humidity: number;
-  windSpeed: number;
-  location: string;
-  forecast: WeatherForecast[];
-  lastUpdated: string;
-}
-
-export interface WeatherForecast {
-  day: string;
-  temperature: {
-    min: number;
-    max: number;
-  };
-  condition: string;
-  icon: string;
-}
-
-export interface Event {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  time: string;
-  location: string;
-  image: string;
-  category: string;
-  price: string;
-  featured?: boolean;
-}
-
-export interface Attraction {
-  id: string;
-  name: string;
-  description: string;
-  image: string;
-  location: string;
-  rating: number;
-  category: string;
-  openingHours: string;
-  price: string;
-  featured?: boolean;
-}
-
-export type AttractionCategory = 'landmark' | 'museum' | 'park' | 'entertainment' | 'shopping' | 'restaurant';
+export type NewsCategory = 'local' | 'business' | 'culture' | 'sports' | 'politics' | 'other';
 
 export interface NewsItem {
   id: string;
   title: string;
   summary: string;
-  description: string; // Added this field to fix the error
   content: string;
+  category: NewsCategory;
   image: string;
   date: string;
   author: string;
-  category: NewsCategory;
+  source?: string;
+  url?: string;
   featured?: boolean;
-  url?: string; // URL to link back to the original news source
+  locationName?: string;
   coordinates?: {
     latitude: number;
     longitude: number;
-  }; // Geographic coordinates for map display
-  locationName?: string; // Specific location name within Elbasan
+  };
 }
 
-export type NewsCategory = 'local' | 'business' | 'culture' | 'sports' | 'politics' | 'other';
-
-export interface TouristInfo {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  category: string;
-}
-
-// Tour-related types
-export interface Tour {
-  id: string;
-  title: string;
-  description: string;
-  category: TourCategory;
-  duration: string; // e.g., "2 hours"
-  distance: string; // e.g., "3.5 km"
-  difficulty: TourDifficulty;
-  image: string;
-  featured?: boolean;
-  rating?: number;
-  reviewCount?: number;
-  stops: TourStop[];
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export type TourCategory = 'historical' | 'cultural' | 'culinary' | 'nature' | 'hidden-gems' | 'nightlife';
-
+export type TourCategory = 'historical' | 'cultural' | 'culinary' | 'nature' | 'adventure';
 export type TourDifficulty = 'easy' | 'moderate' | 'challenging';
 
 export interface TourStop {
@@ -159,13 +27,30 @@ export interface TourStop {
   title: string;
   description: string;
   image: string;
-  audio?: string;
   coordinates: {
     latitude: number;
     longitude: number;
   };
-  duration: string; // Time to spend at this stop
-  order: number; // Order in the tour sequence
+  duration: string;
+  order: number;
   funFacts?: string[];
   localTips?: string[];
+}
+
+export interface Tour {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  duration: string;
+  distance: string;
+  difficulty: string;
+  image: string;
+  featured?: boolean;
+  rating: number;
+  reviewCount: number;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+  stops: TourStop[];
 }

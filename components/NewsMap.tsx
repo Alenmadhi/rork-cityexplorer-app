@@ -59,7 +59,7 @@ export default function NewsMap({ news, onSelectNews }: NewsMapProps) {
   const handleZoomIn = () => {
     if (mapRef.current) {
       mapRef.current.getCamera().then((camera) => {
-        if (camera.zoom !== undefined) {
+        if (camera.zoom) {
           camera.zoom += 1;
           mapRef.current?.animateCamera(camera, { duration: 300 });
         }
@@ -71,7 +71,7 @@ export default function NewsMap({ news, onSelectNews }: NewsMapProps) {
   const handleZoomOut = () => {
     if (mapRef.current) {
       mapRef.current.getCamera().then((camera) => {
-        if (camera.zoom !== undefined) {
+        if (camera.zoom) {
           camera.zoom -= 1;
           mapRef.current?.animateCamera(camera, { duration: 300 });
         }
