@@ -15,7 +15,7 @@ import { MapPin, List, Grid } from 'lucide-react-native';
 
 export default function NewsScreen() {
   const router = useRouter();
-  const { news, loading, error, refreshNews, lastUpdated } = useNews();
+  const { news, loading, error, refreshNews, lastUpdated, isLoading, refetch } = useNews();
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [refreshing, setRefreshing] = useState(false);

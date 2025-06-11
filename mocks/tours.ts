@@ -31,7 +31,7 @@ export const tours: Tour[] = [
         funFacts: [
           'The castle walls are 2 meters thick in some places',
           'The fortress originally had 26 towers, though only a few remain today',
-          'Local legend says there's a network of secret tunnels beneath the castle'
+          'Local legend says there is a network of secret tunnels beneath the castle'
         ],
         localTips: [
           'Visit early morning to avoid crowds and get the best photos',
