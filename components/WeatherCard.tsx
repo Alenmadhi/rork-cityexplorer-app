@@ -37,9 +37,6 @@ export function WeatherCard({ weather, onRefresh }: WeatherCardProps) {
     }
   };
   
-  // Ensure forecast exists and is an array
-  const forecast = weather?.forecast || [];
-  
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -81,14 +78,14 @@ export function WeatherCard({ weather, onRefresh }: WeatherCardProps) {
         </View>
       </View>
       
-      {forecast && forecast.length > 0 && (
+      {weather?.forecast && weather.forecast.length > 0 && (
         <View style={styles.forecastContainer}>
-          {forecast.map((day, index) => (
+          {weather.forecast.map((day, index) => (
             <View 
               key={index}
               style={[
                 styles.forecastDay,
-                index < forecast.length - 1 && styles.forecastDayBorder
+                index < weather.forecast.length - 1 && styles.forecastDayBorder
               ]}
             >
               <Text style={styles.forecastDayName}>{day.day}</Text>
