@@ -1,5 +1,23 @@
 import { NewsItem } from '@/types';
 
+// Elbasan city center coordinates
+const ELBASAN_CENTER = {
+  latitude: 41.1116,
+  longitude: 20.0822
+};
+
+// Generate slightly randomized coordinates around Elbasan
+const getRandomElbasanCoordinates = () => {
+  // Random offset between -0.01 and 0.01 (roughly 1km)
+  const latOffset = (Math.random() - 0.5) * 0.02;
+  const lngOffset = (Math.random() - 0.5) * 0.02;
+  
+  return {
+    latitude: ELBASAN_CENTER.latitude + latOffset,
+    longitude: ELBASAN_CENTER.longitude + lngOffset
+  };
+};
+
 export const news: NewsItem[] = [
   {
     id: '1',
@@ -10,7 +28,12 @@ export const news: NewsItem[] = [
     date: '2025-06-05T09:30:00Z',
     author: 'Elbasan News',
     category: 'local',
-    featured: true
+    featured: true,
+    coordinates: {
+      latitude: 41.1125,
+      longitude: 20.0833
+    },
+    locationName: 'Qemal Stafa Square'
   },
   {
     id: '2',
@@ -21,7 +44,12 @@ export const news: NewsItem[] = [
     date: '2025-06-04T14:15:00Z',
     author: 'Cultural Affairs Desk',
     category: 'culture',
-    featured: true
+    featured: true,
+    coordinates: {
+      latitude: 41.1097,
+      longitude: 20.0789
+    },
+    locationName: 'Elbasan Castle'
   },
   {
     id: '3',
@@ -31,7 +59,12 @@ export const news: NewsItem[] = [
     image: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1000&auto=format&fit=crop',
     date: '2025-06-03T11:45:00Z',
     author: 'Business Reporter',
-    category: 'business'
+    category: 'business',
+    coordinates: {
+      latitude: 41.1142,
+      longitude: 20.0867
+    },
+    locationName: 'Elbasan Innovation Hub'
   },
   {
     id: '4',
@@ -41,7 +74,12 @@ export const news: NewsItem[] = [
     image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=1000&auto=format&fit=crop',
     date: '2025-06-02T13:20:00Z',
     author: 'Education Correspondent',
-    category: 'local'
+    category: 'local',
+    coordinates: {
+      latitude: 41.1078,
+      longitude: 20.0798
+    },
+    locationName: 'Elbasan Public School'
   },
   {
     id: '5',
@@ -51,7 +89,12 @@ export const news: NewsItem[] = [
     image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1000&auto=format&fit=crop',
     date: '2025-06-01T22:10:00Z',
     author: 'Sports Desk',
-    category: 'sports'
+    category: 'sports',
+    coordinates: {
+      latitude: 41.1031,
+      longitude: 20.0875
+    },
+    locationName: 'Elbasan Arena'
   },
   {
     id: '6',
@@ -61,7 +104,12 @@ export const news: NewsItem[] = [
     image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=1000&auto=format&fit=crop',
     date: '2025-05-30T10:05:00Z',
     author: 'Health Reporter',
-    category: 'local'
+    category: 'local',
+    coordinates: {
+      latitude: 41.1167,
+      longitude: 20.0922
+    },
+    locationName: 'East Elbasan Health Center'
   },
   {
     id: '7',
@@ -71,7 +119,12 @@ export const news: NewsItem[] = [
     image: 'https://images.unsplash.com/photo-1551818255-e6e10975bc17?q=80&w=1000&auto=format&fit=crop',
     date: '2025-05-29T16:40:00Z',
     author: 'Economic Affairs',
-    category: 'business'
+    category: 'business',
+    coordinates: {
+      latitude: 41.1089,
+      longitude: 20.0845
+    },
+    locationName: 'Elbasan Convention Center'
   },
   {
     id: '8',
@@ -81,7 +134,12 @@ export const news: NewsItem[] = [
     image: 'https://images.unsplash.com/photo-1577720643272-265f09367456?q=80&w=1000&auto=format&fit=crop',
     date: '2025-05-28T12:15:00Z',
     author: 'Arts Correspondent',
-    category: 'culture'
+    category: 'culture',
+    coordinates: {
+      latitude: 41.1103,
+      longitude: 20.0812
+    },
+    locationName: 'Elbasan Art Gallery'
   },
   {
     id: '9',
@@ -91,7 +149,12 @@ export const news: NewsItem[] = [
     image: 'https://images.unsplash.com/photo-1465447142348-e9952c393450?q=80&w=1000&auto=format&fit=crop',
     date: '2025-05-27T09:50:00Z',
     author: 'City Hall Reporter',
-    category: 'politics'
+    category: 'politics',
+    coordinates: {
+      latitude: 41.1116,
+      longitude: 20.0822
+    },
+    locationName: 'Elbasan City Hall'
   },
   {
     id: '10',
@@ -101,7 +164,12 @@ export const news: NewsItem[] = [
     image: 'https://images.unsplash.com/photo-1588492069485-d05b56b2831d?q=80&w=1000&auto=format&fit=crop',
     date: '2025-05-26T20:30:00Z',
     author: 'Sports Editor',
-    category: 'sports'
+    category: 'sports',
+    coordinates: {
+      latitude: 41.1058,
+      longitude: 20.0802
+    },
+    locationName: 'Elbasan Sports Hall'
   },
   {
     id: '11',
@@ -111,7 +179,12 @@ export const news: NewsItem[] = [
     image: 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?q=80&w=1000&auto=format&fit=crop',
     date: '2025-05-25T14:00:00Z',
     author: 'Heritage Correspondent',
-    category: 'culture'
+    category: 'culture',
+    coordinates: {
+      latitude: 41.1092,
+      longitude: 20.0778
+    },
+    locationName: 'Sultan Bayezid II Mosque'
   },
   {
     id: '12',
@@ -121,6 +194,11 @@ export const news: NewsItem[] = [
     image: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?q=80&w=1000&auto=format&fit=crop',
     date: '2025-05-24T11:25:00Z',
     author: 'Urban Affairs',
-    category: 'local'
+    category: 'local',
+    coordinates: {
+      latitude: 41.1136,
+      longitude: 20.0852
+    },
+    locationName: 'Elbasan Bus Terminal'
   }
 ];

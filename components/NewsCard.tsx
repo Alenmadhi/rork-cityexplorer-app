@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity, Linking, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Calendar, ExternalLink } from 'lucide-react-native';
+import { Calendar, ExternalLink, MapPin } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { NewsItem } from '@/types';
 
@@ -43,17 +43,17 @@ export default function NewsCard({ news, featured = false }: NewsCardProps) {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'local':
-        return Colors.primary;
+        return Colors.categoryLocal;
       case 'business':
-        return Colors.success;
+        return Colors.categoryBusiness;
       case 'culture':
-        return Colors.warning;
+        return Colors.categoryCulture;
       case 'sports':
-        return '#FF6B6B';
+        return Colors.categorySports;
       case 'politics':
-        return '#6B66FF';
+        return Colors.categoryPolitics;
       default:
-        return Colors.textSecondary;
+        return Colors.categoryOther;
     }
   };
   
@@ -151,6 +151,15 @@ export default function NewsCard({ news, featured = false }: NewsCardProps) {
             <Text style={styles.date}>{formatDate(news.date)}</Text>
           </View>
           
+          {news.locationName && (
+            <View style={styles.locationContainer}>
+              <MapPin size={14} color={Colors.textSecondary} />
+              <Text style={styles.location} numberOfLines={1}>
+                {news.locationName}
+              </Text>
+            </View>
+          )}
+          
           <Text style={styles.author}>{news.author}</Text>
         </View>
       </View>
@@ -238,6 +247,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textSecondary,
     marginLeft: 4,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  location: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    marginLeft: 4,
+    maxWidth: 100,
   },
   author: {
     fontSize: 12,

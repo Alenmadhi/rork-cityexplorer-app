@@ -110,7 +110,12 @@ export interface NewsItem {
   author: string;
   category: NewsCategory;
   featured?: boolean;
-  url?: string; // Added URL to link back to the original news source
+  url?: string; // URL to link back to the original news source
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  }; // Geographic coordinates for map display
+  locationName?: string; // Specific location name within Elbasan
 }
 
 export type NewsCategory = 'local' | 'business' | 'culture' | 'sports' | 'politics' | 'other';

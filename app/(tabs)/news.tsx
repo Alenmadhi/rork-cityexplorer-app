@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, FlatList, RefreshControl, TouchableOpacity, Platform } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { Filter, RefreshCw } from 'lucide-react-native';
+import { Filter, RefreshCw, List, Map } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useNews } from '@/hooks/useNews';
 import { NewsItem, NewsCategory } from '@/types';
 import NewsCard from '@/components/NewsCard';
+import NewsMap from '@/components/NewsMap';
 import { SearchBar } from '@/components/SearchBar';
 import { SectionHeader } from '@/components/SectionHeader';
 import { LoadingIndicator } from '@/components/LoadingIndicator';
@@ -22,6 +23,8 @@ export default function NewsScreen() {
   const [filteredNews, setFilteredNews] = useState<NewsItem[]>([]);
   const [featuredNews, setFeaturedNews] = useState<NewsItem[]>([]);
   const [regularNews, setRegularNews] = useState<NewsItem[]>([]);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [selectedMapNews, setSelectedMapNews] = useState<NewsItem | null>(null);
   
   // Update filtered news when news, search query, or category changes
   useEffect(() => {
@@ -53,6 +56,16 @@ export default function NewsScreen() {
     setRefreshing(true);
     await refreshNews();
     setRefreshing(false);
+  };
+  
+  // Toggle view mode between list and map
+  const toggleViewMode = () => {
+    setViewMode(prev => prev === 'list' ? 'map' : 'list');
+  };
+  
+  // Handle news selection on map
+  const handleMapNewsSelect = (newsItem: NewsItem) => {
+    setSelectedMapNews(newsItem);
   };
   
   // Render news item
@@ -89,6 +102,17 @@ export default function NewsScreen() {
         >
           <Filter size={20} color={Colors.text} />
         </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.viewModeButton}
+          onPress={toggleViewMode}
+        >
+          {viewMode === 'list' ? (
+            <Map size={20} color={Colors.text} />
+          ) : (
+            <List size={20} color={Colors.text} />
+          )}
+        </TouchableOpacity>
       </View>
       
       {selectedCategory !== 'all' && (
@@ -106,7 +130,7 @@ export default function NewsScreen() {
         <LastUpdated date={lastUpdated.toString()} />
       )}
       
-      {featuredNews.length > 0 && (
+      {viewMode === 'list' && featuredNews.length > 0 && (
         <>
           <SectionHeader 
             title="Featured News" 
@@ -173,25 +197,37 @@ export default function NewsScreen() {
         }} 
       />
       
-      <FlatList
-        data={regularNews}
-        renderItem={renderNewsItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={[
-          styles.list,
-          regularNews.length === 0 && styles.emptyList
-        ]}
-        ListHeaderComponent={renderListHeader}
-        ListEmptyComponent={filteredNews.length === 0 ? renderEmptyComponent : null}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            colors={[Colors.primary]}
-            tintColor={Colors.primary}
-          />
-        }
-      />
+      {viewMode === 'list' ? (
+        <FlatList
+          data={regularNews}
+          renderItem={renderNewsItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={[
+            styles.list,
+            regularNews.length === 0 && styles.emptyList
+          ]}
+          ListHeaderComponent={renderListHeader}
+          ListEmptyComponent={filteredNews.length === 0 ? renderEmptyComponent : null}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={[Colors.primary]}
+              tintColor={Colors.primary}
+            />
+          }
+        />
+      ) : (
+        <View style={styles.mapContainer}>
+          {renderListHeader()}
+          <View style={styles.mapWrapper}>
+            <NewsMap 
+              news={filteredNews}
+              onSelectNews={handleMapNewsSelect}
+            />
+          </View>
+        </View>
+      )}
     </>
   );
 }
@@ -207,8 +243,21 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     marginBottom: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
   filterButton: {
+    width: 48,
+    height: 48,
+    backgroundColor: Colors.card,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  viewModeButton: {
     width: 48,
     height: 48,
     backgroundColor: Colors.card,
@@ -231,6 +280,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     marginBottom: 16,
+    marginHorizontal: 16,
   },
   filterText: {
     fontSize: 14,
@@ -247,5 +297,14 @@ const styles = StyleSheet.create({
   },
   featuredList: {
     paddingBottom: 16,
+    paddingHorizontal: 16,
+  },
+  mapContainer: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  mapWrapper: {
+    flex: 1,
+    marginTop: 8,
   },
 });

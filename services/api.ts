@@ -8,6 +8,12 @@ const GNEWS_API_URL = 'https://gnews.io/api/v4/search';
 // If you get a 401 error, you need to get a new API key from https://gnews.io/
 const GNEWS_API_KEY = '5f916c6339a945be8b6abc1b6264385a';
 
+// Elbasan city center coordinates
+const ELBASAN_CENTER = {
+  latitude: 41.1116,
+  longitude: 20.0822
+};
+
 /**
  * Fetch news related to Elbasan or Albania
  * Using GNews API to get real news about Elbasan/Albania
@@ -97,6 +103,12 @@ function mapArticlesToNewsItems(articles: any[]): NewsItem[] {
       category = 'local';
     }
     
+    // Generate random coordinates around Elbasan for the news item
+    const coordinates = getRandomElbasanCoordinates();
+    
+    // Try to extract a location name from the content
+    let locationName = extractLocationFromContent(article.title, article.description);
+    
     return {
       id: `${index + 1}`,
       title: article.title || 'No title available',
@@ -107,9 +119,51 @@ function mapArticlesToNewsItems(articles: any[]): NewsItem[] {
       author: article.source?.name || 'News Source',
       category,
       featured: index < 2, // First two articles are featured
-      url: article.url // Add the original URL to link back to the source
+      url: article.url, // Add the original URL to link back to the source
+      coordinates, // Add coordinates for map display
+      locationName: locationName || 'Elbasan' // Add location name
     };
   });
+}
+
+/**
+ * Generate random coordinates around Elbasan
+ */
+function getRandomElbasanCoordinates() {
+  // Random offset between -0.01 and 0.01 (roughly 1km)
+  const latOffset = (Math.random() - 0.5) * 0.02;
+  const lngOffset = (Math.random() - 0.5) * 0.02;
+  
+  return {
+    latitude: ELBASAN_CENTER.latitude + latOffset,
+    longitude: ELBASAN_CENTER.longitude + lngOffset
+  };
+}
+
+/**
+ * Try to extract a location name from the content
+ */
+function extractLocationFromContent(title: string, description: string): string | null {
+  const content = `${title || ''} ${description || ''}`;
+  
+  // List of common locations in Elbasan
+  const elbasanLocations = [
+    'Elbasan Castle', 'Qemal Stafa Square', 'Elbasan Arena', 
+    'Sultan Bayezid II Mosque', 'Elbasan Cathedral', 'Elbasan Park',
+    'Skampa Theater', 'Elbasan University', 'Elbasan Hospital',
+    'Elbasan Bus Terminal', 'Elbasan Market', 'Elbasan City Hall',
+    'Elbasan Sports Hall', 'Elbasan Art Gallery', 'Elbasan Library'
+  ];
+  
+  // Check if any of the locations are mentioned in the content
+  for (const location of elbasanLocations) {
+    if (content.includes(location)) {
+      return location;
+    }
+  }
+  
+  // If no specific location is found, return null
+  return null;
 }
 
 /**
