@@ -15,7 +15,7 @@ import { DailyChallengeWidget } from '@/components/DailyChallengeWidget';
 import NetInfo from '@react-native-community/netinfo';
 import { WeatherCard } from '@/components/WeatherCard';
 import { mockWeather } from '@/mocks/weather';
-import { SuccessStory } from '@/types';
+import { SuccessStory, EmergencyAlert } from '@/types';
 
 // Define proper types for location data
 type Coordinate = {
@@ -28,7 +28,7 @@ export default function HomeScreen() {
   const { alerts, fetchAlerts } = useAlertsStore();
   const { stories, fetchStories } = useSuccessStoriesStore();
   const { user } = useAuthStore();
-  const { userStats } = useGamificationStore();
+  const { userStats, userAchievements } = useGamificationStore();
   const { fetchChallenges } = useChallengesStore();
   
   const [isConnected, setIsConnected] = useState<boolean | null>(true);
@@ -117,11 +117,22 @@ export default function HomeScreen() {
   // Get active alerts - safely handle undefined alerts
   const activeAlerts = alerts ? alerts.filter(alert => alert.active) : [];
   
+  // Convert Alert[] to EmergencyAlert[]
+  const emergencyAlerts: EmergencyAlert[] = activeAlerts.map(alert => ({
+    id: alert.id,
+    title: alert.title,
+    message: alert.message,
+    type: alert.type,
+    active: alert.active,
+    date: alert.createdAt || new Date().toISOString(),
+    link: alert.link
+  }));
+  
   // Get featured success stories - safely handle undefined stories
   const featuredStories: SuccessStory[] = stories ? stories.filter(story => story.featured).slice(0, 1) : [];
   
-  // Get earned badges count - safely handle undefined userStats
-  const earnedBadgesCount = userStats ? userStats.userAchievements.length : 0;
+  // Get earned badges count - safely handle undefined userAchievements
+  const earnedBadgesCount = userAchievements ? userAchievements.length : 0;
 
   return (
     <>
@@ -133,8 +144,8 @@ export default function HomeScreen() {
       />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         {/* Emergency Alerts Carousel */}
-        {activeAlerts && activeAlerts.length > 0 && (
-          <EmergencyAlertCarousel alerts={activeAlerts} />
+        {emergencyAlerts.length > 0 && (
+          <EmergencyAlertCarousel alerts={emergencyAlerts} />
         )}
         
         {/* Offline Mode Banner */}
@@ -235,7 +246,7 @@ export default function HomeScreen() {
         )}
         
         {/* Success Story Spotlight */}
-        {featuredStories && featuredStories.length > 0 && (
+        {featuredStories.length > 0 && (
           <View style={styles.successStoriesContainer}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Fix of the Week</Text>

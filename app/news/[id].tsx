@@ -83,12 +83,7 @@ export default function NewsDetailScreen() {
       try {
         const shareOptions = {
           title: newsItem.title,
-          message: `${newsItem.title}
-
-${newsItem.summary}
-
-${newsItem.url || 'Elbasan City App'}`,
-          url: newsItem.url,
+          message: `${newsItem.title}\n\n${newsItem.summary}\n\n${newsItem.url || 'Elbasan City App'}`,
         };
         
         if (Platform.OS === 'web') {
@@ -96,7 +91,7 @@ ${newsItem.url || 'Elbasan City App'}`,
             await navigator.share({
               title: shareOptions.title,
               text: shareOptions.message,
-              url: shareOptions.url,
+              url: newsItem.url,
             });
           } else {
             console.log('Web share not supported');

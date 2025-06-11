@@ -9,7 +9,7 @@ export interface Alert {
   type: 'info' | 'warning' | 'danger';
   active: boolean;
   link?: string;
-  createdAt?: string;
+  createdAt: string;
   updatedAt?: string;
   affectedAreas?: string[];
   severity?: 'low' | 'medium' | 'high';
@@ -34,6 +34,7 @@ const mockAlerts: Alert[] = [
     type: "warning",
     active: true,
     link: "/alerts/1",
+    createdAt: new Date().toISOString(),
   },
   {
     id: "2",
@@ -42,6 +43,7 @@ const mockAlerts: Alert[] = [
     type: "info",
     active: true,
     link: "/alerts/2",
+    createdAt: new Date().toISOString(),
   },
   {
     id: "3",
@@ -50,6 +52,7 @@ const mockAlerts: Alert[] = [
     type: "info",
     active: true,
     link: "/alerts/3",
+    createdAt: new Date().toISOString(),
   },
 ];
 
