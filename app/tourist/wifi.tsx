@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, ScrollView, Text, Image, TouchableOpacity, Linking } from 'react-native';
+import { StyleSheet, View, ScrollView, Text, Image, TouchableOpacity, Linking, Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { TouristInfoCard } from '@/components/TouristInfoCard';
 import { touristInfo } from '@/mocks/tourist-info';

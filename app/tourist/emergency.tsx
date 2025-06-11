@@ -4,7 +4,7 @@ import { Stack } from 'expo-router';
 import { TouristInfoCard } from '@/components/TouristInfoCard';
 import { touristInfo } from '@/mocks/tourist-info';
 import Colors from '@/constants/colors';
-import { Phone, Hospital, Police, AlertTriangle } from 'lucide-react-native';
+import { Phone, Hospital, Shield, AlertTriangle } from 'lucide-react-native';
 
 export default function EmergencyScreen() {
   const emergencyInfo = touristInfo.filter(info => info.category === 'emergency');
@@ -98,7 +98,7 @@ export default function EmergencyScreen() {
           activeOpacity={0.7}
         >
           <View style={[styles.contactIcon, { backgroundColor: '#4A6CFA15' }]}>
-            <Police size={24} color="#4A6CFA" />
+            <Shield size={24} color="#4A6CFA" />
           </View>
           <View style={styles.contactInfo}>
             <Text style={styles.contactName}>Police</Text>
@@ -120,7 +120,7 @@ export default function EmergencyScreen() {
           activeOpacity={0.7}
         >
           <View style={[styles.contactIcon, { backgroundColor: '#ED8A1915' }]}>
-            <Police size={24} color="#ED8A19" />
+            <Shield size={24} color="#ED8A19" />
           </View>
           <View style={styles.contactInfo}>
             <Text style={styles.contactName}>Tourist Police</Text>
