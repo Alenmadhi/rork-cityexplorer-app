@@ -35,6 +35,7 @@ export interface TourStop {
   order: number;
   funFacts?: string[];
   localTips?: string[];
+  audio?: string; // URL to audio file for guided narration
 }
 
 export interface Tour {
@@ -53,4 +54,5 @@ export interface Tour {
   createdAt: string;
   updatedAt: string;
   stops: TourStop[];
+  mapImage?: string; // Optional custom map image
 }

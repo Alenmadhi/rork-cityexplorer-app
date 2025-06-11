@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, Image, TouchableOpacity, Platform, Dimensions } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, View, Text, ScrollView, Image, TouchableOpacity, Platform, Dimensions, Animated } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { Clock, MapPin, Star, Users, ChevronLeft, ChevronRight, Play, Pause, Info, ArrowLeft } from 'lucide-react-native';
+import { Clock, MapPin, Star, Users, ChevronLeft, ChevronRight, Play, Pause, Info, ArrowLeft, Map, List } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { tours } from '@/mocks/tours';
 import { TourStopCard } from '@/components/TourStopCard';
+import { TourMap } from '@/components/TourMap';
 import { Tour, TourStop } from '@/types';
 
 export default function TourDetailScreen() {
@@ -14,6 +15,11 @@ export default function TourDetailScreen() {
   const [activeStopIndex, setActiveStopIndex] = useState(0);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [showFunFacts, setShowFunFacts] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const scrollRef = useRef<ScrollView>(null);
+  
+  // Animation for view mode toggle
+  const slideAnim = useRef(new Animated.Value(0)).current;
   
   useEffect(() => {
     if (id) {
@@ -23,6 +29,15 @@ export default function TourDetailScreen() {
       }
     }
   }, [id]);
+  
+  useEffect(() => {
+    // Animate the view mode transition
+    Animated.timing(slideAnim, {
+      toValue: viewMode === 'list' ? 0 : 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [viewMode]);
   
   if (!tour) {
     return (
@@ -51,6 +66,16 @@ export default function TourDetailScreen() {
   const toggleAudio = () => {
     // In a real app, this would control audio playback
     setIsAudioPlaying(!isAudioPlaying);
+  };
+  
+  const handleStopPress = (index: number) => {
+    setActiveStopIndex(index);
+    setShowFunFacts(false);
+    
+    // Scroll to the active stop section
+    if (scrollRef.current && viewMode === 'list') {
+      scrollRef.current.scrollTo({ y: 400, animated: true });
+    }
   };
   
   const getCategoryColor = (category: string) => {
@@ -93,7 +118,11 @@ export default function TourDetailScreen() {
           headerBackTitle: 'Tours',
         }} 
       />
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        ref={scrollRef}
+        style={styles.container} 
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.imageContainer}>
           <Image 
             source={{ uri: tour.image }} 
@@ -171,6 +200,62 @@ export default function TourDetailScreen() {
           
           <View style={styles.divider} />
           
+          <View style={styles.viewToggleContainer}>
+            <Text style={styles.sectionTitle}>Tour Overview</Text>
+            
+            <View style={styles.viewToggleButtons}>
+              <TouchableOpacity 
+                style={[
+                  styles.viewToggleButton,
+                  viewMode === 'list' && styles.viewToggleButtonActive
+                ]}
+                onPress={() => setViewMode('list')}
+              >
+                <List 
+                  size={16} 
+                  color={viewMode === 'list' ? Colors.primary : Colors.textSecondary} 
+                />
+                <Text 
+                  style={[
+                    styles.viewToggleButtonText,
+                    viewMode === 'list' && styles.viewToggleButtonTextActive
+                  ]}
+                >
+                  List
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[
+                  styles.viewToggleButton,
+                  viewMode === 'map' && styles.viewToggleButtonActive
+                ]}
+                onPress={() => setViewMode('map')}
+              >
+                <Map 
+                  size={16} 
+                  color={viewMode === 'map' ? Colors.primary : Colors.textSecondary} 
+                />
+                <Text 
+                  style={[
+                    styles.viewToggleButtonText,
+                    viewMode === 'map' && styles.viewToggleButtonTextActive
+                  ]}
+                >
+                  Map
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          
+          {viewMode === 'map' && (
+            <TourMap 
+              stops={tour.stops} 
+              activeStopIndex={activeStopIndex}
+              onStopPress={handleStopPress}
+            />
+          )}
+          
           <Text style={styles.sectionTitle}>Current Stop</Text>
           
           <View style={styles.activeStopContainer}>
@@ -241,6 +326,14 @@ export default function TourDetailScreen() {
                   <Clock size={14} color={Colors.textSecondary} />
                   <Text style={styles.metaText}>{activeStop.duration}</Text>
                 </View>
+                
+                <TouchableOpacity 
+                  style={styles.locationButton}
+                  onPress={() => setViewMode('map')}
+                >
+                  <MapPin size={14} color={Colors.primary} />
+                  <Text style={styles.locationButtonText}>View on Map</Text>
+                </TouchableOpacity>
               </View>
               
               <Text style={styles.activeStopDescription}>{activeStop.description}</Text>
@@ -285,19 +378,20 @@ export default function TourDetailScreen() {
           
           <View style={styles.divider} />
           
-          <Text style={styles.sectionTitle}>Tour Stops</Text>
-          
-          {tour.stops.map((stop, index) => (
-            <TourStopCard 
-              key={stop.id}
-              stop={stop}
-              isActive={index === activeStopIndex}
-              onPress={() => {
-                setActiveStopIndex(index);
-                setShowFunFacts(false);
-              }}
-            />
-          ))}
+          {viewMode === 'list' && (
+            <>
+              <Text style={styles.sectionTitle}>Tour Stops</Text>
+              
+              {tour.stops.map((stop, index) => (
+                <TourStopCard 
+                  key={stop.id}
+                  stop={stop}
+                  isActive={index === activeStopIndex}
+                  onPress={() => handleStopPress(index)}
+                />
+              ))}
+            </>
+          )}
           
           <TouchableOpacity 
             style={styles.startTourButton}
@@ -306,6 +400,7 @@ export default function TourDetailScreen() {
               // For now, we'll just show the first stop
               setActiveStopIndex(0);
               setShowFunFacts(false);
+              setViewMode('map');
             }}
           >
             <Text style={styles.startTourButtonText}>Start Guided Tour</Text>
@@ -431,6 +526,37 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.border,
     marginVertical: 24,
   },
+  viewToggleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  viewToggleButtons: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  viewToggleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  viewToggleButtonActive: {
+    backgroundColor: `${Colors.primary}20`,
+  },
+  viewToggleButtonText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginLeft: 4,
+  },
+  viewToggleButtonTextActive: {
+    color: Colors.primary,
+    fontWeight: '500',
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -525,7 +651,18 @@ const styles = StyleSheet.create({
   activeStopMeta: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 12,
+  },
+  locationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  locationButtonText: {
+    fontSize: 14,
+    color: Colors.primary,
+    marginLeft: 4,
+    fontWeight: '500',
   },
   activeStopDescription: {
     fontSize: 15,
