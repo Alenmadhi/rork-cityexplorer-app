@@ -1,16 +1,23 @@
 import React from 'react';
-import { StyleSheet, View, ScrollView, Text, Image } from 'react-native';
-import { Stack } from 'expo-router';
+import { StyleSheet, View, ScrollView, Text, TouchableOpacity } from 'react-native';
+import { Stack, useRouter } from 'expo-router';
 import { TouristInfoCard } from '@/components/TouristInfoCard';
 import { touristInfo } from '@/mocks/tourist-info';
 import Colors from '@/constants/colors';
+import { MapPin, Navigation, Hotel, Wifi, HeartPulse, Info } from 'lucide-react-native';
 
 export default function TouristInfoScreen() {
+  const router = useRouter();
+  
   const transportationInfo = touristInfo.filter(info => info.category === 'transportation');
   const accommodationInfo = touristInfo.filter(info => info.category === 'accommodation');
   const emergencyInfo = touristInfo.filter(info => info.category === 'emergency');
   const tipsInfo = touristInfo.filter(info => info.category === 'tips');
   const wifiInfo = touristInfo.filter(info => info.category === 'wifi');
+
+  const navigateToCategory = (category: string) => {
+    router.push(`/tourist/${category}`);
+  };
 
   return (
     <>
@@ -61,38 +68,92 @@ export default function TouristInfoScreen() {
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Transportation</Text>
-          {transportationInfo.map(info => (
-            <TouristInfoCard key={info.id} info={info} />
-          ))}
+        <Text style={styles.categoriesTitle}>Information Categories</Text>
+        
+        <View style={styles.categoriesGrid}>
+          <TouchableOpacity 
+            style={styles.categoryCard}
+            onPress={() => navigateToCategory('transportation')}
+          >
+            <View style={[styles.categoryIcon, { backgroundColor: `${Colors.primary}15` }]}>
+              <Navigation size={24} color={Colors.primary} />
+            </View>
+            <Text style={styles.categoryText}>Transportation</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.categoryCard}
+            onPress={() => navigateToCategory('accommodation')}
+          >
+            <View style={[styles.categoryIcon, { backgroundColor: `${Colors.secondary}15` }]}>
+              <Hotel size={24} color={Colors.secondary} />
+            </View>
+            <Text style={styles.categoryText}>Accommodation</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.categoryCard}
+            onPress={() => navigateToCategory('emergency')}
+          >
+            <View style={[styles.categoryIcon, { backgroundColor: '#FF585815' }]}>
+              <HeartPulse size={24} color="#FF5858" />
+            </View>
+            <Text style={styles.categoryText}>Emergency</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.categoryCard}
+            onPress={() => navigateToCategory('wifi')}
+          >
+            <View style={[styles.categoryIcon, { backgroundColor: '#4A6CFA15' }]}>
+              <Wifi size={24} color="#4A6CFA" />
+            </View>
+            <Text style={styles.categoryText}>Wi-Fi Access</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.categoryCard}
+            onPress={() => navigateToCategory('tips')}
+          >
+            <View style={[styles.categoryIcon, { backgroundColor: '#38B2AC15' }]}>
+              <Info size={24} color="#38B2AC" />
+            </View>
+            <Text style={styles.categoryText}>Local Tips</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.categoryCard}
+            onPress={() => {}}
+          >
+            <View style={[styles.categoryIcon, { backgroundColor: '#ED8A1915' }]}>
+              <MapPin size={24} color="#ED8A19" />
+            </View>
+            <Text style={styles.categoryText}>Map</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Accommodation</Text>
-          {accommodationInfo.map(info => (
-            <TouristInfoCard key={info.id} info={info} />
+          <Text style={styles.sectionTitle}>Featured Information</Text>
+          {transportationInfo.slice(0, 1).map(info => (
+            <TouristInfoCard 
+              key={info.id} 
+              info={info} 
+              onPress={() => navigateToCategory('transportation')}
+            />
           ))}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Emergency Services</Text>
-          {emergencyInfo.map(info => (
-            <TouristInfoCard key={info.id} info={info} />
+          {accommodationInfo.slice(0, 1).map(info => (
+            <TouristInfoCard 
+              key={info.id} 
+              info={info}
+              onPress={() => navigateToCategory('accommodation')}
+            />
           ))}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Wi-Fi Access</Text>
-          {wifiInfo.map(info => (
-            <TouristInfoCard key={info.id} info={info} />
-          ))}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Local Tips</Text>
-          {tipsInfo.map(info => (
-            <TouristInfoCard key={info.id} info={info} />
+          {emergencyInfo.slice(0, 1).map(info => (
+            <TouristInfoCard 
+              key={info.id} 
+              info={info}
+              onPress={() => navigateToCategory('emergency')}
+            />
           ))}
         </View>
       </ScrollView>
@@ -170,6 +231,49 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: Colors.text,
+  },
+  categoriesTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 16,
+  },
+  categoriesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  categoryCard: {
+    width: '31%',
+    backgroundColor: Colors.card,
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+    marginBottom: 12,
+    ...Platform.OS !== 'web' ? {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 2,
+      elevation: 2,
+    } : {
+      boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1)',
+    },
+  },
+  categoryIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  categoryText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: Colors.text,
+    textAlign: 'center',
   },
   section: {
     marginBottom: 24,

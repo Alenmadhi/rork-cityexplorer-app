@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
+import { useRouter } from 'expo-router';
 import { TouristInfo } from '@/types';
 import Colors from '@/constants/colors';
 import { 
@@ -9,9 +10,17 @@ import {
 
 interface TouristInfoCardProps {
   info: TouristInfo;
+  onPress?: () => void;
+  showChevron?: boolean;
 }
 
-export const TouristInfoCard: React.FC<TouristInfoCardProps> = ({ info }) => {
+export const TouristInfoCard: React.FC<TouristInfoCardProps> = ({ 
+  info, 
+  onPress,
+  showChevron = true
+}) => {
+  const router = useRouter();
+
   const getIcon = () => {
     switch (info.icon) {
       case 'train':
@@ -31,19 +40,26 @@ export const TouristInfoCard: React.FC<TouristInfoCardProps> = ({ info }) => {
     }
   };
 
+  const handlePress = () => {
+    if (onPress) {
+      onPress();
+    }
+  };
+
   return (
     <TouchableOpacity 
       style={styles.container} 
       activeOpacity={0.8}
+      onPress={handlePress}
     >
       <View style={styles.iconContainer}>
         {getIcon()}
       </View>
       <View style={styles.content}>
         <Text style={styles.title}>{info.title}</Text>
-        <Text style={styles.description} numberOfLines={2}>{info.description}</Text>
+        <Text style={styles.description} numberOfLines={showChevron ? 2 : undefined}>{info.description}</Text>
       </View>
-      <ChevronRight size={20} color={Colors.textSecondary} />
+      {showChevron && <ChevronRight size={20} color={Colors.textSecondary} />}
     </TouchableOpacity>
   );
 };
