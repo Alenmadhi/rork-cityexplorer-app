@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Home, Calendar, MapPin, Heart, Newspaper, User, AlertTriangle, Briefcase } from 'lucide-react-native';
+import { Home, Calendar, Newspaper, Map, Heart, ShoppingBag } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 
 export default function TabsLayout() {
@@ -10,76 +10,62 @@ export default function TabsLayout() {
         tabBarActiveTintColor: Colors.primary,
         tabBarInactiveTintColor: Colors.textSecondary,
         tabBarStyle: {
-          borderTopWidth: 1,
+          backgroundColor: Colors.background,
           borderTopColor: Colors.border,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '500',
         },
         headerStyle: {
           backgroundColor: Colors.background,
         },
-        headerTitleStyle: {
-          fontWeight: 'bold',
-          color: Colors.text,
-        },
+        headerTintColor: Colors.text,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <Home size={22} color={color} />,
+          tabBarIcon: ({ color }) => <Home size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="events"
         options={{
           title: 'Events',
-          tabBarIcon: ({ color }) => <Calendar size={22} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="attractions"
-        options={{
-          title: 'Attractions',
-          tabBarIcon: ({ color }) => <MapPin size={22} color={color} />,
+          tabBarIcon: ({ color }) => <Calendar size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="news"
         options={{
           title: 'News',
-          tabBarIcon: ({ color }) => <Newspaper size={22} color={color} />,
+          tabBarIcon: ({ color }) => <Newspaper size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="report-issue"
+        name="tourist"
         options={{
-          title: 'Report',
-          tabBarIcon: ({ color }) => <AlertTriangle size={22} color={color} />,
+          title: 'Tourist',
+          tabBarIcon: ({ color }) => <Map size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="attractions"
+        options={{
+          title: 'Attractions',
+          tabBarIcon: ({ color }) => <Map size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="services"
         options={{
           title: 'Services',
-          tabBarIcon: ({ color }) => <Briefcase size={22} color={color} />,
+          tabBarIcon: ({ color }) => <ShoppingBag size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="favorites"
         options={{
           title: 'Favorites',
-          tabBarIcon: ({ color }) => <Heart size={22} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color }) => <User size={22} color={color} />,
+          tabBarIcon: ({ color }) => <Heart size={24} color={color} />,
         }}
       />
     </Tabs>
