@@ -16,6 +16,7 @@ import NetInfo from '@react-native-community/netinfo';
 import { WeatherCard } from '@/components/WeatherCard';
 import { mockWeather } from '@/mocks/weather';
 import { SuccessStory, EmergencyAlert } from '@/types';
+import { useWeather } from '@/hooks/useWeather';
 
 // Define proper types for location data
 type Coordinate = {
@@ -30,12 +31,12 @@ export default function HomeScreen() {
   const { user } = useAuthStore();
   const { userStats, userAchievements, fetchBadges } = useGamificationStore();
   const { fetchChallenges } = useChallengesStore();
+  const { weather, refreshWeather } = useWeather();
   
   const [isConnected, setIsConnected] = useState<boolean | null>(true);
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [nearbyIssues, setNearbyIssues] = useState<any[]>([]);
   const [locationPermission, setLocationPermission] = useState<boolean | null>(null);
-  const [weather, setWeather] = useState(mockWeather);
   
   // Use useCallback to prevent unnecessary re-renders
   const fetchNearbyIssues = useCallback(async () => {
@@ -109,11 +110,6 @@ export default function HomeScreen() {
     };
   }, [fetchAlerts, fetchStories, fetchChallenges, fetchNearbyIssues]);
   
-  const refreshWeather = () => {
-    // In a real app, this would fetch fresh weather data
-    setWeather({...mockWeather});
-  };
-  
   // Get active alerts - safely handle undefined alerts
   const activeAlerts = alerts ? alerts.filter(alert => alert.active) : [];
   
@@ -144,7 +140,7 @@ export default function HomeScreen() {
       />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         {/* Emergency Alerts Carousel */}
-        {emergencyAlerts.length > 0 && (
+        {emergencyAlerts && emergencyAlerts.length > 0 && (
           <EmergencyAlertCarousel alerts={emergencyAlerts} />
         )}
         
@@ -246,7 +242,7 @@ export default function HomeScreen() {
         )}
         
         {/* Success Story Spotlight */}
-        {featuredStories.length > 0 && (
+        {featuredStories && featuredStories.length > 0 && (
           <View style={styles.successStoriesContainer}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Fix of the Week</Text>

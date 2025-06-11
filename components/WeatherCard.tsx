@@ -81,23 +81,25 @@ export function WeatherCard({ weather, onRefresh }: WeatherCardProps) {
         </View>
       </View>
       
-      <View style={styles.forecastContainer}>
-        {forecast.map((day, index) => (
-          <View 
-            key={index}
-            style={[
-              styles.forecastDay,
-              index < forecast.length - 1 && styles.forecastDayBorder
-            ]}
-          >
-            <Text style={styles.forecastDayName}>{day.day}</Text>
-            {renderWeatherIcon(day.icon, 24)}
-            <Text style={styles.forecastTemperature}>
-              {day.temperature.min}° / {day.temperature.max}°
-            </Text>
-          </View>
-        ))}
-      </View>
+      {forecast && forecast.length > 0 && (
+        <View style={styles.forecastContainer}>
+          {forecast.map((day, index) => (
+            <View 
+              key={index}
+              style={[
+                styles.forecastDay,
+                index < forecast.length - 1 && styles.forecastDayBorder
+              ]}
+            >
+              <Text style={styles.forecastDayName}>{day.day}</Text>
+              {renderWeatherIcon(day.icon, 24)}
+              <Text style={styles.forecastTemperature}>
+                {day.temperature.min}° / {day.temperature.max}°
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
     </View>
   );
 }

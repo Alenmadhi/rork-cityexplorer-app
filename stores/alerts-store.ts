@@ -59,7 +59,7 @@ const mockAlerts: Alert[] = [
 export const useAlertsStore = create<AlertsState>()(
   persist(
     (set) => ({
-      alerts: [],
+      alerts: mockAlerts, // Initialize with mock data to prevent undefined
       isLoading: false,
       error: null,
       

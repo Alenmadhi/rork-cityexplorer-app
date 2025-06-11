@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Weather } from '@/types';
 import { fetchWeather } from '@/services/api';
-import { weatherData as mockWeather } from '@/mocks/weather';
+import { mockWeather } from '@/mocks/weather';
 
 export function useWeather() {
   const [weather, setWeather] = useState<Weather>(mockWeather);
@@ -32,22 +32,53 @@ export function useWeather() {
     }
   };
 
+  // Use a separate effect for initial loading to prevent state updates before mount
   useEffect(() => {
-    loadWeather();
+    let isMounted = true;
+    
+    const initWeather = async () => {
+      try {
+        const fetchedWeather = await fetchWeather();
+        if (isMounted) {
+          setWeather(fetchedWeather);
+          setLastUpdated(new Date());
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('Error loading initial weather:', err);
+        if (isMounted) {
+          // Fall back to mock data on error
+          setWeather(mockWeather);
+          setError("Couldn't connect to weather service. Showing sample weather instead.");
+          setLoading(false);
+        }
+      }
+    };
+    
+    initWeather();
     
     // Set up periodic refresh every hour
     const refreshInterval = setInterval(() => {
-      loadWeather();
+      if (isMounted) {
+        loadWeather();
+      }
     }, 60 * 60 * 1000);
     
-    return () => clearInterval(refreshInterval);
+    return () => {
+      isMounted = false;
+      clearInterval(refreshInterval);
+    };
   }, []);
+
+  const refreshWeather = () => {
+    loadWeather(true);
+  };
 
   return {
     weather,
     loading,
     error,
     lastUpdated,
-    refreshWeather: () => loadWeather(true),
+    refreshWeather,
   };
 }

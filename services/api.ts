@@ -1,31 +1,36 @@
 import { Event, NewsItem, Weather, WeatherForecast } from '@/types';
+import { news as mockNews } from '@/mocks/news';
 
 // Base URLs for API requests
 const WEATHER_API_URL = 'https://api.open-meteo.com/v1/forecast';
 const GNEWS_API_URL = 'https://gnews.io/api/v4/search';
-const GNEWS_API_KEY = '5f916c6339a945be8b6abc1b6264385a'; // Using the API key from user's message
+// Note: This API key might be expired or invalid, so we'll handle errors gracefully
+const GNEWS_API_KEY = '5f916c6339a945be8b6abc1b6264385a';
 
 /**
  * Fetch news related to Elbasan or Albania
  * Using GNews API to get real news about Elbasan/Albania
+ * Falls back to mock data if API fails
  */
 export async function fetchNews(): Promise<NewsItem[]> {
   try {
     console.log('Fetching news from GNews API...');
+    
     // Try to fetch news about Elbasan from GNews API
     const response = await fetch(
       `${GNEWS_API_URL}?q=Elbasan&lang=en&country=al&max=10&token=${GNEWS_API_KEY}`
     );
     
     if (!response.ok) {
+      console.log(`GNews API error: ${response.status}`);
       throw new Error(`Failed to fetch news: ${response.status}`);
     }
     
     const data = await response.json();
-    console.log('GNews API response:', data);
     
-    if (!data.articles || data.articles.length === 0) {
+    if (!data.articles || !Array.isArray(data.articles) || data.articles.length === 0) {
       console.log('No Elbasan-specific news found, trying Albania news');
+      
       // If no Elbasan-specific news, try Albania news
       const albaniaResponse = await fetch(
         `${GNEWS_API_URL}?q=Albania&lang=en&country=al&max=10&token=${GNEWS_API_KEY}`
@@ -36,9 +41,8 @@ export async function fetchNews(): Promise<NewsItem[]> {
       }
       
       const albaniaData = await albaniaResponse.json();
-      console.log('Albania news response:', albaniaData);
       
-      if (!albaniaData.articles || albaniaData.articles.length === 0) {
+      if (!albaniaData.articles || !Array.isArray(albaniaData.articles) || albaniaData.articles.length === 0) {
         throw new Error('No articles found in any source');
       }
       
@@ -51,7 +55,6 @@ export async function fetchNews(): Promise<NewsItem[]> {
     
     // Fall back to mock data
     console.log('Falling back to mock news data');
-    const mockNews = require('@/mocks/news').news;
     
     // Randomize which news items are "featured" to simulate changing content
     return mockNews.map((item: NewsItem) => ({
@@ -108,14 +111,19 @@ function mapArticlesToNewsItems(articles: any[]): NewsItem[] {
  * Make dates appear more recent for demo purposes
  */
 function randomizeDate(dateString: string): string {
-  const originalDate = new Date(dateString);
-  const now = new Date();
-  
-  // Set the date to be between the original date and now
-  const timeDiff = now.getTime() - originalDate.getTime();
-  const randomTime = originalDate.getTime() + Math.random() * timeDiff;
-  
-  return new Date(randomTime).toISOString();
+  try {
+    const originalDate = new Date(dateString);
+    const now = new Date();
+    
+    // Set the date to be between the original date and now
+    const timeDiff = now.getTime() - originalDate.getTime();
+    const randomTime = originalDate.getTime() + Math.random() * timeDiff;
+    
+    return new Date(randomTime).toISOString();
+  } catch (error) {
+    // If date parsing fails, return current date
+    return new Date().toISOString();
+  }
 }
 
 /**
@@ -129,7 +137,7 @@ export async function fetchWeather(): Promise<Weather> {
     );
     
     if (!response.ok) {
-      throw new Error('Failed to fetch weather');
+      throw new Error(`Failed to fetch weather: ${response.status}`);
     }
     
     const data = await response.json();
