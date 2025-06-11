@@ -40,7 +40,7 @@ export const useSuccessStoriesStore = create<SuccessStoriesState>()(
       voteForStory: (id: string) => {
         set((state) => ({
           stories: state.stories.map(story => 
-            story.id === id ? { ...story, votes: story.votes + 1 } : story
+            story.id === id ? { ...story, votes: story.votes ? story.votes + 1 : 1 } : story
           )
         }));
       },
