@@ -3,8 +3,10 @@ import { StyleSheet, View, ScrollView, Text, TouchableOpacity, Platform } from '
 import { Stack, useRouter } from 'expo-router';
 import { TouristInfoCard } from '@/components/TouristInfoCard';
 import { touristInfo } from '@/mocks/tourist-info';
+import { tours } from '@/mocks/tours';
+import { TourCard } from '@/components/TourCard';
 import Colors from '@/constants/colors';
-import { MapPin, Navigation, Hotel, Wifi, HeartPulse, Info } from 'lucide-react-native';
+import { MapPin, Navigation, Hotel, Wifi, HeartPulse, Info, Map } from 'lucide-react-native';
 
 export default function TouristInfoScreen() {
   const router = useRouter();
@@ -14,6 +16,9 @@ export default function TouristInfoScreen() {
   const emergencyInfo = touristInfo.filter(info => info.category === 'emergency');
   const tipsInfo = touristInfo.filter(info => info.category === 'tips');
   const wifiInfo = touristInfo.filter(info => info.category === 'wifi');
+  
+  // Get featured tours
+  const featuredTours = tours.filter(tour => tour.featured).slice(0, 2);
 
   const navigateToCategory = (category: string) => {
     router.push(`/tourist/${category}`);
@@ -35,6 +40,31 @@ export default function TouristInfoScreen() {
         <View style={styles.welcomeContainer}>
           <Text style={styles.welcomeText}>Visitor's Guide to</Text>
           <Text style={styles.cityName}>Elbasan, Albania</Text>
+        </View>
+        
+        <View style={styles.toursContainer}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Explore Like a Local</Text>
+            <TouchableOpacity onPress={() => router.push('/tourist/tours')}>
+              <Text style={styles.viewAllText}>View All</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <Text style={styles.toursDescription}>
+            Discover Elbasan through guided tours with stories, facts, and local tips
+          </Text>
+          
+          {featuredTours.map(tour => (
+            <TourCard key={tour.id} tour={tour} featured={true} />
+          ))}
+          
+          <TouchableOpacity 
+            style={styles.viewAllToursButton}
+            onPress={() => router.push('/tourist/tours')}
+          >
+            <Map size={18} color={Colors.primary} />
+            <Text style={styles.viewAllToursText}>Explore All Tours</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.infoBox}>
@@ -123,12 +153,12 @@ export default function TouristInfoScreen() {
           
           <TouchableOpacity 
             style={styles.categoryCard}
-            onPress={() => {}}
+            onPress={() => navigateToCategory('tours')}
           >
             <View style={[styles.categoryIcon, { backgroundColor: '#ED8A1915' }]}>
-              <MapPin size={24} color="#ED8A19" />
+              <Map size={24} color="#ED8A19" />
             </View>
-            <Text style={styles.categoryText}>Map</Text>
+            <Text style={styles.categoryText}>Tours</Text>
           </TouchableOpacity>
         </View>
 
@@ -181,6 +211,48 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: Colors.text,
+  },
+  toursContainer: {
+    backgroundColor: `${Colors.primary}05`,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.text,
+  },
+  viewAllText: {
+    fontSize: 14,
+    color: Colors.primary,
+  },
+  toursDescription: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  viewAllToursButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    backgroundColor: `${Colors.primary}15`,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  viewAllToursText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.primary,
+    marginLeft: 8,
   },
   infoBox: {
     backgroundColor: Colors.card,
@@ -282,11 +354,5 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 12,
   },
 });

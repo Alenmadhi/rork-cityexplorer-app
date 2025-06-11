@@ -100,6 +100,8 @@ export interface Attraction {
   featured?: boolean;
 }
 
+export type AttractionCategory = 'landmark' | 'museum' | 'park' | 'entertainment' | 'shopping' | 'restaurant';
+
 export interface NewsItem {
   id: string;
   title: string;
@@ -127,4 +129,43 @@ export interface TouristInfo {
   description: string;
   icon: string;
   category: string;
+}
+
+// Tour-related types
+export interface Tour {
+  id: string;
+  title: string;
+  description: string;
+  category: TourCategory;
+  duration: string; // e.g., "2 hours"
+  distance: string; // e.g., "3.5 km"
+  difficulty: TourDifficulty;
+  image: string;
+  featured?: boolean;
+  rating?: number;
+  reviewCount?: number;
+  stops: TourStop[];
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type TourCategory = 'historical' | 'cultural' | 'culinary' | 'nature' | 'hidden-gems' | 'nightlife';
+
+export type TourDifficulty = 'easy' | 'moderate' | 'challenging';
+
+export interface TourStop {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  audio?: string;
+  coordinates: {
+    latitude: number;
+    longitude: number;
+  };
+  duration: string; // Time to spend at this stop
+  order: number; // Order in the tour sequence
+  funFacts?: string[];
+  localTips?: string[];
 }

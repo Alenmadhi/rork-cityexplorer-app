@@ -7,7 +7,7 @@ const Colors = {
   info: '#3498db',
   background: '#f8f9fa',
   card: '#ffffff',
-  cardDarker: '#f1f3f5', // Added this color
+  cardDarker: '#f1f3f5',
   text: '#212529',
   textSecondary: '#6c757d',
   border: '#dee2e6',

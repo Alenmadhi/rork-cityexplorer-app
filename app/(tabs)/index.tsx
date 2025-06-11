@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Platform, Image } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { AlertTriangle, Camera, WifiOff, Award, MapPin, Wrench } from 'lucide-react-native';
+import { AlertTriangle, Camera, WifiOff, Award, MapPin, Wrench, Map } from 'lucide-react-native';
 import * as Location from 'expo-location';
 import Colors from '@/constants/colors';
 import { EmergencyAlertCarousel } from '@/components/EmergencyAlertCarousel';
@@ -14,9 +14,9 @@ import { SuccessStoryCard } from '@/components/SuccessStoryCard';
 import { DailyChallengeWidget } from '@/components/DailyChallengeWidget';
 import NetInfo from '@react-native-community/netinfo';
 import { WeatherCard } from '@/components/WeatherCard';
-import { mockWeather } from '@/mocks/weather';
 import { SuccessStory, EmergencyAlert } from '@/types';
 import { useWeather } from '@/hooks/useWeather';
+import { tours } from '@/mocks/tours';
 
 // Define proper types for location data
 type Coordinate = {
@@ -145,6 +145,9 @@ export default function HomeScreen() {
   
   // Get earned badges count - safely handle undefined userAchievements
   const earnedBadgesCount = userAchievements ? userAchievements.length : 0;
+  
+  // Get featured tours
+  const featuredTours = tours.filter(tour => tour.featured).slice(0, 1);
 
   return (
     <>
@@ -172,6 +175,39 @@ export default function HomeScreen() {
         
         {/* Weather Card */}
         <WeatherCard weather={weather} onRefresh={refreshWeather} />
+        
+        {/* Tours Promo */}
+        {featuredTours.length > 0 && (
+          <View style={styles.toursPromoContainer}>
+            <View style={styles.toursPromoHeader}>
+              <Text style={styles.toursPromoTitle}>Explore Like a Local</Text>
+              <TouchableOpacity onPress={() => router.push('/tourist/tours')}>
+                <Text style={styles.viewAllText}>View All</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.tourCard}>
+              <Image 
+                source={{ uri: featuredTours[0].image }} 
+                style={styles.tourImage}
+                resizeMode="cover"
+              />
+              <View style={styles.tourOverlay}>
+                <Text style={styles.tourTitle}>{featuredTours[0].title}</Text>
+                <Text style={styles.tourDescription} numberOfLines={2}>
+                  {featuredTours[0].description}
+                </Text>
+                <TouchableOpacity 
+                  style={styles.tourButton}
+                  onPress={() => router.push(`/tourist/tours/${featuredTours[0].id}`)}
+                >
+                  <Map size={16} color="#fff" />
+                  <Text style={styles.tourButtonText}>View Tour</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
         
         {/* Daily Challenge Widget */}
         <DailyChallengeWidget />
@@ -213,12 +249,12 @@ export default function HomeScreen() {
             
             <TouchableOpacity 
               style={styles.quickActionButton}
-              onPress={() => router.push('/challenges')}
+              onPress={() => router.push('/tourist/tours')}
             >
               <View style={[styles.quickActionIcon, { backgroundColor: `${Colors.success}20` }]}>
-                <Award size={24} color={Colors.success} />
+                <Map size={24} color={Colors.success} />
               </View>
-              <Text style={styles.quickActionText}>Challenges</Text>
+              <Text style={styles.quickActionText}>Explore Tours</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -369,6 +405,85 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 14,
     fontWeight: '500',
+  },
+  toursPromoContainer: {
+    marginBottom: 24,
+    backgroundColor: `${Colors.primary}05`,
+    borderRadius: 12,
+    padding: 16,
+  },
+  toursPromoHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  toursPromoTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.text,
+  },
+  viewAllText: {
+    fontSize: 14,
+    color: Colors.primary,
+  },
+  tourCard: {
+    height: 180,
+    borderRadius: 12,
+    overflow: 'hidden',
+    position: 'relative',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+      },
+    }),
+  },
+  tourImage: {
+    width: '100%',
+    height: '100%',
+  },
+  tourOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+  },
+  tourTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  tourDescription: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.9)',
+    marginBottom: 12,
+  },
+  tourButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+  },
+  tourButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+    marginLeft: 6,
   },
   quickActionsContainer: {
     marginBottom: 24,

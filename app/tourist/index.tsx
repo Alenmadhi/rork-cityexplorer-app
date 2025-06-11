@@ -3,8 +3,10 @@ import { StyleSheet, View, ScrollView, Text, Image, TouchableOpacity, Platform }
 import { useRouter } from 'expo-router';
 import { TouristInfoCard } from '@/components/TouristInfoCard';
 import { touristInfo } from '@/mocks/tourist-info';
+import { tours } from '@/mocks/tours';
+import { TourCard } from '@/components/TourCard';
 import Colors from '@/constants/colors';
-import { MapPin, Navigation, Hotel, Wifi, HeartPulse, Info, Camera, Coffee, Utensils } from 'lucide-react-native';
+import { MapPin, Navigation, Hotel, Wifi, HeartPulse, Info, Camera, Coffee, Utensils, Map } from 'lucide-react-native';
 
 export default function TouristIndexScreen() {
   const router = useRouter();
@@ -12,6 +14,7 @@ export default function TouristIndexScreen() {
   const transportationInfo = touristInfo.filter(info => info.category === 'transportation');
   const accommodationInfo = touristInfo.filter(info => info.category === 'accommodation');
   const emergencyInfo = touristInfo.filter(info => info.category === 'emergency');
+  const featuredTours = tours.filter(tour => tour.featured).slice(0, 2);
 
   const navigateToCategory = (category: string) => {
     router.push(`/tourist/${category}`);
@@ -41,6 +44,31 @@ export default function TouristIndexScreen() {
         <Text style={styles.cityDescription}>
           A historic city with Ottoman architecture, traditional cuisine, and warm hospitality
         </Text>
+      </View>
+
+      <View style={styles.toursPromoContainer}>
+        <View style={styles.toursPromoHeader}>
+          <Text style={styles.toursPromoTitle}>Explore Like a Local</Text>
+          <TouchableOpacity onPress={() => router.push('/tourist/tours')}>
+            <Text style={styles.viewAllText}>View All Tours</Text>
+          </TouchableOpacity>
+        </View>
+        
+        <Text style={styles.toursPromoSubtitle}>
+          Discover Elbasan through guided tours with stories, facts, and local tips
+        </Text>
+        
+        {featuredTours.map(tour => (
+          <TourCard key={tour.id} tour={tour} featured={true} />
+        ))}
+        
+        <TouchableOpacity 
+          style={styles.viewAllToursButton}
+          onPress={() => router.push('/tourist/tours')}
+        >
+          <Map size={18} color={Colors.primary} />
+          <Text style={styles.viewAllToursText}>Explore All Tours</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.quickLinksContainer}>
@@ -222,12 +250,12 @@ export default function TouristIndexScreen() {
           
           <TouchableOpacity 
             style={styles.categoryCard}
-            onPress={() => {}}
+            onPress={() => navigateToCategory('tours')}
           >
             <View style={[styles.categoryIcon, { backgroundColor: '#ED8A1915' }]}>
-              <MapPin size={24} color="#ED8A19" />
+              <Map size={24} color="#ED8A19" />
             </View>
-            <Text style={styles.categoryText}>Map</Text>
+            <Text style={styles.categoryText}>Tours</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -312,6 +340,48 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: Colors.textSecondary,
     lineHeight: 22,
+  },
+  toursPromoContainer: {
+    padding: 16,
+    paddingTop: 8,
+    backgroundColor: `${Colors.primary}05`,
+    marginBottom: 16,
+  },
+  toursPromoHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  toursPromoTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.text,
+  },
+  viewAllText: {
+    fontSize: 14,
+    color: Colors.primary,
+  },
+  toursPromoSubtitle: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  viewAllToursButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    backgroundColor: `${Colors.primary}15`,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  viewAllToursText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.primary,
+    marginLeft: 8,
   },
   quickLinksContainer: {
     padding: 16,

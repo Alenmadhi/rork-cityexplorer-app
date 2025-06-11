@@ -35,6 +35,18 @@ export default function TouristLayout() {
           title: 'Local Tips',
         }} 
       />
+      <Stack.Screen 
+        name="tours" 
+        options={{ 
+          title: 'Explore Tours',
+        }} 
+      />
+      <Stack.Screen 
+        name="tours/[id]" 
+        options={{ 
+          title: 'Tour Details',
+        }} 
+      />
     </Stack>
   );
 }
