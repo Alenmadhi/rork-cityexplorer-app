@@ -151,7 +151,7 @@ ${newsItem.url || 'Elbasan City App'}`,
         }} 
       />
       
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <Image 
           source={{ uri: newsItem.image }} 
           style={styles.image}
@@ -191,7 +191,7 @@ ${newsItem.url || 'Elbasan City App'}`,
           
           <Text style={styles.author}>By {newsItem.author}</Text>
           
-          <Text style={styles.content}>{newsItem.content}</Text>
+          <Text style={styles.articleContent}>{newsItem.content}</Text>
           
           {newsItem.url && (
             <TouchableOpacity 
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  content: {
+  contentContainer: {
     paddingBottom: 40,
   },
   loadingContainer: {
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     color: Colors.text,
     marginBottom: 24,
   },
-  content: {
+  articleContent: {
     fontSize: 16,
     color: Colors.text,
     lineHeight: 24,
