@@ -6,10 +6,12 @@ import { Weather } from '@/types';
 
 interface WeatherCardProps {
   weather: Weather;
+  loading?: boolean;
+  error?: string | null;
   onRefresh?: () => void;
 }
 
-export function WeatherCard({ weather, onRefresh }: WeatherCardProps) {
+export function WeatherCard({ weather, loading, error, onRefresh }: WeatherCardProps) {
   // Format date
   const formatDate = (dateString: string) => {
     try {
@@ -49,8 +51,9 @@ export function WeatherCard({ weather, onRefresh }: WeatherCardProps) {
           <TouchableOpacity 
             style={styles.refreshButton}
             onPress={onRefresh}
+            disabled={loading}
           >
-            <RefreshCw size={16} color={Colors.primary} />
+            <RefreshCw size={16} color={loading ? Colors.textSecondary : Colors.primary} />
           </TouchableOpacity>
         )}
       </View>
@@ -77,6 +80,12 @@ export function WeatherCard({ weather, onRefresh }: WeatherCardProps) {
           </View>
         </View>
       </View>
+      
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
       
       {weather?.forecast && weather.forecast.length > 0 && (
         <View style={styles.forecastContainer}>
@@ -184,6 +193,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.textSecondary,
     marginLeft: 4,
+  },
+  errorContainer: {
+    backgroundColor: `${Colors.error}15`,
+    padding: 8,
+    borderRadius: 4,
+    marginBottom: 16,
+  },
+  errorText: {
+    fontSize: 14,
+    color: Colors.error,
   },
   forecastContainer: {
     flexDirection: 'row',

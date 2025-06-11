@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, Image, TouchableOpacity, Linking, Platform } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, Image, TouchableOpacity, Linking, Platform, Share as RNShare } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { MapPin, Clock, Star, Phone, Mail, Globe, Tag, Calendar, Navigation, Share2, ArrowLeft } from 'lucide-react-native';
 import Colors from '@/constants/colors';
@@ -85,14 +85,22 @@ export default function ShopDetailScreen() {
   };
   
   const handleShare = () => {
-    const message = `Check out ${shop.name} in Elbasan!\n\n${shop.description}\n\nAddress: ${shop.address}`;
+    const message = `Check out ${shop.name} in Elbasan!
+
+${shop.description}
+
+Address: ${shop.address}`;
+    
+    let finalMessage = message;
     
     if (shop.promotion) {
-      message.concat(`\n\nSpecial Offer: ${shop.promotion.title} - ${shop.promotion.description}`);
+      finalMessage = finalMessage.concat(`
+
+Special Offer: ${shop.promotion.title} - ${shop.promotion.description}`);
     }
     
-    Share.share({
-      message,
+    RNShare.share({
+      message: finalMessage,
       title: shop.name
     });
   };

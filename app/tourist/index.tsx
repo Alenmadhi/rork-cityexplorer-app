@@ -8,7 +8,7 @@ import { useWeather } from '@/hooks/useWeather';
 
 export default function TouristInfoScreen() {
   const router = useRouter();
-  const { weather, isLoading, error, refetch } = useWeather();
+  const { weather, loading, error, refreshWeather } = useWeather();
   
   const touristOptions = [
     {
@@ -100,7 +100,7 @@ export default function TouristInfoScreen() {
       
       {weather && (
         <View style={styles.weatherContainer}>
-          <WeatherCard weather={weather} isLoading={isLoading} error={error} onRefresh={refetch} />
+          <WeatherCard weather={weather} loading={loading} error={error} onRefresh={refreshWeather} />
         </View>
       )}
       
