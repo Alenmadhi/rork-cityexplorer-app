@@ -28,7 +28,7 @@ export default function HomeScreen() {
   const { alerts, fetchAlerts } = useAlertsStore();
   const { stories, fetchStories } = useSuccessStoriesStore();
   const { user } = useAuthStore();
-  const { userStats, userAchievements } = useGamificationStore();
+  const { userStats, userAchievements, fetchBadges } = useGamificationStore();
   const { fetchChallenges } = useChallengesStore();
   
   const [isConnected, setIsConnected] = useState<boolean | null>(true);

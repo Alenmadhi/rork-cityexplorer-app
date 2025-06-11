@@ -37,6 +37,7 @@ interface GamificationState {
   badges: Badge[];
   isLoading: boolean;
   error: string | null;
+  fetchBadges: () => Promise<void>;
   updateStats: (stats: Partial<UserStats>) => void;
   unlockBadge: (badgeId: string) => void;
   checkForNewBadges: () => Promise<string[]>;
@@ -155,6 +156,23 @@ export const useGamificationStore = create<GamificationState>()(
       badges: mockBadges,
       isLoading: false,
       error: null,
+      
+      fetchBadges: async () => {
+        set({ isLoading: true, error: null });
+        
+        try {
+          // Simulate API call with a delay
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Use mock data
+          set({ badges: mockBadges, isLoading: false });
+        } catch (error) {
+          set({ 
+            error: error instanceof Error ? error.message : 'Failed to fetch badges', 
+            isLoading: false 
+          });
+        }
+      },
       
       updateStats: (stats: Partial<UserStats>) => {
         set((state) => {

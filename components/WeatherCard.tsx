@@ -37,12 +37,15 @@ export function WeatherCard({ weather, onRefresh }: WeatherCardProps) {
     }
   };
   
+  // Ensure forecast exists and is an array
+  const forecast = weather?.forecast || [];
+  
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.locationContainer}>
-          <Text style={styles.location}>{weather.location}</Text>
-          <Text style={styles.updatedAt}>Updated at {formatDate(weather.lastUpdated)}</Text>
+          <Text style={styles.location}>{weather?.location || 'Unknown Location'}</Text>
+          <Text style={styles.updatedAt}>Updated at {formatDate(weather?.lastUpdated || new Date().toISOString())}</Text>
         </View>
         
         {onRefresh && (
@@ -57,34 +60,34 @@ export function WeatherCard({ weather, onRefresh }: WeatherCardProps) {
       
       <View style={styles.currentWeather}>
         <View style={styles.temperatureContainer}>
-          {renderWeatherIcon(weather.icon)}
-          <Text style={styles.temperature}>{weather.temperature}°</Text>
+          {renderWeatherIcon(weather?.icon || 'sun')}
+          <Text style={styles.temperature}>{weather?.temperature || '--'}°</Text>
         </View>
         
         <View style={styles.detailsContainer}>
-          <Text style={styles.condition}>{weather.condition}</Text>
+          <Text style={styles.condition}>{weather?.condition || 'Unknown'}</Text>
           
           <View style={styles.detailRow}>
             <View style={styles.detailItem}>
               <Wind size={16} color={Colors.textSecondary} />
-              <Text style={styles.detailText}>{weather.windSpeed} km/h</Text>
+              <Text style={styles.detailText}>{weather?.windSpeed || '--'} km/h</Text>
             </View>
             
             <View style={styles.detailItem}>
               <Cloud size={16} color={Colors.textSecondary} />
-              <Text style={styles.detailText}>{weather.humidity}% humidity</Text>
+              <Text style={styles.detailText}>{weather?.humidity || '--'}% humidity</Text>
             </View>
           </View>
         </View>
       </View>
       
       <View style={styles.forecastContainer}>
-        {weather.forecast.map((day, index) => (
+        {forecast.map((day, index) => (
           <View 
             key={index}
             style={[
               styles.forecastDay,
-              index < weather.forecast.length - 1 && styles.forecastDayBorder
+              index < forecast.length - 1 && styles.forecastDayBorder
             ]}
           >
             <Text style={styles.forecastDayName}>{day.day}</Text>
