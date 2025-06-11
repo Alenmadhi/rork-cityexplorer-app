@@ -1,78 +1,86 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, ScrollView } from 'react-native';
-import { Stack } from 'expo-router';
-import { ShoppingBag, Tag, Search } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image } from 'react-native';
+import { Stack, useRouter } from 'expo-router';
+import { ShoppingBag, Tag, Filter, MapPin } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { shops } from '@/mocks/shops';
-import { ShopCard } from '@/components/ShopCard';
-import { PromotionCard } from '@/components/PromotionCard';
 import { SearchBar } from '@/components/SearchBar';
-import { Shop, ShopCategory } from '@/types';
+import { Shop } from '@/types';
 
 export default function ShopsScreen() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<ShopCategory | 'all'>('all');
-  const [featuredShops, setFeaturedShops] = useState<Shop[]>([]);
-  const [promotions, setPromotions] = useState<Shop[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showPromotionsOnly, setShowPromotionsOnly] = useState(false);
   
-  useEffect(() => {
-    // Get featured shops
-    const featured = shops.filter(shop => shop.featured);
-    setFeaturedShops(featured);
-    
-    // Get shops with promotions
-    const withPromotions = shops.filter(shop => shop.promotion);
-    setPromotions(withPromotions);
-  }, []);
+  // Extract unique categories
+  const categories = Array.from(new Set(shops.map(shop => shop.category)));
   
-  const categories: Array<ShopCategory | 'all'> = [
-    'all', 'souvenirs', 'food', 'clothing', 'books', 'sports'
-  ];
-  
+  // Filter shops based on search, category, and promotions
   const filteredShops = shops.filter(shop => {
-    const matchesSearch = shop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          shop.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = 
+      shop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      shop.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      shop.category.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesCategory = selectedCategory === 'all' || shop.category === selectedCategory;
+    const matchesCategory = selectedCategory ? shop.category === selectedCategory : true;
+    const matchesPromotions = showPromotionsOnly ? !!shop.promotion : true;
     
-    return matchesSearch && matchesCategory;
+    return matchesSearch && matchesCategory && matchesPromotions;
   });
   
-  const renderCategoryButton = (category: ShopCategory | 'all') => {
-    const isSelected = category === selectedCategory;
-    const displayName = category === 'all' ? 'All Shops' : category.charAt(0).toUpperCase() + category.slice(1);
-    
-    return (
-      <TouchableOpacity
-        key={category}
-        style={[
-          styles.categoryButton,
-          isSelected && styles.selectedCategoryButton
-        ]}
-        onPress={() => setSelectedCategory(category)}
-      >
-        <Text 
-          style={[
-            styles.categoryButtonText,
-            isSelected && styles.selectedCategoryButtonText
-          ]}
-        >
-          {displayName}
-        </Text>
-      </TouchableOpacity>
-    );
+  const handleShopPress = (shopId: string) => {
+    router.push(`/tourist/shops/${shopId}`);
+  };
+  
+  const toggleCategory = (category: string) => {
+    setSelectedCategory(prev => prev === category ? null : category);
+  };
+  
+  const togglePromotionsFilter = () => {
+    setShowPromotionsOnly(prev => !prev);
   };
   
   const renderShopItem = ({ item }: { item: Shop }) => (
-    <ShopCard shop={item} />
-  );
-  
-  const renderFeaturedShop = (shop: Shop) => (
-    <ShopCard key={shop.id} shop={shop} compact />
-  );
-  
-  const renderPromotionItem = ({ item }: { item: Shop }) => (
-    <PromotionCard shop={item} />
+    <TouchableOpacity 
+      style={styles.shopCard}
+      onPress={() => handleShopPress(item.id)}
+    >
+      <Image 
+        source={{ uri: item.image }} 
+        style={styles.shopImage}
+        resizeMode="cover"
+      />
+      
+      <View style={styles.shopContent}>
+        <View>
+          <Text style={styles.shopName}>{item.name}</Text>
+          <View style={styles.shopMeta}>
+            <View style={styles.categoryBadge}>
+              <Text style={styles.categoryText}>
+                {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
+              </Text>
+            </View>
+            <Text style={styles.shopRating}>★ {item.rating.toFixed(1)}</Text>
+          </View>
+          
+          <View style={styles.locationContainer}>
+            <MapPin size={14} color={Colors.textSecondary} />
+            <Text style={styles.locationText} numberOfLines={1}>{item.address}</Text>
+          </View>
+        </View>
+        
+        {item.promotion && (
+          <View style={styles.promotionBadge}>
+            <Text style={styles.promotionText}>
+              {item.promotion.discountPercent 
+                ? `${item.promotion.discountPercent}% OFF` 
+                : 'Special Offer'}
+            </Text>
+          </View>
+        )}
+      </View>
+    </TouchableOpacity>
   );
   
   return (
@@ -85,110 +93,98 @@ export default function ShopsScreen() {
       />
       <View style={styles.container}>
         <SearchBar 
+          placeholder="Search shops..."
           value={searchQuery}
           onChangeText={setSearchQuery}
-          placeholder="Search shops..."
         />
         
-        <ScrollView 
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoriesContainer}
-        >
-          {categories.map(renderCategoryButton)}
-        </ScrollView>
-        
-        {searchQuery === '' && selectedCategory === 'all' ? (
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {featuredShops.length > 0 && (
-              <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                  <ShoppingBag size={20} color={Colors.primary} />
-                  <Text style={styles.sectionTitle}>Featured Shops</Text>
-                </View>
-                
-                <ScrollView 
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.featuredContainer}
+        <View style={styles.filtersContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesContainer}>
+            {categories.map(category => (
+              <TouchableOpacity
+                key={category}
+                style={[
+                  styles.categoryButton,
+                  selectedCategory === category && styles.selectedCategoryButton
+                ]}
+                onPress={() => toggleCategory(category)}
+              >
+                <Text 
+                  style={[
+                    styles.categoryButtonText,
+                    selectedCategory === category && styles.selectedCategoryButtonText
+                  ]}
                 >
-                  {featuredShops.map(renderFeaturedShop)}
-                </ScrollView>
-              </View>
-            )}
-            
-            {promotions.length > 0 && (
-              <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                  <Tag size={20} color={Colors.primary} />
-                  <Text style={styles.sectionTitle}>Special Offers</Text>
-                </View>
-                
-                <FlatList
-                  data={promotions.slice(0, 3)}
-                  renderItem={renderPromotionItem}
-                  keyExtractor={(item) => `promo-${item.id}`}
-                  scrollEnabled={false}
-                  contentContainerStyle={styles.promotionsContainer}
-                />
-                
-                {promotions.length > 3 && (
-                  <TouchableOpacity 
-                    style={styles.viewAllButton}
-                    onPress={() => setSelectedCategory('all')}
-                  >
-                    <Text style={styles.viewAllText}>View All Offers</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
-            
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <ShoppingBag size={20} color={Colors.primary} />
-                <Text style={styles.sectionTitle}>All Shops</Text>
-              </View>
-              
-              <FlatList
-                data={shops}
-                renderItem={renderShopItem}
-                keyExtractor={(item) => item.id}
-                scrollEnabled={false}
-                contentContainerStyle={styles.shopsContainer}
-              />
-            </View>
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </ScrollView>
+          
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              showPromotionsOnly && styles.activeFilterButton
+            ]}
+            onPress={togglePromotionsFilter}
+          >
+            <Tag size={16} color={showPromotionsOnly ? '#fff' : Colors.primary} />
+            <Text 
+              style={[
+                styles.filterButtonText,
+                showPromotionsOnly && styles.activeFilterButtonText
+              ]}
+            >
+              Promotions
+            </Text>
+          </TouchableOpacity>
+        </View>
+        
+        {filteredShops.length > 0 ? (
+          <FlatList
+            data={filteredShops}
+            renderItem={renderShopItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.shopsList}
+            showsVerticalScrollIndicator={false}
+          />
         ) : (
-          <>
-            {filteredShops.length > 0 ? (
-              <FlatList
-                data={filteredShops}
-                renderItem={renderShopItem}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.shopsContainer}
-              />
-            ) : (
-              <View style={styles.emptyContainer}>
-                <Search size={48} color={`${Colors.text}30`} />
-                <Text style={styles.emptyTitle}>No shops found</Text>
-                <Text style={styles.emptyMessage}>Try adjusting your search or filters</Text>
-              </View>
-            )}
-          </>
+          <View style={styles.emptyContainer}>
+            <ShoppingBag size={48} color={Colors.textSecondary} />
+            <Text style={styles.emptyText}>No shops found</Text>
+            <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
+            
+            <TouchableOpacity 
+              style={styles.resetButton}
+              onPress={() => {
+                setSearchQuery('');
+                setSelectedCategory(null);
+                setShowPromotionsOnly(false);
+              }}
+            >
+              <Text style={styles.resetButtonText}>Reset Filters</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
     </>
   );
 }
 
+import { ScrollView } from 'react-native';
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
   },
+  filtersContainer: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
   categoriesContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
   },
   categoryButton: {
     paddingHorizontal: 16,
@@ -206,62 +202,128 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   selectedCategoryButtonText: {
-    color: Colors.background,
+    color: '#fff',
   },
-  section: {
-    marginBottom: 24,
-  },
-  sectionHeader: {
+  filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginLeft: 8,
-  },
-  featuredContainer: {
-    paddingHorizontal: 16,
-  },
-  promotionsContainer: {
-    paddingHorizontal: 16,
-  },
-  shopsContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 24,
-  },
-  viewAllButton: {
-    alignSelf: 'center',
     paddingVertical: 8,
-    paddingHorizontal: 16,
     borderRadius: 20,
     backgroundColor: `${Colors.primary}15`,
-    marginTop: 8,
+    marginTop: 12,
+    alignSelf: 'center',
   },
-  viewAllText: {
+  activeFilterButton: {
+    backgroundColor: Colors.primary,
+  },
+  filterButtonText: {
     fontSize: 14,
     color: Colors.primary,
     fontWeight: '500',
+    marginLeft: 6,
+  },
+  activeFilterButtonText: {
+    color: '#fff',
+  },
+  shopsList: {
+    padding: 16,
+  },
+  shopCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  shopImage: {
+    width: '100%',
+    height: 180,
+  },
+  shopContent: {
+    padding: 16,
+    position: 'relative',
+  },
+  shopName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 8,
+  },
+  shopMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  categoryBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    backgroundColor: `${Colors.primary}15`,
+    borderRadius: 4,
+  },
+  categoryText: {
+    fontSize: 12,
+    color: Colors.primary,
+    fontWeight: '500',
+  },
+  shopRating: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: Colors.text,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  locationText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginLeft: 4,
+  },
+  promotionBadge: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 4,
+  },
+  promotionText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    paddingHorizontal: 32,
   },
-  emptyTitle: {
+  emptyText: {
     fontSize: 18,
     fontWeight: 'bold',
     color: Colors.text,
     marginTop: 16,
     marginBottom: 8,
   },
-  emptyMessage: {
+  emptySubtext: {
     fontSize: 14,
     color: Colors.textSecondary,
     textAlign: 'center',
+    marginBottom: 24,
+  },
+  resetButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    backgroundColor: Colors.primary,
+    borderRadius: 8,
+  },
+  resetButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });

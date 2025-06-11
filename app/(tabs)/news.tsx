@@ -3,19 +3,14 @@ import { StyleSheet, View, FlatList, Text, TouchableOpacity, RefreshControl } fr
 import { Stack, useRouter } from 'expo-router';
 import NewsCard from '@/components/NewsCard';
 import { SearchBar } from '@/components/SearchBar';
-import { SectionHeader } from '@/components/SectionHeader';
-import { LoadingIndicator } from '@/components/LoadingIndicator';
-import { ErrorMessage } from '@/components/ErrorMessage';
-import { LastUpdated } from '@/components/LastUpdated';
-import { EmptyState } from '@/components/EmptyState';
-import CityVibeWidget from '@/components/CityVibeWidget';
 import { useNews } from '@/hooks/useNews';
 import Colors from '@/constants/colors';
 import { MapPin, List, Grid } from 'lucide-react-native';
+import { NewsItem } from '@/types';
 
 export default function NewsScreen() {
   const router = useRouter();
-  const { news, loading, error, refreshNews, lastUpdated, isLoading, refetch } = useNews();
+  const { news, loading, error, refreshNews, lastUpdated } = useNews();
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [refreshing, setRefreshing] = useState(false);
@@ -49,13 +44,21 @@ export default function NewsScreen() {
   };
 
   // Render news item
-  const renderNewsItem = ({ item }: { item: any }) => (
+  const renderNewsItem = ({ item }: { item: NewsItem }) => (
     <NewsCard 
       news={item} 
       onPress={() => handleNewsPress(item.id)} 
       viewMode={viewMode}
     />
   );
+
+  if (loading && news.length === 0) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading news...</Text>
+      </View>
+    );
+  }
 
   return (
     <>
@@ -92,29 +95,29 @@ export default function NewsScreen() {
           </View>
         </View>
 
-        {/* City Vibe Widget */}
-        <CityVibeWidget />
-
-        {loading ? (
-          <LoadingIndicator message="Loading news..." />
-        ) : error ? (
-          <ErrorMessage 
-            message="Failed to load news. Please try again." 
-            onRetry={refreshNews} 
-          />
+        {error ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={refreshNews}>
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
         ) : filteredNews.length === 0 ? (
-          <EmptyState 
-            title="No News Found"
-            message={
-              searchQuery 
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No News Found</Text>
+            <Text style={styles.emptySubtext}>
+              {searchQuery 
                 ? "No news found matching your search." 
-                : "No news available at the moment."
-            }
-            icon="newspaper"
-          />
+                : "No news available at the moment."}
+            </Text>
+          </View>
         ) : (
           <>
-            <LastUpdated date={lastUpdated ? lastUpdated.toISOString() : new Date().toISOString()} />
+            {lastUpdated && (
+              <Text style={styles.lastUpdated}>
+                Last updated: {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </Text>
+            )}
             <FlatList
               data={filteredNews}
               renderItem={renderNewsItem}
@@ -132,9 +135,9 @@ export default function NewsScreen() {
               numColumns={viewMode === 'grid' ? 2 : 1}
               key={viewMode} // Force re-render when view mode changes
               ListHeaderComponent={
-                <SectionHeader 
-                  title="Latest News" 
-                />
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>Latest News</Text>
+                </View>
               }
             />
           </>
@@ -148,6 +151,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: Colors.textSecondary,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -181,5 +194,59 @@ const styles = StyleSheet.create({
   newsList: {
     padding: 16,
     paddingTop: 8,
+  },
+  sectionHeader: {
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.text,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  errorText: {
+    fontSize: 16,
+    color: Colors.error,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    backgroundColor: Colors.primary,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+  },
+  lastUpdated: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 8,
   },
 });

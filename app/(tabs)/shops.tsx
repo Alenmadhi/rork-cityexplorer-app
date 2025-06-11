@@ -1,7 +1,7 @@
-import React from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ShoppingBag, Tag, Search } from 'lucide-react-native';
+import { ShoppingBag, Tag, Search, MapPin, Star } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { shops } from '@/mocks/shops';
 import { SearchBar } from '@/components/SearchBar';
@@ -9,6 +9,7 @@ import { Shop } from '@/types';
 
 export default function ShopsTabScreen() {
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Get featured shops
   const featuredShops = shops.filter(shop => shop.featured);
@@ -16,12 +17,26 @@ export default function ShopsTabScreen() {
   // Get shops with promotions
   const promotions = shops.filter(shop => shop.promotion);
   
+  // Filter shops based on search
+  const filteredShops = shops.filter(shop => 
+    searchQuery === '' || 
+    shop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    shop.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
   const handleShopPress = (shopId: string) => {
     router.push(`/tourist/shops/${shopId}`);
   };
   
   const handleViewAllPress = () => {
     router.push('/tourist/shops');
+  };
+  
+  const handleSearchSubmit = () => {
+    router.push({
+      pathname: '/tourist/shops',
+      params: { query: searchQuery }
+    });
   };
   
   const renderShopItem = ({ item }: { item: Shop }) => (
@@ -40,7 +55,10 @@ export default function ShopsTabScreen() {
         <Text style={styles.shopCategory}>{item.category.charAt(0).toUpperCase() + item.category.slice(1)}</Text>
         
         <View style={styles.shopMeta}>
-          <Text style={styles.shopRating}>★ {item.rating.toFixed(1)}</Text>
+          <View style={styles.ratingContainer}>
+            <Star size={14} color="#FFD700" fill="#FFD700" />
+            <Text style={styles.shopRating}>{item.rating.toFixed(1)}</Text>
+          </View>
           
           {item.promotion && (
             <View style={styles.promotionBadge}>
@@ -60,12 +78,13 @@ export default function ShopsTabScreen() {
     <View style={styles.container}>
       <SearchBar 
         placeholder="Search shops in Elbasan..."
-        onChangeText={() => {}}
-        onSubmit={() => router.push('/tourist/shops')}
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        onSubmit={handleSearchSubmit}
       />
       
       <FlatList
-        data={shops}
+        data={filteredShops}
         renderItem={renderShopItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
@@ -83,29 +102,29 @@ export default function ShopsTabScreen() {
                   <Text style={styles.sectionTitle}>Featured Shops</Text>
                 </View>
                 
-                <FlatList
+                <ScrollView
                   horizontal
-                  data={featuredShops}
-                  renderItem={({ item }) => (
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.featuredList}
+                >
+                  {featuredShops.map(shop => (
                     <TouchableOpacity 
+                      key={`featured-${shop.id}`}
                       style={styles.featuredCard}
-                      onPress={() => handleShopPress(item.id)}
+                      onPress={() => handleShopPress(shop.id)}
                     >
                       <Image 
-                        source={{ uri: item.image }} 
+                        source={{ uri: shop.image }} 
                         style={styles.featuredImage}
                         resizeMode="cover"
                       />
                       <View style={styles.featuredOverlay}>
-                        <Text style={styles.featuredName}>{item.name}</Text>
-                        <Text style={styles.featuredCategory}>{item.category}</Text>
+                        <Text style={styles.featuredName}>{shop.name}</Text>
+                        <Text style={styles.featuredCategory}>{shop.category}</Text>
                       </View>
                     </TouchableOpacity>
-                  )}
-                  keyExtractor={(item) => `featured-${item.id}`}
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.featuredList}
-                />
+                  ))}
+                </ScrollView>
               </View>
             )}
             
@@ -116,28 +135,41 @@ export default function ShopsTabScreen() {
                   <Text style={styles.sectionTitle}>Special Offers</Text>
                 </View>
                 
-                <TouchableOpacity 
-                  style={styles.promotionCard}
-                  onPress={() => handleShopPress(promotions[0].id)}
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.promotionsList}
                 >
-                  <View style={styles.promotionContent}>
-                    <Text style={styles.promotionTitle}>{promotions[0].promotion?.title}</Text>
-                    <Text style={styles.promotionDescription} numberOfLines={2}>
-                      {promotions[0].promotion?.description}
-                    </Text>
-                    <Text style={styles.promotionShopName}>
-                      {promotions[0].name} • {promotions[0].category}
-                    </Text>
-                  </View>
-                  
-                  {promotions[0].promotion?.discountPercent && (
-                    <View style={styles.discountBadge}>
-                      <Text style={styles.discountText}>
-                        {promotions[0].promotion.discountPercent}% OFF
-                      </Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
+                  {promotions.slice(0, 3).map(shop => (
+                    <TouchableOpacity 
+                      key={`promotion-${shop.id}`}
+                      style={styles.promotionCard}
+                      onPress={() => handleShopPress(shop.id)}
+                    >
+                      <Image 
+                        source={{ uri: shop.image }} 
+                        style={styles.promotionImage}
+                        resizeMode="cover"
+                      />
+                      <View style={styles.promotionContent}>
+                        <Text style={styles.promotionTitle} numberOfLines={1}>
+                          {shop.promotion?.title}
+                        </Text>
+                        <Text style={styles.promotionShopName} numberOfLines={1}>
+                          {shop.name}
+                        </Text>
+                        
+                        {shop.promotion?.discountPercent && (
+                          <View style={styles.discountBadge}>
+                            <Text style={styles.discountText}>
+                              {shop.promotion.discountPercent}% OFF
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
                 
                 <TouchableOpacity 
                   style={styles.viewAllButton}
@@ -232,47 +264,50 @@ const styles = StyleSheet.create({
     opacity: 0.8,
     textTransform: 'capitalize',
   },
+  promotionsList: {
+    paddingLeft: 16,
+    paddingRight: 8,
+  },
   promotionCard: {
-    backgroundColor: `${Colors.primary}10`,
+    width: 250,
+    height: 180,
     borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 16,
+    overflow: 'hidden',
+    marginRight: 12,
+    backgroundColor: Colors.card,
     borderWidth: 1,
-    borderColor: `${Colors.primary}30`,
-    position: 'relative',
+    borderColor: Colors.border,
+  },
+  promotionImage: {
+    width: '100%',
+    height: 120,
   },
   promotionContent: {
-    paddingRight: 60,
+    padding: 12,
+    position: 'relative',
   },
   promotionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: Colors.primary,
-    marginBottom: 8,
-  },
-  promotionDescription: {
-    fontSize: 14,
-    color: Colors.text,
-    marginBottom: 8,
-    lineHeight: 20,
+    marginBottom: 4,
   },
   promotionShopName: {
     fontSize: 14,
     color: Colors.textSecondary,
-    textTransform: 'capitalize',
   },
   discountBadge: {
     position: 'absolute',
-    top: 16,
-    right: 16,
+    top: 12,
+    right: 12,
     backgroundColor: Colors.primary,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 4,
   },
   discountText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   viewAllButton: {
@@ -296,6 +331,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     flexDirection: 'row',
     height: 100,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   shopImage: {
     width: 100,
@@ -322,10 +359,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   shopRating: {
     fontSize: 14,
     fontWeight: 'bold',
     color: Colors.text,
+    marginLeft: 4,
   },
   promotionBadge: {
     backgroundColor: Colors.primary,

@@ -1,12 +1,8 @@
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, View, FlatList, Text } from 'react-native';
+import { StyleSheet, View, FlatList, Text, RefreshControl } from 'react-native';
 import { Stack } from 'expo-router';
 import { EventCard } from '@/components/EventCard';
 import { SearchBar } from '@/components/SearchBar';
-import { LoadingIndicator } from '@/components/LoadingIndicator';
-import { ErrorMessage } from '@/components/ErrorMessage';
-import { LastUpdated } from '@/components/LastUpdated';
-import { RefreshControl } from '@/components/RefreshControl';
 import { useEvents } from '@/hooks/useEvents';
 import { Event, EventCategory } from '@/types';
 import Colors from '@/constants/colors';
@@ -52,7 +48,11 @@ export default function EventsScreen() {
   const keyExtractor = useCallback((item: Event) => item.id, []);
 
   if (loading && events.length === 0) {
-    return <LoadingIndicator message="Loading events..." />;
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading events...</Text>
+      </View>
+    );
   }
 
   return (
@@ -81,10 +81,19 @@ export default function EventsScreen() {
         </View>
         
         {error ? (
-          <ErrorMessage message={error} onRetry={refreshEvents} />
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={refreshEvents}>
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
         ) : filteredEvents.length > 0 ? (
           <>
-            {lastUpdated && <LastUpdated date={lastUpdated} />}
+            {lastUpdated && (
+              <Text style={styles.lastUpdated}>
+                Last updated: {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </Text>
+            )}
             <FlatList
               data={filteredEvents}
               renderItem={renderEvent}
@@ -92,7 +101,7 @@ export default function EventsScreen() {
               contentContainerStyle={styles.eventsList}
               showsVerticalScrollIndicator={false}
               refreshControl={
-                <RefreshControl refreshing={loading} onRefresh={refreshEvents} />
+                <RefreshControl refreshing={loading} onRefresh={refreshEvents} colors={[Colors.primary]} />
               }
             />
           </>
@@ -112,6 +121,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
     paddingTop: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: Colors.textSecondary,
   },
   categoriesContainer: {
     marginBottom: 16,
@@ -152,5 +171,34 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.textSecondary,
     textAlign: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  errorText: {
+    fontSize: 16,
+    color: Colors.error,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    backgroundColor: Colors.primary,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  lastUpdated: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 8,
   },
 });

@@ -74,11 +74,18 @@ export function useWeather() {
     loadWeather(true);
   };
 
+  // Add aliases for consistency with other hooks
+  const refetch = refreshWeather;
+  const isLoading = loading;
+
   return {
     weather,
     loading,
     error,
     lastUpdated,
     refreshWeather,
+    // Add these aliases for consistency with other hooks
+    refetch,
+    isLoading,
   };
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, Image, TouchableOpacity, Linking, Platform, Share } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, Image, TouchableOpacity, Linking, Platform, Share as RNShare } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { MapPin, Clock, Star, Phone, Mail, Globe, Tag, Calendar, Navigation, Share2, ArrowLeft } from 'lucide-react-native';
 import Colors from '@/constants/colors';
@@ -99,7 +99,7 @@ Address: ${shop.address}`;
 Special Offer: ${shop.promotion.title} - ${shop.promotion.description}`);
     }
     
-    Share.share({
+    RNShare.share({
       message: finalMessage,
       title: shop.name
     });
