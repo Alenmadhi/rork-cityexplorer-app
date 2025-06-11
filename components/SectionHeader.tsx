@@ -5,14 +5,22 @@ import Colors from '@/constants/colors';
 
 interface SectionHeaderProps {
   title: string;
+  count?: number;
   onViewAll?: () => void;
   viewAllLabel?: string;
 }
 
-export function SectionHeader({ title, onViewAll, viewAllLabel = 'View All' }: SectionHeaderProps) {
+export function SectionHeader({ title, count, onViewAll, viewAllLabel = 'View All' }: SectionHeaderProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>{title}</Text>
+        {count !== undefined && (
+          <View style={styles.countBadge}>
+            <Text style={styles.countText}>{count}</Text>
+          </View>
+        )}
+      </View>
       
       {onViewAll && (
         <TouchableOpacity 
@@ -34,10 +42,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
     color: Colors.text,
+  },
+  countBadge: {
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginLeft: 8,
+  },
+  countText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
   viewAllButton: {
     flexDirection: 'row',

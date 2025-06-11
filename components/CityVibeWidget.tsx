@@ -43,7 +43,7 @@ export default function CityVibeWidget() {
       let negativeCount = 0;
       
       recentNews.forEach(item => {
-        const combinedText = `${item.title} ${item.description}`.toLowerCase();
+        const combinedText = `${item.title} ${item.summary}`.toLowerCase();
         
         if (positiveKeywords.some(keyword => combinedText.includes(keyword))) {
           positiveCount++;
@@ -100,13 +100,13 @@ export default function CityVibeWidget() {
   const getGradientColors = (vibe: CityVibe) => {
     switch (vibe) {
       case 'positive':
-        return ['#34D399', '#10B981'];
+        return ['#34D399', '#10B981'] as [string, string];
       case 'neutral':
-        return ['#60A5FA', '#3B82F6'];
+        return ['#60A5FA', '#3B82F6'] as [string, string];
       case 'negative':
-        return ['#F87171', '#EF4444'];
+        return ['#F87171', '#EF4444'] as [string, string];
       default:
-        return ['#60A5FA', '#3B82F6'];
+        return ['#60A5FA', '#3B82F6'] as [string, string];
     }
   };
   
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   refreshButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.cardDarker,
+    backgroundColor: Colors.muted,
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,

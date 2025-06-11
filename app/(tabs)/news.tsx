@@ -1,21 +1,21 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, FlatList, Text, TouchableOpacity, RefreshControl } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { NewsCard } from '@/components/NewsCard';
+import NewsCard from '@/components/NewsCard';
 import { SearchBar } from '@/components/SearchBar';
 import { SectionHeader } from '@/components/SectionHeader';
 import { LoadingIndicator } from '@/components/LoadingIndicator';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { LastUpdated } from '@/components/LastUpdated';
 import { EmptyState } from '@/components/EmptyState';
-import { CityVibeWidget } from '@/components/CityVibeWidget';
+import CityVibeWidget from '@/components/CityVibeWidget';
 import { useNews } from '@/hooks/useNews';
 import Colors from '@/constants/colors';
 import { MapPin, List, Grid } from 'lucide-react-native';
 
 export default function NewsScreen() {
   const router = useRouter();
-  const { news, isLoading, error, refetch, lastUpdated } = useNews();
+  const { news, loading, error, refreshNews, lastUpdated } = useNews();
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [refreshing, setRefreshing] = useState(false);
@@ -23,15 +23,15 @@ export default function NewsScreen() {
   // Filter news based on search query
   const filteredNews = news.filter(item => 
     item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.description.toLowerCase().includes(searchQuery.toLowerCase())
+    item.summary.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Handle refresh
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await refetch();
+    await refreshNews();
     setRefreshing(false);
-  }, [refetch]);
+  }, [refreshNews]);
 
   // Navigate to news details
   const handleNewsPress = (id: string) => {
@@ -95,15 +95,16 @@ export default function NewsScreen() {
         {/* City Vibe Widget */}
         <CityVibeWidget />
 
-        {isLoading ? (
+        {loading ? (
           <LoadingIndicator message="Loading news..." />
         ) : error ? (
           <ErrorMessage 
             message="Failed to load news. Please try again." 
-            onRetry={refetch} 
+            onRetry={refreshNews} 
           />
         ) : filteredNews.length === 0 ? (
           <EmptyState 
+            title="No News Found"
             message={
               searchQuery 
                 ? "No news found matching your search." 
@@ -113,7 +114,7 @@ export default function NewsScreen() {
           />
         ) : (
           <>
-            <LastUpdated timestamp={lastUpdated} />
+            <LastUpdated date={lastUpdated ? lastUpdated.toISOString() : new Date().toISOString()} />
             <FlatList
               data={filteredNews}
               renderItem={renderNewsItem}
@@ -133,7 +134,6 @@ export default function NewsScreen() {
               ListHeaderComponent={
                 <SectionHeader 
                   title="Latest News" 
-                  count={filteredNews.length}
                 />
               }
             />

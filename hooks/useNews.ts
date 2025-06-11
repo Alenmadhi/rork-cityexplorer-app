@@ -49,6 +49,9 @@ export function useNews() {
     }
   }, []);
 
+  // Alias for refreshNews to match the usage in the component
+  const refetch = refreshNews;
+
   // Load news on mount with proper cleanup to prevent state updates after unmount
   useEffect(() => {
     let isMounted = true;
@@ -87,5 +90,7 @@ export function useNews() {
     error,
     lastUpdated,
     refreshNews,
+    refetch, // Add refetch as an alias for refreshNews
+    isLoading: loading, // Add isLoading as an alias for loading
   };
 }

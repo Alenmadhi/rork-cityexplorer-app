@@ -104,6 +104,7 @@ export interface NewsItem {
   id: string;
   title: string;
   summary: string;
+  description: string; // Added this field to fix the error
   content: string;
   image: string;
   date: string;

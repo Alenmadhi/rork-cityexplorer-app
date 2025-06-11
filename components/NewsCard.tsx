@@ -7,10 +7,12 @@ import { NewsItem } from '@/types';
 
 interface NewsCardProps {
   news: NewsItem;
+  onPress: () => void;
+  viewMode?: 'list' | 'grid';
   featured?: boolean;
 }
 
-export default function NewsCard({ news, featured = false }: NewsCardProps) {
+export default function NewsCard({ news, onPress, viewMode = 'list', featured = false }: NewsCardProps) {
   const router = useRouter();
   
   // Format date
@@ -57,15 +59,6 @@ export default function NewsCard({ news, featured = false }: NewsCardProps) {
     }
   };
   
-  // Handle card press
-  const handlePress = () => {
-    if (news.url) {
-      handleExternalLink();
-    } else {
-      router.push(`/news/${news.id}`);
-    }
-  };
-  
   // Handle external link press
   const handleExternalLink = async () => {
     if (news.url) {
@@ -86,21 +79,23 @@ export default function NewsCard({ news, featured = false }: NewsCardProps) {
     <TouchableOpacity 
       style={[
         styles.container,
-        featured && styles.featuredContainer
+        featured && styles.featuredContainer,
+        viewMode === 'grid' && styles.gridContainer
       ]}
-      onPress={handlePress}
+      onPress={onPress}
       activeOpacity={0.8}
     >
       <Image 
         source={{ uri: news.image }} 
         style={[
           styles.image,
-          featured && styles.featuredImage
+          featured && styles.featuredImage,
+          viewMode === 'grid' && styles.gridImage
         ]}
         resizeMode="cover"
       />
       
-      <View style={styles.content}>
+      <View style={[styles.content, viewMode === 'grid' && styles.gridContent]}>
         <View style={styles.header}>
           <View 
             style={[
@@ -131,27 +126,30 @@ export default function NewsCard({ news, featured = false }: NewsCardProps) {
         <Text 
           style={[
             styles.title,
-            featured && styles.featuredTitle
+            featured && styles.featuredTitle,
+            viewMode === 'grid' && styles.gridTitle
           ]}
-          numberOfLines={2}
+          numberOfLines={viewMode === 'grid' ? 2 : 2}
         >
           {news.title}
         </Text>
         
-        <Text 
-          style={styles.summary}
-          numberOfLines={featured ? 3 : 2}
-        >
-          {news.summary}
-        </Text>
+        {viewMode !== 'grid' && (
+          <Text 
+            style={styles.summary}
+            numberOfLines={featured ? 3 : 2}
+          >
+            {news.summary}
+          </Text>
+        )}
         
-        <View style={styles.footer}>
+        <View style={[styles.footer, viewMode === 'grid' && styles.gridFooter]}>
           <View style={styles.dateContainer}>
             <Calendar size={14} color={Colors.textSecondary} />
             <Text style={styles.date}>{formatDate(news.date)}</Text>
           </View>
           
-          {news.locationName && (
+          {news.locationName && viewMode !== 'grid' && (
             <View style={styles.locationContainer}>
               <MapPin size={14} color={Colors.textSecondary} />
               <Text style={styles.location} numberOfLines={1}>
@@ -160,7 +158,9 @@ export default function NewsCard({ news, featured = false }: NewsCardProps) {
             </View>
           )}
           
-          <Text style={styles.author}>{news.author}</Text>
+          {viewMode !== 'grid' && (
+            <Text style={styles.author}>{news.author}</Text>
+          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -191,6 +191,11 @@ const styles = StyleSheet.create({
   featuredContainer: {
     marginBottom: 24,
   },
+  gridContainer: {
+    flex: 1,
+    marginHorizontal: 4,
+    maxWidth: '48%',
+  },
   image: {
     width: '100%',
     height: 160,
@@ -198,8 +203,14 @@ const styles = StyleSheet.create({
   featuredImage: {
     height: 200,
   },
+  gridImage: {
+    height: 120,
+  },
   content: {
     padding: 16,
+  },
+  gridContent: {
+    padding: 12,
   },
   header: {
     flexDirection: 'row',
@@ -228,6 +239,10 @@ const styles = StyleSheet.create({
   featuredTitle: {
     fontSize: 18,
   },
+  gridTitle: {
+    fontSize: 14,
+    marginBottom: 4,
+  },
   summary: {
     fontSize: 14,
     color: Colors.textSecondary,
@@ -238,6 +253,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  gridFooter: {
+    justifyContent: 'flex-start',
   },
   dateContainer: {
     flexDirection: 'row',
