@@ -37,36 +37,8 @@ export default function HomeScreen() {
   const [locationPermission, setLocationPermission] = useState<boolean | null>(null);
   const [weather, setWeather] = useState(mockWeather);
   
-  useEffect(() => {
-    fetchAlerts();
-    fetchStories();
-    fetchChallenges();
-    fetchNearbyIssues();
-    
-    // Subscribe to network state updates
-    const unsubscribe = NetInfo.addEventListener(state => {
-      setIsConnected(state.isConnected);
-    });
-    
-    // Request location permission
-    (async () => {
-      if (Platform.OS !== 'web') {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        setLocationPermission(status === 'granted');
-        
-        if (status === 'granted') {
-          const location = await Location.getCurrentPositionAsync({});
-          setLocation(location);
-        }
-      }
-    })();
-    
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-  
-  const fetchNearbyIssues = async () => {
+  // Use useCallback to prevent unnecessary re-renders
+  const fetchNearbyIssues = useCallback(async () => {
     // Mock data for nearby issues
     const mockIssues = [
       {
@@ -105,20 +77,50 @@ export default function HomeScreen() {
     ];
     
     setNearbyIssues(mockIssues);
-  };
+  }, []);
+  
+  useEffect(() => {
+    // Fetch data
+    fetchAlerts();
+    fetchStories();
+    fetchChallenges();
+    fetchNearbyIssues();
+    
+    // Subscribe to network state updates
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsConnected(state.isConnected);
+    });
+    
+    // Request location permission
+    (async () => {
+      if (Platform.OS !== 'web') {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        setLocationPermission(status === 'granted');
+        
+        if (status === 'granted') {
+          const location = await Location.getCurrentPositionAsync({});
+          setLocation(location);
+        }
+      }
+    })();
+    
+    return () => {
+      unsubscribe();
+    };
+  }, [fetchAlerts, fetchStories, fetchChallenges, fetchNearbyIssues]);
   
   const refreshWeather = () => {
     // In a real app, this would fetch fresh weather data
     setWeather({...mockWeather});
   };
   
-  // Get active alerts
+  // Get active alerts - safely handle undefined alerts
   const activeAlerts = alerts ? alerts.filter(alert => alert.active) : [];
   
-  // Get featured success stories - ensure type safety
+  // Get featured success stories - safely handle undefined stories
   const featuredStories: SuccessStory[] = stories ? stories.filter(story => story.featured).slice(0, 1) : [];
   
-  // Get earned badges count
+  // Get earned badges count - safely handle undefined userStats
   const earnedBadgesCount = userStats ? userStats.userAchievements.length : 0;
 
   return (

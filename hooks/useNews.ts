@@ -39,9 +39,35 @@ export function useNews() {
     }
   }, []);
 
+  // Load news on mount
   useEffect(() => {
-    loadNews();
-  }, [loadNews]);
+    let isMounted = true;
+    
+    const fetchData = async () => {
+      try {
+        const newsData = await fetchNews();
+        // Only update state if component is still mounted
+        if (isMounted) {
+          setNews(newsData || []);
+          setLastUpdated(new Date());
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('Error in useNews hook:', err);
+        if (isMounted) {
+          setError('Failed to load news. Please try again later.');
+          setLoading(false);
+        }
+      }
+    };
+    
+    fetchData();
+    
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return {
     news,

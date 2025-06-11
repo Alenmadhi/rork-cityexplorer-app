@@ -15,22 +15,27 @@ export default function NewsCard({ news, featured = false }: NewsCardProps) {
   
   // Format date
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (diffInDays === 0) {
-      // Today - show time
-      return `Today at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-    } else if (diffInDays === 1) {
-      // Yesterday
-      return 'Yesterday';
-    } else if (diffInDays < 7) {
-      // Within a week
-      return `${diffInDays} days ago`;
-    } else {
-      // More than a week
-      return date.toLocaleDateString();
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (diffInDays === 0) {
+        // Today - show time
+        return `Today at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      } else if (diffInDays === 1) {
+        // Yesterday
+        return 'Yesterday';
+      } else if (diffInDays < 7) {
+        // Within a week
+        return `${diffInDays} days ago`;
+      } else {
+        // More than a week
+        return date.toLocaleDateString();
+      }
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Recent';
     }
   };
   

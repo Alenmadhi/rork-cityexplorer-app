@@ -83,11 +83,7 @@ export default function NewsDetailScreen() {
       try {
         const shareOptions = {
           title: newsItem.title,
-          message: `${newsItem.title}
-
-${newsItem.summary}
-
-${newsItem.url || 'Elbasan City App'}`,
+          message: `${newsItem.title}\n\n${newsItem.summary}\n\n${newsItem.url || 'Elbasan City App'}`,
           url: newsItem.url,
         };
         

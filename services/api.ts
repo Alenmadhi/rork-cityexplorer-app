@@ -66,11 +66,16 @@ export async function fetchNews(): Promise<NewsItem[]> {
  * Map GNews API articles to our NewsItem format
  */
 function mapArticlesToNewsItems(articles: any[]): NewsItem[] {
+  if (!articles || !Array.isArray(articles)) {
+    console.error('Invalid articles data:', articles);
+    return [];
+  }
+  
   return articles.map((article: any, index: number): NewsItem => {
     // Determine category based on content or title keywords
     let category: 'local' | 'business' | 'culture' | 'sports' | 'politics' | 'other' = 'other';
     
-    const content = (article.title + ' ' + article.description).toLowerCase();
+    const content = ((article.title || '') + ' ' + (article.description || '')).toLowerCase();
     
     if (content.includes('business') || content.includes('economy') || content.includes('market')) {
       category = 'business';
@@ -86,7 +91,7 @@ function mapArticlesToNewsItems(articles: any[]): NewsItem[] {
     
     return {
       id: `${index + 1}`,
-      title: article.title,
+      title: article.title || 'No title available',
       summary: article.description || article.content || 'No description available',
       content: article.content || article.description || 'No content available',
       image: article.image || 'https://images.unsplash.com/photo-1578297886235-f2be6e8f3c3e?q=80&w=1000&auto=format&fit=crop',

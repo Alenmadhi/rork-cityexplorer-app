@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, FlatList, RefreshControl, TouchableOpacity, Platform } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Filter, RefreshCw } from 'lucide-react-native';
@@ -19,24 +19,34 @@ export default function NewsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<NewsCategory | 'all'>('all');
   const [refreshing, setRefreshing] = useState(false);
+  const [filteredNews, setFilteredNews] = useState<NewsItem[]>([]);
+  const [featuredNews, setFeaturedNews] = useState<NewsItem[]>([]);
+  const [regularNews, setRegularNews] = useState<NewsItem[]>([]);
   
-  // Filter news based on search query and category
-  const filteredNews = news ? news.filter(item => {
-    const matchesSearch = 
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.author.toLowerCase().includes(searchQuery.toLowerCase());
+  // Update filtered news when news, search query, or category changes
+  useEffect(() => {
+    if (!news) {
+      setFilteredNews([]);
+      setFeaturedNews([]);
+      setRegularNews([]);
+      return;
+    }
     
-    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+    const filtered = news.filter(item => {
+      const matchesSearch = 
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.author.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+      
+      return matchesSearch && matchesCategory;
+    });
     
-    return matchesSearch && matchesCategory;
-  }) : [];
-  
-  // Get featured news
-  const featuredNews = filteredNews.filter(item => item.featured);
-  
-  // Get regular news (non-featured)
-  const regularNews = filteredNews.filter(item => !item.featured);
+    setFilteredNews(filtered);
+    setFeaturedNews(filtered.filter(item => item.featured));
+    setRegularNews(filtered.filter(item => !item.featured));
+  }, [news, searchQuery, selectedCategory]);
   
   // Handle refresh
   const handleRefresh = async () => {
