@@ -13,7 +13,7 @@ export default function GuestScreen() {
   
   const handleContinue = async () => {
     // Login as guest
-    await login({ email: 'guest@example.com', password: '' }, true);
+    await login({ email: 'guest@example.com', password: '', isGuest: true });
     router.replace('/(tabs)');
   };
   

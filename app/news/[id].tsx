@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Linking, ActivityIndicator, Platform } from 'react-native';
+import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, Linking, ActivityIndicator, Platform, Share } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { Calendar, Clock, ArrowLeft, ExternalLink, Share2 } from 'lucide-react-native';
 import Colors from '@/constants/colors';
@@ -82,7 +82,11 @@ export default function NewsDetailScreen() {
       try {
         const shareOptions = {
           title: newsItem.title,
-          message: `${newsItem.title}\n\n${newsItem.summary}\n\n${newsItem.url || 'Elbasan City App'}`,
+          message: `${newsItem.title}
+
+${newsItem.summary}
+
+${newsItem.url || 'Elbasan City App'}`,
           url: newsItem.url,
         };
         
@@ -97,7 +101,6 @@ export default function NewsDetailScreen() {
             console.log('Web share not supported');
           }
         } else {
-          const { Share } = require('react-native');
           await Share.share(shareOptions);
         }
       } catch (error) {
