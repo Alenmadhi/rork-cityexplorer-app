@@ -1,79 +1,112 @@
 import React from 'react';
-import { StyleSheet, View, Text, Platform, TouchableOpacity } from 'react-native';
-import { Weather } from '@/types';
+import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
+import { Cloud, CloudRain, CloudSnow, RefreshCw, Sun, Wind, CloudSun } from 'lucide-react-native';
 import Colors from '@/constants/colors';
-import { 
-  CloudSun, CloudRain, Sun, Cloud, Wind, Droplets, RefreshCw
-} from 'lucide-react-native';
+import { Weather } from '@/types';
 
 interface WeatherCardProps {
   weather: Weather;
   onRefresh?: () => void;
 }
 
-export const WeatherCard: React.FC<WeatherCardProps> = ({ weather, onRefresh }) => {
-  const getWeatherIcon = () => {
-    switch (weather.icon) {
-      case 'cloud-sun':
-        return <CloudSun size={36} color={Colors.primary} />;
-      case 'cloud-rain':
-        return <CloudRain size={36} color={Colors.primary} />;
-      case 'sun':
-        return <Sun size={36} color={Colors.warning} />;
-      case 'cloud':
-        return <Cloud size={36} color={Colors.primary} />;
-      default:
-        return <CloudSun size={36} color={Colors.primary} />;
+export function WeatherCard({ weather, onRefresh }: WeatherCardProps) {
+  // Format date
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (error) {
+      return 'Unknown';
     }
   };
-
+  
+  // Render weather icon based on condition
+  const renderWeatherIcon = (icon: string, size: number = 40) => {
+    switch (icon) {
+      case 'cloud':
+        return <Cloud size={size} color={Colors.textSecondary} />;
+      case 'cloud-rain':
+        return <CloudRain size={size} color={Colors.textSecondary} />;
+      case 'cloud-snow':
+        return <CloudSnow size={size} color={Colors.textSecondary} />;
+      case 'cloud-sun':
+        return <CloudSun size={size} color={Colors.textSecondary} />;
+      case 'sun':
+      default:
+        return <Sun size={size} color={Colors.warning} />;
+    }
+  };
+  
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.location}>Elbasan, Albania</Text>
+        <View style={styles.locationContainer}>
+          <Text style={styles.location}>{weather.location}</Text>
+          <Text style={styles.updatedAt}>Updated at {formatDate(weather.lastUpdated)}</Text>
+        </View>
+        
         {onRefresh && (
-          <TouchableOpacity onPress={onRefresh} style={styles.refreshButton} hitSlop={{top: 10, right: 10, bottom: 10, left: 10}}>
+          <TouchableOpacity 
+            style={styles.refreshButton}
+            onPress={onRefresh}
+          >
             <RefreshCw size={16} color={Colors.primary} />
           </TouchableOpacity>
         )}
       </View>
       
-      <View style={styles.mainInfo}>
+      <View style={styles.currentWeather}>
         <View style={styles.temperatureContainer}>
+          {renderWeatherIcon(weather.icon)}
           <Text style={styles.temperature}>{weather.temperature}°</Text>
-          <Text style={styles.condition}>{weather.condition}</Text>
-          <Text style={styles.highLow}>H:{weather.high}° L:{weather.low}°</Text>
         </View>
-        <View style={styles.iconContainer}>
-          {getWeatherIcon()}
+        
+        <View style={styles.detailsContainer}>
+          <Text style={styles.condition}>{weather.condition}</Text>
+          
+          <View style={styles.detailRow}>
+            <View style={styles.detailItem}>
+              <Wind size={16} color={Colors.textSecondary} />
+              <Text style={styles.detailText}>{weather.windSpeed} km/h</Text>
+            </View>
+            
+            <View style={styles.detailItem}>
+              <Cloud size={16} color={Colors.textSecondary} />
+              <Text style={styles.detailText}>{weather.humidity}% humidity</Text>
+            </View>
+          </View>
         </View>
       </View>
       
-      <View style={styles.separator} />
-      
-      <View style={styles.detailsContainer}>
-        <View style={styles.detailItem}>
-          <Droplets size={20} color={Colors.primary} />
-          <Text style={styles.detailText}>Humidity</Text>
-          <Text style={styles.detailValue}>{weather.humidity}%</Text>
-        </View>
-        <View style={styles.detailItem}>
-          <Wind size={20} color={Colors.primary} />
-          <Text style={styles.detailText}>Wind</Text>
-          <Text style={styles.detailValue}>{weather.windSpeed} km/h</Text>
-        </View>
+      <View style={styles.forecastContainer}>
+        {weather.forecast.map((day, index) => (
+          <View 
+            key={index}
+            style={[
+              styles.forecastDay,
+              index < weather.forecast.length - 1 && styles.forecastDayBorder
+            ]}
+          >
+            <Text style={styles.forecastDayName}>{day.day}</Text>
+            {renderWeatherIcon(day.icon, 24)}
+            <Text style={styles.forecastTemperature}>
+              {day.temperature.min}° / {day.temperature.max}°
+            </Text>
+          </View>
+        ))}
       </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.card,
     borderRadius: 12,
     padding: 16,
-    marginHorizontal: 16,
-    marginBottom: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: Colors.border,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -82,7 +115,7 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
       },
       android: {
-        elevation: 3,
+        elevation: 2,
       },
       web: {
         boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
@@ -92,65 +125,88 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  locationContainer: {
+    flex: 1,
   },
   location: {
-    fontSize: 14,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  updatedAt: {
+    fontSize: 12,
+    color: Colors.textSecondary,
   },
   refreshButton: {
     padding: 4,
   },
-  mainInfo: {
+  currentWeather: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 20,
   },
   temperatureContainer: {
-    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
   },
   temperature: {
-    fontSize: 42,
+    fontSize: 36,
     fontWeight: 'bold',
     color: Colors.text,
-  },
-  condition: {
-    fontSize: 16,
-    color: Colors.textSecondary,
-    marginBottom: 4,
-  },
-  highLow: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-  },
-  iconContainer: {
-    padding: 12,
-    borderRadius: 30,
-    backgroundColor: `${Colors.primary}10`,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: Colors.border,
-    marginVertical: 16,
+    marginLeft: 8,
   },
   detailsContainer: {
+    flex: 1,
+  },
+  condition: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: Colors.text,
+    marginBottom: 8,
+  },
+  detailRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    alignItems: 'center',
   },
   detailItem: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginRight: 12,
   },
   detailText: {
     fontSize: 14,
     color: Colors.textSecondary,
-    marginTop: 4,
+    marginLeft: 4,
   },
-  detailValue: {
-    fontSize: 16,
-    fontWeight: '600',
+  forecastContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    paddingTop: 16,
+  },
+  forecastDay: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  forecastDayBorder: {
+    borderRightWidth: 1,
+    borderRightColor: Colors.border,
+  },
+  forecastDayName: {
+    fontSize: 12,
+    fontWeight: '500',
     color: Colors.text,
-    marginTop: 2,
+    marginBottom: 8,
+  },
+  forecastTemperature: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    marginTop: 8,
   },
 });

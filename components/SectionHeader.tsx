@@ -1,35 +1,31 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
 import Colors from '@/constants/colors';
 
 interface SectionHeaderProps {
   title: string;
-  viewAllRoute?: string;
+  onViewAll?: () => void;
+  viewAllLabel?: string;
 }
 
-export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, viewAllRoute }) => {
-  const router = useRouter();
-
-  const handleViewAll = () => {
-    if (viewAllRoute) {
-      router.push(viewAllRoute);
-    }
-  };
-
+export function SectionHeader({ title, onViewAll, viewAllLabel = 'View All' }: SectionHeaderProps) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
-      {viewAllRoute && (
-        <TouchableOpacity style={styles.viewAllButton} onPress={handleViewAll}>
-          <Text style={styles.viewAllText}>View All</Text>
+      
+      {onViewAll && (
+        <TouchableOpacity 
+          style={styles.viewAllButton}
+          onPress={onViewAll}
+        >
+          <Text style={styles.viewAllText}>{viewAllLabel}</Text>
           <ChevronRight size={16} color={Colors.primary} />
         </TouchableOpacity>
       )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -37,10 +33,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
-    paddingHorizontal: 16,
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: Colors.text,
   },
@@ -51,6 +46,6 @@ const styles = StyleSheet.create({
   viewAllText: {
     fontSize: 14,
     color: Colors.primary,
-    marginRight: 4,
+    marginRight: 2,
   },
 });

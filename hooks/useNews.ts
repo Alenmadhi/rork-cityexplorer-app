@@ -6,7 +6,7 @@ export function useNews() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const loadNews = useCallback(async () => {
     setLoading(true);
@@ -15,7 +15,7 @@ export function useNews() {
     try {
       const newsData = await fetchNews();
       setNews(newsData);
-      setLastUpdated(new Date().toISOString());
+      setLastUpdated(new Date());
     } catch (err) {
       console.error('Error in useNews hook:', err);
       setError('Failed to load news. Please try again later.');
@@ -30,7 +30,7 @@ export function useNews() {
     try {
       const newsData = await fetchNews();
       setNews(newsData);
-      setLastUpdated(new Date().toISOString());
+      setLastUpdated(new Date());
       return true;
     } catch (err) {
       console.error('Error refreshing news:', err);

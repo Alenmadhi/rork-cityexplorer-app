@@ -8,53 +8,52 @@ interface ErrorMessageProps {
   onRetry?: () => void;
 }
 
-export const ErrorMessage: React.FC<ErrorMessageProps> = ({ 
-  message, 
-  onRetry 
-}) => {
+export function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
   return (
     <View style={styles.container}>
-      <AlertCircle size={40} color={Colors.error} />
+      <AlertCircle size={48} color={Colors.error} />
       <Text style={styles.message}>{message}</Text>
       
       {onRetry && (
-        <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
-          <RefreshCw size={16} color={Colors.background} />
-          <Text style={styles.retryText}>Try Again</Text>
+        <TouchableOpacity 
+          style={styles.retryButton}
+          onPress={onRetry}
+        >
+          <RefreshCw size={16} color="#fff" />
+          <Text style={styles.retryButtonText}>Try Again</Text>
         </TouchableOpacity>
       )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    alignItems: 'center',
+    flex: 1,
     justifyContent: 'center',
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    margin: 16,
+    alignItems: 'center',
+    padding: 24,
   },
   message: {
-    marginTop: 12,
+    marginTop: 16,
+    marginBottom: 24,
     fontSize: 16,
     color: Colors.text,
     textAlign: 'center',
-    marginBottom: 16,
     lineHeight: 22,
   },
   retryButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.primary,
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 20,
-    gap: 8,
+    borderRadius: 8,
   },
-  retryText: {
-    color: Colors.background,
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: '500',
+    marginLeft: 8,
   },
 });

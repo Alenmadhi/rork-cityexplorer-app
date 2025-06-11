@@ -4,78 +4,74 @@ import { Search, X } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 
 interface SearchBarProps {
+  placeholder?: string;
   value: string;
   onChangeText: (text: string) => void;
-  placeholder?: string;
   onClear?: () => void;
+  onSubmit?: () => void;
+  autoFocus?: boolean;
 }
 
-export const SearchBar: React.FC<SearchBarProps> = ({ 
+export function SearchBar({ 
+  placeholder = 'Search...', 
   value, 
   onChangeText, 
-  placeholder = 'Search...',
-  onClear
-}) => {
-  const handleClear = () => {
-    onChangeText('');
-    if (onClear) {
-      onClear();
-    }
-  };
-
+  onClear, 
+  onSubmit,
+  autoFocus = false
+}: SearchBarProps) {
   return (
     <View style={styles.container}>
-      <Search size={20} color={Colors.textSecondary} style={styles.icon} />
+      <Search size={20} color={Colors.textSecondary} style={styles.searchIcon} />
+      
       <TextInput
         style={styles.input}
-        value={value}
-        onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor={Colors.textSecondary}
+        value={value}
+        onChangeText={onChangeText}
+        onSubmitEditing={onSubmit}
+        returnKeyType="search"
+        clearButtonMode="while-editing"
+        autoCapitalize="none"
+        autoCorrect={false}
+        autoFocus={autoFocus}
       />
-      {value.length > 0 && (
-        <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
-          <X size={18} color={Colors.textSecondary} />
+      
+      {value.length > 0 && onClear && Platform.OS !== 'ios' && (
+        <TouchableOpacity 
+          style={styles.clearButton}
+          onPress={onClear}
+        >
+          <X size={16} color={Colors.textSecondary} />
         </TouchableOpacity>
       )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.card,
-    borderRadius: 12,
+    borderRadius: 8,
     paddingHorizontal: 12,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-      },
-      android: {
-        elevation: 2,
-      },
-      web: {
-        boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.1)',
-      },
-    }),
+    height: 48,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
-  icon: {
+  searchIcon: {
     marginRight: 8,
   },
   input: {
     flex: 1,
-    height: 48,
+    height: '100%',
     fontSize: 16,
     color: Colors.text,
   },
   clearButton: {
-    padding: 6,
+    padding: 4,
   },
 });

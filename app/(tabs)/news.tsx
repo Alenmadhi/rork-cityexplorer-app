@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, FlatList, RefreshControl, TouchableOpacity, Platform } from 'react-native';
-import { Stack } from 'expo-router';
-import { Filter } from 'lucide-react-native';
+import { Stack, useRouter } from 'expo-router';
+import { Filter, RefreshCw } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { useNews } from '@/hooks/useNews';
 import { NewsItem, NewsCategory } from '@/types';
@@ -14,6 +14,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { LastUpdated } from '@/components/LastUpdated';
 
 export default function NewsScreen() {
+  const router = useRouter();
   const { news, loading, error, lastUpdated, refreshNews } = useNews();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<NewsCategory | 'all'>('all');
@@ -97,7 +98,11 @@ export default function NewsScreen() {
       
       {featuredNews.length > 0 && (
         <>
-          <SectionHeader title="Featured News" />
+          <SectionHeader 
+            title="Featured News" 
+            viewAllLabel="Refresh"
+            onViewAll={handleRefresh}
+          />
           <FlatList
             data={featuredNews}
             renderItem={renderFeaturedNewsItem}
@@ -117,8 +122,28 @@ export default function NewsScreen() {
     </>
   );
   
+  // Render empty component
+  const renderEmptyComponent = () => (
+    <EmptyState 
+      title="No news found"
+      message={searchQuery ? "Try a different search term or clear filters" : "Check back later for updates"}
+      icon="newspaper"
+      actionLabel="Refresh"
+      onAction={handleRefresh}
+    />
+  );
+  
   if (loading && !refreshing) {
-    return <LoadingIndicator />;
+    return <LoadingIndicator message="Loading news..." />;
+  }
+  
+  if (error && !refreshing) {
+    return (
+      <ErrorMessage 
+        message={error} 
+        onRetry={refreshNews}
+      />
+    );
   }
   
   return (
@@ -127,34 +152,36 @@ export default function NewsScreen() {
         options={{
           title: 'News',
           headerLargeTitle: true,
+          headerRight: () => (
+            <TouchableOpacity 
+              style={styles.refreshButton}
+              onPress={handleRefresh}
+            >
+              <RefreshCw size={22} color={Colors.primary} />
+            </TouchableOpacity>
+          ),
         }} 
       />
       
-      {error && <ErrorMessage message={error} />}
-      
-      {filteredNews.length === 0 ? (
-        <EmptyState 
-          title="No news found"
-          message={searchQuery ? "Try a different search term or clear filters" : "Check back later for updates"}
-          icon="newspaper"
-        />
-      ) : (
-        <FlatList
-          data={regularNews}
-          renderItem={renderNewsItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
-          ListHeaderComponent={renderListHeader}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              colors={[Colors.primary]}
-              tintColor={Colors.primary}
-            />
-          }
-        />
-      )}
+      <FlatList
+        data={regularNews}
+        renderItem={renderNewsItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={[
+          styles.list,
+          regularNews.length === 0 && styles.emptyList
+        ]}
+        ListHeaderComponent={renderListHeader}
+        ListEmptyComponent={filteredNews.length === 0 ? renderEmptyComponent : null}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[Colors.primary]}
+            tintColor={Colors.primary}
+          />
+        }
+      />
     </>
   );
 }
@@ -163,6 +190,9 @@ const styles = StyleSheet.create({
   list: {
     padding: 16,
     paddingBottom: 40,
+  },
+  emptyList: {
+    flex: 1,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -178,6 +208,9 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     borderWidth: 1,
     borderColor: Colors.border,
+  },
+  refreshButton: {
+    padding: 8,
   },
   filterIndicator: {
     flexDirection: 'row',
