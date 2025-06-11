@@ -4,7 +4,8 @@ import { news as mockNews } from '@/mocks/news';
 // Base URLs for API requests
 const WEATHER_API_URL = 'https://api.open-meteo.com/v1/forecast';
 const GNEWS_API_URL = 'https://gnews.io/api/v4/search';
-// Using a free API key - this may have limited requests
+// Using a free API key - this may have limited requests or expired
+// If you get a 401 error, you need to get a new API key from https://gnews.io/
 const GNEWS_API_KEY = '5f916c6339a945be8b6abc1b6264385a';
 
 /**
@@ -23,6 +24,10 @@ export async function fetchNews(): Promise<NewsItem[]> {
     
     if (!response.ok) {
       console.log(`GNews API error: ${response.status}`);
+      // If we get a 401 error, the API key is likely expired
+      if (response.status === 401) {
+        console.log('API key may have expired. Please get a new API key from https://gnews.io/');
+      }
       throw new Error(`Failed to fetch news: ${response.status}`);
     }
     
