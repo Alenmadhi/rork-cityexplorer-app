@@ -3,7 +3,7 @@ import { Event, NewsItem, Weather, WeatherForecast } from '@/types';
 // Base URLs for API requests
 const WEATHER_API_URL = 'https://api.open-meteo.com/v1/forecast';
 const GNEWS_API_URL = 'https://gnews.io/api/v4/search';
-const GNEWS_API_KEY = '9b6a64b2c5e7a9d8e3f1c4b7a0d2e5f8'; // Replace with your actual API key
+const GNEWS_API_KEY = '5f916c6339a945be8b6abc1b6264385a'; // Using the API key from user's message
 
 /**
  * Fetch news related to Elbasan or Albania
@@ -11,9 +11,10 @@ const GNEWS_API_KEY = '9b6a64b2c5e7a9d8e3f1c4b7a0d2e5f8'; // Replace with your a
  */
 export async function fetchNews(): Promise<NewsItem[]> {
   try {
+    console.log('Fetching news from GNews API...');
     // Try to fetch news about Elbasan from GNews API
     const response = await fetch(
-      `${GNEWS_API_URL}?q=Elbasan&lang=en&country=al&max=10&apikey=${GNEWS_API_KEY}`
+      `${GNEWS_API_URL}?q=Elbasan&lang=en&country=al&max=10&token=${GNEWS_API_KEY}`
     );
     
     if (!response.ok) {
@@ -21,11 +22,13 @@ export async function fetchNews(): Promise<NewsItem[]> {
     }
     
     const data = await response.json();
+    console.log('GNews API response:', data);
     
     if (!data.articles || data.articles.length === 0) {
+      console.log('No Elbasan-specific news found, trying Albania news');
       // If no Elbasan-specific news, try Albania news
       const albaniaResponse = await fetch(
-        `${GNEWS_API_URL}?q=Albania&lang=en&country=al&max=10&apikey=${GNEWS_API_KEY}`
+        `${GNEWS_API_URL}?q=Albania&lang=en&country=al&max=10&token=${GNEWS_API_KEY}`
       );
       
       if (!albaniaResponse.ok) {
@@ -33,6 +36,7 @@ export async function fetchNews(): Promise<NewsItem[]> {
       }
       
       const albaniaData = await albaniaResponse.json();
+      console.log('Albania news response:', albaniaData);
       
       if (!albaniaData.articles || albaniaData.articles.length === 0) {
         throw new Error('No articles found in any source');
@@ -46,6 +50,7 @@ export async function fetchNews(): Promise<NewsItem[]> {
     console.error('Error fetching news:', error);
     
     // Fall back to mock data
+    console.log('Falling back to mock news data');
     const mockNews = require('@/mocks/news').news;
     
     // Randomize which news items are "featured" to simulate changing content
