@@ -206,7 +206,7 @@ export const tours: Tour[] = [
       {
         id: '3-1',
         title: 'Central Park',
-        description: 'Begin your green journey at Elbasan's main park, with its majestic old trees, flower gardens, and peaceful walking paths.',
+        description: "Begin your green journey at Elbasan's main park, with its majestic old trees, flower gardens, and peaceful walking paths.",
         image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
         coordinates: {
           latitude: 41.1115,
@@ -259,7 +259,7 @@ export const tours: Tour[] = [
   {
     id: '4',
     title: 'Art & Street Culture Tour',
-    description: 'Discover Elbasan's vibrant contemporary art scene, from colorful street murals to hidden galleries and artisan workshops.',
+    description: "Discover Elbasan's vibrant contemporary art scene, from colorful street murals to hidden galleries and artisan workshops.",
     category: 'cultural',
     duration: '3 hours',
     distance: '3.8 km',
@@ -344,7 +344,7 @@ export const tours: Tour[] = [
   {
     id: '5',
     title: 'Dark History Tour',
-    description: 'Explore the mysterious and lesser-known aspects of Elbasan's past, from ancient legends to more recent historical events that shaped the city.',
+    description: "Explore the mysterious and lesser-known aspects of Elbasan's past, from ancient legends to more recent historical events that shaped the city.",
     category: 'historical',
     duration: '2.5 hours',
     distance: '4 km',
@@ -359,7 +359,7 @@ export const tours: Tour[] = [
       {
         id: '5-1',
         title: 'Ancient Crypt',
-        description: 'Begin your journey into Elbasan's darker past with a visit to this mysterious underground structure dating back to Roman times.',
+        description: "Begin your journey into Elbasan's darker past with a visit to this mysterious underground structure dating back to Roman times.",
         image: 'https://images.unsplash.com/photo-1508921108053-9f757ead871c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
         coordinates: {
           latitude: 41.1160,
@@ -376,7 +376,7 @@ export const tours: Tour[] = [
       {
         id: '5-2',
         title: 'Abandoned Factory',
-        description: 'Explore the remains of a once-thriving industrial complex from the communist era, now a haunting reminder of Albania's recent past.',
+        description: "Explore the remains of a once-thriving industrial complex from the communist era, now a haunting reminder of Albania's recent past.",
         image: 'https://images.unsplash.com/photo-1518656306295-aa28b28b2504?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
         coordinates: {
           latitude: 41.1165,
@@ -415,7 +415,7 @@ export const tours: Tour[] = [
       {
         id: '5-4',
         title: 'Memorial Site',
-        description: 'End your tour at this solemn monument commemorating victims of political persecution during Albania's communist period.',
+        description: "End your tour at this solemn monument commemorating victims of political persecution during Albania's communist period.",
         image: 'https://images.unsplash.com/photo-1547480053-7d174f67b557?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
         coordinates: {
           latitude: 41.1175,
