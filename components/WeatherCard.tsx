@@ -94,7 +94,7 @@ export function WeatherCard({ weather, loading, error, onRefresh }: WeatherCardP
               key={index}
               style={[
                 styles.forecastDay,
-                index < weather.forecast.length - 1 && styles.forecastDayBorder
+                index < (weather.forecast?.length || 0) - 1 && styles.forecastDayBorder
               ]}
             >
               <Text style={styles.forecastDayName}>{day.day}</Text>

@@ -47,3 +47,45 @@ export interface WeatherForecast {
     max: number;
   };
 }
+
+// Add Event types
+export interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  location: string;
+  image: string;
+  category: EventCategory;
+  organizer: string;
+  price?: string;
+  featured?: boolean;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+}
+
+export type EventCategory = 'music' | 'art' | 'food' | 'sports' | 'festival' | 'other';
+
+// Add News types
+export interface NewsItem {
+  id: string;
+  title: string;
+  summary: string;
+  content: string;
+  author: string;
+  publishedAt: string;
+  image: string;
+  category: string;
+  source: string;
+  featured?: boolean;
+  location?: {
+    name: string;
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
+  };
+}
