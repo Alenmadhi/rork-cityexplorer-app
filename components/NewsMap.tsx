@@ -59,8 +59,10 @@ export default function NewsMap({ news, onSelectNews }: NewsMapProps) {
   const handleZoomIn = () => {
     if (mapRef.current) {
       mapRef.current.getCamera().then((camera) => {
-        camera.zoom += 1;
-        mapRef.current?.animateCamera(camera, { duration: 300 });
+        if (camera.zoom !== undefined) {
+          camera.zoom += 1;
+          mapRef.current?.animateCamera(camera, { duration: 300 });
+        }
       });
     }
   };
@@ -69,8 +71,10 @@ export default function NewsMap({ news, onSelectNews }: NewsMapProps) {
   const handleZoomOut = () => {
     if (mapRef.current) {
       mapRef.current.getCamera().then((camera) => {
-        camera.zoom -= 1;
-        mapRef.current?.animateCamera(camera, { duration: 300 });
+        if (camera.zoom !== undefined) {
+          camera.zoom -= 1;
+          mapRef.current?.animateCamera(camera, { duration: 300 });
+        }
       });
     }
   };

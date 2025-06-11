@@ -1,310 +1,185 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, FlatList, RefreshControl, TouchableOpacity, Platform } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { StyleSheet, View, FlatList, Text, TouchableOpacity, RefreshControl } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { Filter, RefreshCw, List, Map } from 'lucide-react-native';
-import Colors from '@/constants/colors';
-import { useNews } from '@/hooks/useNews';
-import { NewsItem, NewsCategory } from '@/types';
-import NewsCard from '@/components/NewsCard';
-import NewsMap from '@/components/NewsMap';
+import { NewsCard } from '@/components/NewsCard';
 import { SearchBar } from '@/components/SearchBar';
 import { SectionHeader } from '@/components/SectionHeader';
 import { LoadingIndicator } from '@/components/LoadingIndicator';
 import { ErrorMessage } from '@/components/ErrorMessage';
-import { EmptyState } from '@/components/EmptyState';
 import { LastUpdated } from '@/components/LastUpdated';
+import { EmptyState } from '@/components/EmptyState';
+import { CityVibeWidget } from '@/components/CityVibeWidget';
+import { useNews } from '@/hooks/useNews';
+import Colors from '@/constants/colors';
+import { MapPin, List, Grid } from 'lucide-react-native';
 
 export default function NewsScreen() {
   const router = useRouter();
-  const { news, loading, error, lastUpdated, refreshNews } = useNews();
+  const { news, isLoading, error, refetch, lastUpdated } = useNews();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<NewsCategory | 'all'>('all');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [refreshing, setRefreshing] = useState(false);
-  const [filteredNews, setFilteredNews] = useState<NewsItem[]>([]);
-  const [featuredNews, setFeaturedNews] = useState<NewsItem[]>([]);
-  const [regularNews, setRegularNews] = useState<NewsItem[]>([]);
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
-  const [selectedMapNews, setSelectedMapNews] = useState<NewsItem | null>(null);
-  
-  // Update filtered news when news, search query, or category changes
-  useEffect(() => {
-    if (!news) {
-      setFilteredNews([]);
-      setFeaturedNews([]);
-      setRegularNews([]);
-      return;
-    }
-    
-    const filtered = news.filter(item => {
-      const matchesSearch = 
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.author.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
-      
-      return matchesSearch && matchesCategory;
-    });
-    
-    setFilteredNews(filtered);
-    setFeaturedNews(filtered.filter(item => item.featured));
-    setRegularNews(filtered.filter(item => !item.featured));
-  }, [news, searchQuery, selectedCategory]);
-  
+
+  // Filter news based on search query
+  const filteredNews = news.filter(item => 
+    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   // Handle refresh
-  const handleRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await refreshNews();
+    await refetch();
     setRefreshing(false);
+  }, [refetch]);
+
+  // Navigate to news details
+  const handleNewsPress = (id: string) => {
+    router.push(`/news/${id}`);
   };
-  
-  // Toggle view mode between list and map
+
+  // Navigate to news map
+  const handleMapPress = () => {
+    router.push('/news/map');
+  };
+
+  // Toggle view mode
   const toggleViewMode = () => {
-    setViewMode(prev => prev === 'list' ? 'map' : 'list');
+    setViewMode(prev => prev === 'list' ? 'grid' : 'list');
   };
-  
-  // Handle news selection on map
-  const handleMapNewsSelect = (newsItem: NewsItem) => {
-    setSelectedMapNews(newsItem);
-  };
-  
+
   // Render news item
-  const renderNewsItem = ({ item }: { item: NewsItem }) => (
-    <NewsCard news={item} />
-  );
-  
-  // Render featured news item
-  const renderFeaturedNewsItem = ({ item }: { item: NewsItem }) => (
-    <NewsCard news={item} featured />
-  );
-  
-  // Render list header
-  const renderListHeader = () => (
-    <>
-      <View style={styles.searchContainer}>
-        <SearchBar 
-          placeholder="Search news..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          onClear={() => setSearchQuery('')}
-        />
-        
-        <TouchableOpacity 
-          style={styles.filterButton}
-          onPress={() => {
-            // In a real app, this would open a filter modal
-            // For demo purposes, we'll just cycle through categories
-            const categories: (NewsCategory | 'all')[] = ['all', 'local', 'business', 'culture', 'sports', 'politics', 'other'];
-            const currentIndex = categories.indexOf(selectedCategory);
-            const nextIndex = (currentIndex + 1) % categories.length;
-            setSelectedCategory(categories[nextIndex]);
-          }}
-        >
-          <Filter size={20} color={Colors.text} />
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.viewModeButton}
-          onPress={toggleViewMode}
-        >
-          {viewMode === 'list' ? (
-            <Map size={20} color={Colors.text} />
-          ) : (
-            <List size={20} color={Colors.text} />
-          )}
-        </TouchableOpacity>
-      </View>
-      
-      {selectedCategory !== 'all' && (
-        <View style={styles.filterIndicator}>
-          <Text style={styles.filterText}>
-            Filtering by: <Text style={styles.filterCategory}>{selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}</Text>
-          </Text>
-          <TouchableOpacity onPress={() => setSelectedCategory('all')}>
-            <Text style={styles.clearFilterText}>Clear</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-      
-      {lastUpdated && (
-        <LastUpdated date={lastUpdated.toString()} />
-      )}
-      
-      {viewMode === 'list' && featuredNews.length > 0 && (
-        <>
-          <SectionHeader 
-            title="Featured News" 
-            viewAllLabel="Refresh"
-            onViewAll={handleRefresh}
-          />
-          <FlatList
-            data={featuredNews}
-            renderItem={renderFeaturedNewsItem}
-            keyExtractor={(item) => `featured-${item.id}`}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.featuredList}
-            snapToAlignment="start"
-            snapToInterval={300}
-            decelerationRate="fast"
-            ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
-          />
-          
-          <SectionHeader title="Latest News" />
-        </>
-      )}
-    </>
-  );
-  
-  // Render empty component
-  const renderEmptyComponent = () => (
-    <EmptyState 
-      title="No news found"
-      message={searchQuery ? "Try a different search term or clear filters" : "Check back later for updates"}
-      icon="newspaper"
-      actionLabel="Refresh"
-      onAction={handleRefresh}
+  const renderNewsItem = ({ item }: { item: any }) => (
+    <NewsCard 
+      news={item} 
+      onPress={() => handleNewsPress(item.id)} 
+      viewMode={viewMode}
     />
   );
-  
-  if (loading && !refreshing) {
-    return <LoadingIndicator message="Loading news..." />;
-  }
-  
-  if (error && !refreshing) {
-    return (
-      <ErrorMessage 
-        message={error} 
-        onRetry={refreshNews}
-      />
-    );
-  }
-  
+
   return (
     <>
       <Stack.Screen 
         options={{
-          title: 'News',
+          title: 'Elbasan News',
           headerLargeTitle: true,
-          headerRight: () => (
-            <TouchableOpacity 
-              style={styles.refreshButton}
-              onPress={handleRefresh}
-            >
-              <RefreshCw size={22} color={Colors.primary} />
-            </TouchableOpacity>
-          ),
         }} 
       />
-      
-      {viewMode === 'list' ? (
-        <FlatList
-          data={regularNews}
-          renderItem={renderNewsItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={[
-            styles.list,
-            regularNews.length === 0 && styles.emptyList
-          ]}
-          ListHeaderComponent={renderListHeader}
-          ListEmptyComponent={filteredNews.length === 0 ? renderEmptyComponent : null}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              colors={[Colors.primary]}
-              tintColor={Colors.primary}
-            />
-          }
-        />
-      ) : (
-        <View style={styles.mapContainer}>
-          {renderListHeader()}
-          <View style={styles.mapWrapper}>
-            <NewsMap 
-              news={filteredNews}
-              onSelectNews={handleMapNewsSelect}
-            />
+      <View style={styles.container}>
+        <View style={styles.searchContainer}>
+          <SearchBar 
+            placeholder="Search news..." 
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          <View style={styles.viewControls}>
+            <TouchableOpacity 
+              style={styles.mapButton} 
+              onPress={handleMapPress}
+            >
+              <MapPin size={20} color={Colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.viewModeButton} 
+              onPress={toggleViewMode}
+            >
+              {viewMode === 'list' ? (
+                <Grid size={20} color={Colors.primary} />
+              ) : (
+                <List size={20} color={Colors.primary} />
+              )}
+            </TouchableOpacity>
           </View>
         </View>
-      )}
+
+        {/* City Vibe Widget */}
+        <CityVibeWidget />
+
+        {isLoading ? (
+          <LoadingIndicator message="Loading news..." />
+        ) : error ? (
+          <ErrorMessage 
+            message="Failed to load news. Please try again." 
+            onRetry={refetch} 
+          />
+        ) : filteredNews.length === 0 ? (
+          <EmptyState 
+            message={
+              searchQuery 
+                ? "No news found matching your search." 
+                : "No news available at the moment."
+            }
+            icon="newspaper"
+          />
+        ) : (
+          <>
+            <LastUpdated timestamp={lastUpdated} />
+            <FlatList
+              data={filteredNews}
+              renderItem={renderNewsItem}
+              keyExtractor={item => item.id}
+              contentContainerStyle={styles.newsList}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl 
+                  refreshing={refreshing} 
+                  onRefresh={onRefresh}
+                  colors={[Colors.primary]}
+                  tintColor={Colors.primary}
+                />
+              }
+              numColumns={viewMode === 'grid' ? 2 : 1}
+              key={viewMode} // Force re-render when view mode changes
+              ListHeaderComponent={
+                <SectionHeader 
+                  title="Latest News" 
+                  count={filteredNews.length}
+                />
+              }
+            />
+          </>
+        )}
+      </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  list: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  emptyList: {
-    flex: 1,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
-  filterButton: {
-    width: 48,
-    height: 48,
-    backgroundColor: Colors.card,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 8,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  viewModeButton: {
-    width: 48,
-    height: 48,
-    backgroundColor: Colors.card,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 8,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  refreshButton: {
-    padding: 8,
-  },
-  filterIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: `${Colors.primary}10`,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    marginBottom: 16,
-    marginHorizontal: 16,
-  },
-  filterText: {
-    fontSize: 14,
-    color: Colors.text,
-  },
-  filterCategory: {
-    fontWeight: 'bold',
-    color: Colors.primary,
-  },
-  clearFilterText: {
-    fontSize: 14,
-    color: Colors.primary,
-    fontWeight: '500',
-  },
-  featuredList: {
-    paddingBottom: 16,
-    paddingHorizontal: 16,
-  },
-  mapContainer: {
+  container: {
     flex: 1,
     backgroundColor: Colors.background,
   },
-  mapWrapper: {
-    flex: 1,
-    marginTop: 8,
+  searchContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+    alignItems: 'center',
+  },
+  viewControls: {
+    flexDirection: 'row',
+    marginLeft: 8,
+  },
+  mapButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.card,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  viewModeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.card,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  newsList: {
+    padding: 16,
+    paddingTop: 8,
   },
 });
