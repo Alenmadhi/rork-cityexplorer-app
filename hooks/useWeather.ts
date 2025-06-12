@@ -15,15 +15,24 @@ export function useWeather() {
     
     try {
       const fetchedWeather = await fetchWeather();
-      setWeather(fetchedWeather);
-      setLastUpdated(new Date());
+      
+      if (fetchedWeather) {
+        setWeather(fetchedWeather);
+        setLastUpdated(new Date());
+      } else if (useMockOnFailure) {
+        // Fall back to mock data if API returns empty results
+        setWeather(mockWeather);
+        setError("Couldn't fetch live weather. Showing sample data instead.");
+      } else {
+        setError("No weather data available at this time.");
+      }
     } catch (err) {
       console.error('Error in useWeather hook:', err);
       
       if (useMockOnFailure) {
         // Fall back to mock data on error
         setWeather(mockWeather);
-        setError("Couldn't connect to weather service. Showing sample weather instead.");
+        setError("Couldn't connect to weather service. Showing sample data instead.");
       } else {
         setError("Failed to load weather. Please check your connection and try again.");
       }
@@ -32,60 +41,22 @@ export function useWeather() {
     }
   };
 
-  // Use a separate effect for initial loading to prevent state updates before mount
   useEffect(() => {
-    let isMounted = true;
+    loadWeather();
     
-    const initWeather = async () => {
-      try {
-        const fetchedWeather = await fetchWeather();
-        if (isMounted) {
-          setWeather(fetchedWeather);
-          setLastUpdated(new Date());
-          setLoading(false);
-        }
-      } catch (err) {
-        console.error('Error loading initial weather:', err);
-        if (isMounted) {
-          // Fall back to mock data on error
-          setWeather(mockWeather);
-          setError("Couldn't connect to weather service. Showing sample weather instead.");
-          setLoading(false);
-        }
-      }
-    };
-    
-    initWeather();
-    
-    // Set up periodic refresh every hour
+    // Set up periodic refresh every 30 minutes
     const refreshInterval = setInterval(() => {
-      if (isMounted) {
-        loadWeather();
-      }
-    }, 60 * 60 * 1000);
+      loadWeather();
+    }, 30 * 60 * 1000);
     
-    return () => {
-      isMounted = false;
-      clearInterval(refreshInterval);
-    };
+    return () => clearInterval(refreshInterval);
   }, []);
-
-  const refreshWeather = () => {
-    loadWeather(true);
-  };
-
-  // Add aliases for consistency with other hooks
-  const refetch = refreshWeather;
-  const isLoading = loading;
 
   return {
     weather,
     loading,
     error,
     lastUpdated,
-    refreshWeather,
-    // Add these aliases for consistency with other hooks
-    refetch,
-    isLoading,
+    refreshWeather: () => loadWeather(true),
   };
 }
