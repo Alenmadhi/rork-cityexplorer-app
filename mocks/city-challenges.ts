@@ -32,8 +32,8 @@ export const cityChallenges: CityChallenge[] = [
   {
     id: '2',
     title: 'Color Behind the Cafe',
-    description: 'Find the hidden mural that tells the story of Elbasan's artistic renaissance.',
-    clue: 'Where coffee aromas blend with paint, behind the city's oldest cafe, colors tell tales that words cannot.',
+    description: "Find the hidden mural that tells the story of Elbasan's artistic renaissance.",
+    clue: "Where coffee aromas blend with paint, behind the city's oldest cafe, colors tell tales that words cannot.",
     difficulty: 'easy',
     type: 'visual',
     location: {
@@ -88,7 +88,7 @@ export const cityChallenges: CityChallenge[] = [
   {
     id: '4',
     title: 'Whispers of Music',
-    description: 'Find the place where Elbasan's musical traditions echo through time.',
+    description: "Find the place where Elbasan's musical traditions echo through time.",
     clue: 'Follow the stone steps where melodies once floated through evening air. Though the stage is silent, the stones remember the songs.',
     difficulty: 'hard',
     type: 'audio',
@@ -116,7 +116,7 @@ export const cityChallenges: CityChallenge[] = [
   {
     id: '5',
     title: 'The Forgotten Fountain',
-    description: 'Discover the ancient fountain that once served as the city's main water source.',
+    description: "Discover the ancient fountain that once served as the city's main water source.",
     clue: 'Where water whispers tales of centuries past, beneath the shadow of three cypress trees, life-giving streams have never ceased.',
     difficulty: 'medium',
     type: 'riddle',
