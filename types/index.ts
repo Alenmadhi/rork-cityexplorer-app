@@ -1,4 +1,25 @@
-// Add Shop types to the existing types file
+// Weather types
+export interface Weather {
+  location: string;
+  temperature: number;
+  condition: string;
+  icon: string;
+  windSpeed: number;
+  humidity: number;
+  lastUpdated: string;
+  forecast?: WeatherForecast[];
+}
+
+export interface WeatherForecast {
+  day: string;
+  icon: string;
+  temperature: {
+    min: number;
+    max: number;
+  };
+}
+
+// Shop types
 export interface Shop {
   id: string;
   name: string;
@@ -28,27 +49,7 @@ export interface ShopPromotion {
   discountPercent?: number;
 }
 
-export interface Weather {
-  location: string;
-  temperature: number;
-  condition: string;
-  icon: string;
-  windSpeed: number;
-  humidity: number;
-  lastUpdated: string;
-  forecast?: WeatherForecast[];
-}
-
-export interface WeatherForecast {
-  day: string;
-  icon: string;
-  temperature: {
-    min: number;
-    max: number;
-  };
-}
-
-// Add Event types
+// Event types
 export interface Event {
   id: string;
   title: string;
@@ -69,7 +70,7 @@ export interface Event {
 
 export type EventCategory = 'music' | 'art' | 'food' | 'sports' | 'festival' | 'other';
 
-// Add News types
+// News types
 export interface NewsItem {
   id: string;
   title: string;
@@ -89,3 +90,34 @@ export interface NewsItem {
     };
   };
 }
+
+// Tourist info types
+export interface TouristInfo {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  category: TouristInfoCategory;
+}
+
+export type TouristInfoCategory = 'accommodation' | 'transportation' | 'emergency' | 'wifi' | 'tips' | 'phrasebook';
+
+// Attraction types
+export interface Attraction {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  category: AttractionCategory;
+  address: string;
+  openingHours?: string;
+  admissionFee?: string;
+  rating: number;
+  featured: boolean;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+}
+
+export type AttractionCategory = 'historical' | 'natural' | 'cultural' | 'religious' | 'entertainment';

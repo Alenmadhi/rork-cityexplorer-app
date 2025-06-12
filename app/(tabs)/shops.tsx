@@ -6,7 +6,7 @@ import { ShopCard } from '@/components/ShopCard';
 import { shops } from '@/mocks/shops';
 import { Shop, ShopCategory } from '@/types';
 import Colors from '@/constants/colors';
-import { Filter, MapPin } from 'lucide-react-native';
+import { MapPin } from 'lucide-react-native';
 
 export default function ShopsScreen() {
   const router = useRouter();
