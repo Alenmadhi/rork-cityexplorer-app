@@ -107,8 +107,8 @@ export default function NewsMap({ news, onSelectNews }: NewsMapProps) {
           </Text>
         </View>
       ) : (
-        <MapComponent 
-          ref={mapRef}
+        <MapComponentWrapper 
+          mapRef={mapRef}
           newsWithCoordinates={newsWithCoordinates}
           defaultRegion={defaultRegion}
           getMarkerColor={getMarkerColor}
@@ -123,14 +123,32 @@ export default function NewsMap({ news, onSelectNews }: NewsMapProps) {
   );
 }
 
+// Props interface for the map component wrapper
+interface MapComponentWrapperProps {
+  mapRef: React.RefObject<any>;
+  newsWithCoordinates: NewsItem[];
+  defaultRegion: {
+    latitude: number;
+    longitude: number;
+    latitudeDelta: number;
+    longitudeDelta: number;
+  };
+  getMarkerColor: (category: NewsCategory) => string;
+  handleMarkerPress: (newsItem: NewsItem) => void;
+  handleCalloutPress: (newsItem: NewsItem) => void;
+  handleZoomIn: () => void;
+  handleZoomOut: () => void;
+  handleResetMap: () => void;
+}
+
 // Conditionally import and render MapView component
-const MapComponent = Platform.OS !== 'web' ? 
-  React.forwardRef((props, ref) => {
+const MapComponentWrapper = Platform.OS !== 'web' ? 
+  (props: MapComponentWrapperProps) => {
     // Dynamically import MapView to avoid web errors
-    const [MapViewComponent, setMapViewComponent] = useState(null);
-    const [MarkerComponent, setMarkerComponent] = useState(null);
-    const [CalloutComponent, setCalloutComponent] = useState(null);
-    const [Provider, setProvider] = useState(null);
+    const [MapViewComponent, setMapViewComponent] = useState<any>(null);
+    const [MarkerComponent, setMarkerComponent] = useState<any>(null);
+    const [CalloutComponent, setCalloutComponent] = useState<any>(null);
+    const [Provider, setProvider] = useState<any>(null);
     
     useEffect(() => {
       // Import map components only on native platforms
@@ -151,6 +169,7 @@ const MapComponent = Platform.OS !== 'web' ?
     }
     
     const { 
+      mapRef,
       newsWithCoordinates, 
       defaultRegion, 
       getMarkerColor, 
@@ -164,7 +183,7 @@ const MapComponent = Platform.OS !== 'web' ?
     return (
       <>
         <MapViewComponent
-          ref={ref}
+          ref={mapRef}
           style={styles.map}
           initialRegion={defaultRegion}
           provider={Provider}
@@ -177,7 +196,7 @@ const MapComponent = Platform.OS !== 'web' ?
           showsPointsOfInterest
           toolbarEnabled={false}
         >
-          {newsWithCoordinates.map((item) => (
+          {newsWithCoordinates.map((item: NewsItem) => (
             <MarkerComponent
               key={item.id}
               coordinate={item.coordinates!}
@@ -245,7 +264,7 @@ const MapComponent = Platform.OS !== 'web' ?
         </View>
       </>
     );
-  }) : 
+  } : 
   () => null;
 
 const styles = StyleSheet.create({

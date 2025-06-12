@@ -34,6 +34,8 @@ export interface Event {
   tags: string[];
 }
 
+export type NewsCategory = 'local' | 'business' | 'culture' | 'sports' | 'politics' | 'other';
+
 export interface NewsItem {
   id: string;
   title: string;
@@ -43,9 +45,14 @@ export interface NewsItem {
   source: string;
   author: string;
   image: string;
-  category: string;
+  category: NewsCategory;
   tags: string[];
   url?: string;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+  locationName?: string;
 }
 
 export interface Shop {

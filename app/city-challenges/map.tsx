@@ -5,6 +5,7 @@ import { useCityChallenges } from '@/hooks/useCityChallenges';
 import ChallengeCard from '@/components/ChallengeCard';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { EmptyState } from '@/components/EmptyState';
+import { CityChallenge } from '@/types';
 
 export default function ChallengesMapScreen() {
   const router = useRouter();
@@ -129,6 +130,10 @@ if (Platform.OS !== 'web') {
       challenges, 
       onMarkerPress, 
       onMapReady 
+    }: {
+      challenges: CityChallenge[];
+      onMarkerPress: (id: string) => void;
+      onMapReady: () => void;
     }) => (
       <MapView
         style={styles.map}
@@ -143,7 +148,7 @@ if (Platform.OS !== 'web') {
         showsUserLocation
         showsMyLocationButton
       >
-        {challenges.map(challenge => (
+        {challenges.map((challenge: CityChallenge) => (
           <Marker
             key={challenge.id}
             coordinate={challenge.location.coordinates}
