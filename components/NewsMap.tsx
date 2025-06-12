@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Dimensions, Platform } from 'react-native';
-import MapView, { Marker, Callout, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useRouter } from 'expo-router';
 import { MapPin, Layers, ZoomIn, ZoomOut, Info } from 'lucide-react-native';
 import Colors from '@/constants/colors';
@@ -13,7 +12,7 @@ interface NewsMapProps {
 
 export default function NewsMap({ news, onSelectNews }: NewsMapProps) {
   const router = useRouter();
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef(null);
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
   
   // Default region (Elbasan city center)
@@ -57,10 +56,12 @@ export default function NewsMap({ news, onSelectNews }: NewsMapProps) {
   
   // Zoom in
   const handleZoomIn = () => {
-    if (mapRef.current) {
+    if (mapRef.current && Platform.OS !== 'web') {
+      // @ts-ignore - getCamera is available on native platforms
       mapRef.current.getCamera().then((camera) => {
         if (camera && camera.zoom !== undefined) {
           camera.zoom += 1;
+          // @ts-ignore - animateCamera is available on native platforms
           mapRef.current?.animateCamera(camera, { duration: 300 });
         }
       });
@@ -69,10 +70,12 @@ export default function NewsMap({ news, onSelectNews }: NewsMapProps) {
   
   // Zoom out
   const handleZoomOut = () => {
-    if (mapRef.current) {
+    if (mapRef.current && Platform.OS !== 'web') {
+      // @ts-ignore - getCamera is available on native platforms
       mapRef.current.getCamera().then((camera) => {
         if (camera && camera.zoom !== undefined) {
           camera.zoom -= 1;
+          // @ts-ignore - animateCamera is available on native platforms
           mapRef.current?.animateCamera(camera, { duration: 300 });
         }
       });
@@ -81,7 +84,10 @@ export default function NewsMap({ news, onSelectNews }: NewsMapProps) {
   
   // Reset map to default view
   const handleResetMap = () => {
-    mapRef.current?.animateToRegion(defaultRegion, 500);
+    if (mapRef.current && Platform.OS !== 'web') {
+      // @ts-ignore - animateToRegion is available on native platforms
+      mapRef.current?.animateToRegion(defaultRegion, 500);
+    }
   };
   
   // Filter news items with valid coordinates
@@ -101,92 +107,146 @@ export default function NewsMap({ news, onSelectNews }: NewsMapProps) {
           </Text>
         </View>
       ) : (
-        <>
-          <MapView
-            ref={mapRef}
-            style={styles.map}
-            initialRegion={defaultRegion}
-            provider={PROVIDER_GOOGLE}
-            showsUserLocation
-            showsCompass
-            showsScale
-            showsBuildings
-            showsTraffic={false}
-            showsIndoors={false}
-            showsPointsOfInterest
-            toolbarEnabled={false}
-          >
-            {newsWithCoordinates.map((item) => (
-              <Marker
-                key={item.id}
-                coordinate={item.coordinates!}
-                title={item.title}
-                description={item.locationName || ''}
-                pinColor={getMarkerColor(item.category)}
-                onPress={() => handleMarkerPress(item)}
-              >
-                <Callout tooltip onPress={() => handleCalloutPress(item)}>
-                  <View style={styles.callout}>
-                    <Text style={styles.calloutTitle} numberOfLines={2}>
-                      {item.title}
-                    </Text>
-                    <Text style={styles.calloutCategory}>
-                      {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
-                    </Text>
-                    <Text style={styles.calloutLocation}>
-                      {item.locationName || 'Elbasan'}
-                    </Text>
-                    <Text style={styles.calloutAction}>Tap to read more</Text>
-                  </View>
-                </Callout>
-              </Marker>
-            ))}
-          </MapView>
-          
-          {/* Map controls */}
-          <View style={styles.mapControls}>
-            <TouchableOpacity style={styles.mapButton} onPress={handleZoomIn}>
-              <ZoomIn size={20} color={Colors.text} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.mapButton} onPress={handleZoomOut}>
-              <ZoomOut size={20} color={Colors.text} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.mapButton} onPress={handleResetMap}>
-              <Layers size={20} color={Colors.text} />
-            </TouchableOpacity>
-          </View>
-          
-          {/* Legend */}
-          <View style={styles.legend}>
-            <Text style={styles.legendTitle}>News Categories</Text>
-            <View style={styles.legendItems}>
-              <View style={styles.legendItem}>
-                <MapPin size={16} color={Colors.categoryLocal} />
-                <Text style={styles.legendText}>Local</Text>
-              </View>
-              <View style={styles.legendItem}>
-                <MapPin size={16} color={Colors.categoryBusiness} />
-                <Text style={styles.legendText}>Business</Text>
-              </View>
-              <View style={styles.legendItem}>
-                <MapPin size={16} color={Colors.categoryCulture} />
-                <Text style={styles.legendText}>Culture</Text>
-              </View>
-              <View style={styles.legendItem}>
-                <MapPin size={16} color={Colors.categorySports} />
-                <Text style={styles.legendText}>Sports</Text>
-              </View>
-              <View style={styles.legendItem}>
-                <MapPin size={16} color={Colors.categoryPolitics} />
-                <Text style={styles.legendText}>Politics</Text>
-              </View>
-            </View>
-          </View>
-        </>
+        <MapComponent 
+          ref={mapRef}
+          newsWithCoordinates={newsWithCoordinates}
+          defaultRegion={defaultRegion}
+          getMarkerColor={getMarkerColor}
+          handleMarkerPress={handleMarkerPress}
+          handleCalloutPress={handleCalloutPress}
+          handleZoomIn={handleZoomIn}
+          handleZoomOut={handleZoomOut}
+          handleResetMap={handleResetMap}
+        />
       )}
     </View>
   );
 }
+
+// Conditionally import and render MapView component
+const MapComponent = Platform.OS !== 'web' ? 
+  React.forwardRef((props, ref) => {
+    // Dynamically import MapView to avoid web errors
+    const [MapViewComponent, setMapViewComponent] = useState(null);
+    const [MarkerComponent, setMarkerComponent] = useState(null);
+    const [CalloutComponent, setCalloutComponent] = useState(null);
+    const [Provider, setProvider] = useState(null);
+    
+    useEffect(() => {
+      // Import map components only on native platforms
+      import('react-native-maps').then(({ default: MapView, Marker, Callout, PROVIDER_GOOGLE }) => {
+        setMapViewComponent(() => MapView);
+        setMarkerComponent(() => Marker);
+        setCalloutComponent(() => Callout);
+        setProvider(PROVIDER_GOOGLE);
+      }).catch(err => console.error('Error loading maps:', err));
+    }, []);
+    
+    if (!MapViewComponent || !MarkerComponent || !CalloutComponent) {
+      return (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading map...</Text>
+        </View>
+      );
+    }
+    
+    const { 
+      newsWithCoordinates, 
+      defaultRegion, 
+      getMarkerColor, 
+      handleMarkerPress, 
+      handleCalloutPress,
+      handleZoomIn,
+      handleZoomOut,
+      handleResetMap
+    } = props;
+    
+    return (
+      <>
+        <MapViewComponent
+          ref={ref}
+          style={styles.map}
+          initialRegion={defaultRegion}
+          provider={Provider}
+          showsUserLocation
+          showsCompass
+          showsScale
+          showsBuildings
+          showsTraffic={false}
+          showsIndoors={false}
+          showsPointsOfInterest
+          toolbarEnabled={false}
+        >
+          {newsWithCoordinates.map((item) => (
+            <MarkerComponent
+              key={item.id}
+              coordinate={item.coordinates!}
+              title={item.title}
+              description={item.locationName || ''}
+              pinColor={getMarkerColor(item.category)}
+              onPress={() => handleMarkerPress(item)}
+            >
+              <CalloutComponent tooltip onPress={() => handleCalloutPress(item)}>
+                <View style={styles.callout}>
+                  <Text style={styles.calloutTitle} numberOfLines={2}>
+                    {item.title}
+                  </Text>
+                  <Text style={styles.calloutCategory}>
+                    {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
+                  </Text>
+                  <Text style={styles.calloutLocation}>
+                    {item.locationName || 'Elbasan'}
+                  </Text>
+                  <Text style={styles.calloutAction}>Tap to read more</Text>
+                </View>
+              </CalloutComponent>
+            </MarkerComponent>
+          ))}
+        </MapViewComponent>
+        
+        {/* Map controls */}
+        <View style={styles.mapControls}>
+          <TouchableOpacity style={styles.mapButton} onPress={handleZoomIn}>
+            <ZoomIn size={20} color={Colors.text} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.mapButton} onPress={handleZoomOut}>
+            <ZoomOut size={20} color={Colors.text} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.mapButton} onPress={handleResetMap}>
+            <Layers size={20} color={Colors.text} />
+          </TouchableOpacity>
+        </View>
+        
+        {/* Legend */}
+        <View style={styles.legend}>
+          <Text style={styles.legendTitle}>News Categories</Text>
+          <View style={styles.legendItems}>
+            <View style={styles.legendItem}>
+              <MapPin size={16} color={Colors.categoryLocal} />
+              <Text style={styles.legendText}>Local</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <MapPin size={16} color={Colors.categoryBusiness} />
+              <Text style={styles.legendText}>Business</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <MapPin size={16} color={Colors.categoryCulture} />
+              <Text style={styles.legendText}>Culture</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <MapPin size={16} color={Colors.categorySports} />
+              <Text style={styles.legendText}>Sports</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <MapPin size={16} color={Colors.categoryPolitics} />
+              <Text style={styles.legendText}>Politics</Text>
+            </View>
+          </View>
+        </View>
+      </>
+    );
+  }) : 
+  () => null;
 
 const styles = StyleSheet.create({
   container: {
@@ -321,5 +381,14 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: 8,
     textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: Colors.textSecondary,
   },
 });
