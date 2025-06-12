@@ -1,126 +1,83 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { MapPin, Award, Compass, ChevronRight } from 'lucide-react-native';
-import * as Location from 'expo-location';
+import { Target, Check, ChevronRight } from 'lucide-react-native';
 import Colors from '@/constants/colors';
-import { useCityChallengesStore } from '@/stores/city-challenges-store';
+import { useChallengesStore } from '@/stores/challenges-store';
+import { useGamificationStore } from '@/stores/gamification-store';
 
 export function DailyChallengeWidget() {
   const router = useRouter();
-  const { 
-    dailyChallenge, 
-    fetchDailyChallenge,
-    checkProximity,
-    userChallenges
-  } = useCityChallengesStore();
+  const { availableChallenges, completeChallenge } = useChallengesStore();
+  const { updateStats } = useGamificationStore();
+  const [completed, setCompleted] = useState(false);
   
-  const [location, setLocation] = useState<Location.LocationObject | null>(null);
-  const [proximity, setProximity] = useState<{ isNearby: boolean; distance: number } | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Get daily challenge - first uncompleted challenge or first challenge
+  const dailyChallenge = availableChallenges.find(c => !c.completed) || availableChallenges[0];
   
-  useEffect(() => {
-    // Fetch daily challenge if not already loaded
-    if (!dailyChallenge) {
-      fetchDailyChallenge();
+  // Handle challenge completion
+  const handleCompleteChallenge = () => {
+    if (dailyChallenge && !dailyChallenge.completed && !completed) {
+      // Mark challenge as completed
+      completeChallenge(dailyChallenge.id);
+      
+      // Update user stats
+      updateStats({
+        points: dailyChallenge.points,
+        challengesCompleted: 1
+      });
+      
+      // Update local state
+      setCompleted(true);
     }
-    
-    // Get user location if on mobile
-    if (Platform.OS !== 'web') {
-      (async () => {
-        const { status } = await Location.getForegroundPermissionsAsync();
-        
-        if (status === 'granted') {
-          const location = await Location.getCurrentPositionAsync({});
-          setLocation(location);
-          
-          // Check proximity if we have a challenge
-          if (dailyChallenge) {
-            const result = await checkProximity(dailyChallenge.id, {
-              latitude: location.coords.latitude,
-              longitude: location.coords.longitude
-            });
-            setProximity(result);
-          }
-        }
-      })();
-    }
-    
-    setLoading(false);
-  }, [dailyChallenge]);
-  
-  // Check if challenge is completed
-  const isCompleted = dailyChallenge && userChallenges.some(
-    uc => uc.challengeId === dailyChallenge.id && uc.status === 'completed'
-  );
-  
-  // Format distance
-  const formatDistance = (meters?: number) => {
-    if (!meters) return 'Unknown';
-    
-    if (meters < 1000) {
-      return `${Math.round(meters)}m away`;
-    }
-    return `${(meters / 1000).toFixed(1)}km away`;
   };
   
-  if (loading || !dailyChallenge) {
+  if (!dailyChallenge) {
     return null;
   }
   
   return (
-    <TouchableOpacity 
-      style={styles.container}
-      onPress={() => router.push('/city-challenges')}
-      activeOpacity={0.7}
-    >
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Daily Mystery Challenge</Text>
-          
-          {isCompleted ? (
-            <View style={styles.completedBadge}>
-              <Text style={styles.completedText}>Completed</Text>
-            </View>
-          ) : (
-            <Award size={20} color={Colors.primary} />
-          )}
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.titleContainer}>
+          <Target size={20} color={Colors.primary} />
+          <Text style={styles.title}>Daily Challenge</Text>
         </View>
         
-        <Text style={styles.challengeTitle} numberOfLines={1}>
-          {dailyChallenge.title}
-        </Text>
-        
-        <Text style={styles.clue} numberOfLines={2}>
-          "{dailyChallenge.clue}"
-        </Text>
-        
-        <View style={styles.footer}>
-          <View style={styles.locationContainer}>
-            <MapPin size={16} color={Colors.textSecondary} />
-            <Text style={styles.locationText} numberOfLines={1}>
-              {dailyChallenge.location.name}
-            </Text>
-          </View>
-          
-          {proximity && (
-            <View style={styles.distanceContainer}>
-              <Compass size={16} color={proximity.isNearby ? Colors.success : Colors.textSecondary} />
-              <Text style={[
-                styles.distanceText, 
-                { color: proximity.isNearby ? Colors.success : Colors.textSecondary }
-              ]}>
-                {proximity.isNearby ? 'Nearby!' : formatDistance(proximity.distance)}
-              </Text>
-            </View>
-          )}
-        </View>
+        <TouchableOpacity 
+          style={styles.viewAllButton}
+          onPress={() => router.push('/challenges')}
+        >
+          <Text style={styles.viewAllText}>View All</Text>
+          <ChevronRight size={16} color={Colors.primary} />
+        </TouchableOpacity>
       </View>
       
-      <View style={styles.arrowContainer}>
-        <ChevronRight size={20} color={Colors.primary} />
+      <View style={styles.challengeContainer}>
+        <Text style={styles.challengeTitle}>{dailyChallenge.title}</Text>
+        <Text style={styles.challengeDescription}>{dailyChallenge.description}</Text>
+        
+        <View style={styles.rewardContainer}>
+          <Text style={styles.rewardText}>
+            Reward: <Text style={styles.pointsText}>{dailyChallenge.points} points</Text>
+          </Text>
+          
+          {dailyChallenge.completed || completed ? (
+            <View style={styles.completedButton}>
+              <Check size={16} color="#fff" />
+              <Text style={styles.completedButtonText}>Completed</Text>
+            </View>
+          ) : (
+            <TouchableOpacity 
+              style={styles.completeButton}
+              onPress={handleCompleteChallenge}
+            >
+              <Text style={styles.completeButtonText}>Complete</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
@@ -132,7 +89,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     borderWidth: 1,
     borderColor: Colors.border,
-    flexDirection: 'row',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -148,30 +104,35 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  content: {
-    flex: 1,
-  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 16,
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   title: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginLeft: 8,
+  },
+  viewAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  viewAllText: {
     fontSize: 14,
-    fontWeight: '600',
     color: Colors.primary,
+    marginRight: 2,
   },
-  completedBadge: {
-    backgroundColor: `${Colors.success}20`,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-  },
-  completedText: {
-    fontSize: 12,
-    color: Colors.success,
-    fontWeight: '500',
+  challengeContainer: {
+    backgroundColor: `${Colors.primary}08`,
+    borderRadius: 8,
+    padding: 16,
   },
   challengeTitle: {
     fontSize: 16,
@@ -179,36 +140,48 @@ const styles = StyleSheet.create({
     color: Colors.text,
     marginBottom: 8,
   },
-  clue: {
+  challengeDescription: {
     fontSize: 14,
-    fontStyle: 'italic',
     color: Colors.textSecondary,
-    marginBottom: 12,
+    marginBottom: 16,
     lineHeight: 20,
   },
-  footer: {
+  rewardContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  locationContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
   },
-  locationText: {
-    fontSize: 12,
+  rewardText: {
+    fontSize: 14,
     color: Colors.textSecondary,
-    marginLeft: 4,
   },
-  distanceContainer: {
+  pointsText: {
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  completeButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  completeButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  completedButton: {
+    backgroundColor: Colors.success,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
     flexDirection: 'row',
     alignItems: 'center',
   },
-  distanceText: {
-    fontSize: 12,
+  completedButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
     marginLeft: 4,
-  },
-  arrowContainer: {
-    justifyContent: 'center',
-    marginLeft: 8,
   },
 });
