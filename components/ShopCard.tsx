@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity, Platform } from 'react-native';
-import { MapPin, Star, Tag } from 'lucide-react-native';
+import { MapPin, Phone, Clock, Star } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { Shop } from '@/types';
 
@@ -11,55 +11,70 @@ interface ShopCardProps {
 
 export function ShopCard({ shop, onPress }: ShopCardProps) {
   return (
-    <TouchableOpacity 
-      style={styles.container}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
+    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.imageContainer}>
         <Image 
           source={{ uri: shop.image }} 
           style={styles.image}
           resizeMode="cover"
         />
-        
         {shop.featured && (
           <View style={styles.featuredBadge}>
             <Text style={styles.featuredText}>Featured</Text>
           </View>
         )}
+        {shop.promotion && (
+          <View style={styles.promotionBadge}>
+            <Text style={styles.promotionText}>{shop.promotion.discountPercent}% OFF</Text>
+          </View>
+        )}
       </View>
       
       <View style={styles.content}>
-        <Text style={styles.name} numberOfLines={1}>{shop.name}</Text>
-        
-        <View style={styles.metaContainer}>
-          <View style={styles.categoryBadge}>
-            <Text style={styles.categoryText}>
-              {shop.category.charAt(0).toUpperCase() + shop.category.slice(1)}
-            </Text>
-          </View>
-          
+        <View style={styles.header}>
+          <Text style={styles.name}>{shop.name}</Text>
           <View style={styles.ratingContainer}>
-            <Star size={14} color="#FFD700" fill="#FFD700" />
+            <Star size={16} color={Colors.warning} fill={Colors.warning} />
             <Text style={styles.rating}>{shop.rating.toFixed(1)}</Text>
           </View>
         </View>
         
-        <Text style={styles.description} numberOfLines={2}>{shop.description}</Text>
+        <Text style={styles.category}>{shop.category.charAt(0).toUpperCase() + shop.category.slice(1)}</Text>
         
-        <View style={styles.locationContainer}>
-          <MapPin size={14} color={Colors.textSecondary} />
-          <Text style={styles.location} numberOfLines={1}>{shop.address}</Text>
+        <Text style={styles.description} numberOfLines={2}>
+          {shop.description}
+        </Text>
+        
+        <View style={styles.detailsContainer}>
+          <View style={styles.detailItem}>
+            <MapPin size={14} color={Colors.textSecondary} />
+            <Text style={styles.detailText} numberOfLines={1}>{shop.address}</Text>
+          </View>
+          
+          {shop.phone && (
+            <View style={styles.detailItem}>
+              <Phone size={14} color={Colors.textSecondary} />
+              <Text style={styles.detailText}>{shop.phone}</Text>
+            </View>
+          )}
+          
+          <View style={styles.detailItem}>
+            <Clock size={14} color={Colors.textSecondary} />
+            <Text style={styles.detailText}>{shop.hours}</Text>
+          </View>
         </View>
         
         {shop.promotion && (
           <View style={styles.promotionContainer}>
-            <Tag size={14} color={Colors.primary} />
-            <Text style={styles.promotionText} numberOfLines={1}>
-              {shop.promotion.title}
-              {shop.promotion.discountPercent && ` - ${shop.promotion.discountPercent}% OFF`}
+            <Text style={styles.promotionTitle}>{shop.promotion.title}</Text>
+            <Text style={styles.promotionDescription} numberOfLines={1}>
+              {shop.promotion.description}
             </Text>
+            {shop.promotion.validUntil && (
+              <Text style={styles.promotionValidity}>
+                Valid until: {new Date(shop.promotion.validUntil).toLocaleDateString()}
+              </Text>
+            )}
           </View>
         )}
       </View>
@@ -92,7 +107,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: 'relative',
-    height: 150,
+    height: 160,
   },
   image: {
     width: '100%',
@@ -100,8 +115,8 @@ const styles = StyleSheet.create({
   },
   featuredBadge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
+    top: 12,
+    left: 12,
     backgroundColor: Colors.primary,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -112,35 +127,42 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
-  content: {
-    padding: 12,
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  metaContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  categoryBadge: {
-    backgroundColor: `${Colors.primary}20`,
+  promotionBadge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    backgroundColor: Colors.error,
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 4,
     borderRadius: 4,
   },
-  categoryText: {
+  promotionText: {
+    color: '#fff',
     fontSize: 12,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontWeight: 'bold',
+  },
+  content: {
+    padding: 16,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  name: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.text,
+    flex: 1,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: `${Colors.warning}15`,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
   rating: {
     fontSize: 14,
@@ -148,36 +170,51 @@ const styles = StyleSheet.create({
     color: Colors.text,
     marginLeft: 4,
   },
+  category: {
+    fontSize: 14,
+    color: Colors.primary,
+    marginBottom: 8,
+  },
   description: {
     fontSize: 14,
     color: Colors.text,
-    marginBottom: 8,
+    marginBottom: 12,
     lineHeight: 20,
   },
-  locationContainer: {
+  detailsContainer: {
+    marginBottom: 12,
+  },
+  detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
-  location: {
-    fontSize: 12,
+  detailText: {
+    fontSize: 14,
     color: Colors.textSecondary,
-    marginLeft: 4,
+    marginLeft: 8,
     flex: 1,
   },
   promotionContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: `${Colors.primary}10`,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    backgroundColor: `${Colors.error}10`,
+    padding: 12,
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.error,
   },
-  promotionText: {
+  promotionTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  promotionDescription: {
+    fontSize: 14,
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  promotionValidity: {
     fontSize: 12,
-    color: Colors.primary,
-    fontWeight: '500',
-    marginLeft: 4,
-    flex: 1,
+    color: Colors.textSecondary,
   },
 });

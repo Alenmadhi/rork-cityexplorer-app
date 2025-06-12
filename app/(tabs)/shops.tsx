@@ -3,13 +3,17 @@ import { StyleSheet, View, FlatList, Text, TouchableOpacity, RefreshControl } fr
 import { Stack, useRouter } from 'expo-router';
 import { SearchBar } from '@/components/SearchBar';
 import { ShopCard } from '@/components/ShopCard';
-import { shops } from '@/mocks/shops';
+import { shops as mockShops } from '@/mocks/shops';
 import { Shop, ShopCategory } from '@/types';
 import Colors from '@/constants/colors';
 import { MapPin } from 'lucide-react-native';
+import { fetchShops } from '@/services/api';
 
 export default function ShopsScreen() {
   const router = useRouter();
+  const [shops, setShops] = useState<Shop[]>(mockShops);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ShopCategory | 'all'>('all');
   const [refreshing, setRefreshing] = useState(false);
@@ -43,12 +47,19 @@ export default function ShopsScreen() {
     router.push('/tourist/shops/map');
   };
   
-  const handleRefresh = useCallback(() => {
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    // Simulate refresh
-    setTimeout(() => {
+    setError(null);
+    
+    try {
+      const fetchedShops = await fetchShops();
+      setShops(fetchedShops);
+    } catch (err) {
+      console.error('Error fetching shops:', err);
+      setError("Couldn't connect to shops service. Showing sample shops instead.");
+    } finally {
       setRefreshing(false);
-    }, 1000);
+    }
   }, []);
   
   const renderCategoryButton = (category: ShopCategory | 'all') => {
@@ -111,6 +122,15 @@ export default function ShopsScreen() {
             contentContainerStyle={styles.categoriesList}
           />
         </View>
+        
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={handleRefresh}>
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        )}
         
         {sortedShops.length > 0 ? (
           <FlatList
@@ -208,5 +228,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.textSecondary,
     textAlign: 'center',
+  },
+  errorContainer: {
+    padding: 16,
+    backgroundColor: `${Colors.error}15`,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 8,
+  },
+  errorText: {
+    fontSize: 14,
+    color: Colors.error,
+    marginBottom: 8,
+  },
+  retryButton: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    backgroundColor: Colors.primary,
+    borderRadius: 4,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
