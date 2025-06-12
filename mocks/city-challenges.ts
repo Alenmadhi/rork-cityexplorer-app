@@ -143,7 +143,7 @@ export const cityChallenges: CityChallenge[] = [
   },
   {
     id: '6',
-    title: 'The Merchant's Secret',
+    title: "The Merchant's Secret",
     description: 'Find the hidden courtyard where merchants once traded exotic goods from distant lands.',
     clue: 'Through the narrow passage where sunlight barely reaches, seek the courtyard where silk and spice once changed hands in whispers.',
     difficulty: 'hard',
@@ -171,7 +171,7 @@ export const cityChallenges: CityChallenge[] = [
   },
   {
     id: '7',
-    title: 'The Craftsman's Legacy',
+    title: "The Craftsman's Legacy",
     description: 'Discover the workshop where traditional crafts have been practiced for generations.',
     clue: 'Hands that shape clay have worked in this place for ten generations. Find where the wheel still turns as it did centuries ago.',
     difficulty: 'easy',
