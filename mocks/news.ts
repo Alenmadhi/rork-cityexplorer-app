@@ -5,94 +5,150 @@ export const news: NewsItem[] = [
     id: '1',
     title: 'Elbasan Castle Restoration Project Completed',
     summary: 'The historic Elbasan Castle has been fully restored after a two-year renovation project.',
-    content: 'After two years of meticulous work, the restoration of Elbasan Castle has been completed. The project, funded by the Ministry of Culture and the European Union, has restored the ancient walls, towers, and interior structures to their former glory. The castle, which dates back to the 15th century, is now open to visitors with new exhibition spaces, a museum, and guided tours available daily.\n\nThe restoration team used traditional materials and techniques wherever possible, ensuring the authenticity of the historic structure while making it safe and accessible for modern visitors. Archaeological discoveries made during the restoration process, including Ottoman-era artifacts and Byzantine mosaics, are now on display in the castle museum.\n\n"This is a proud moment for Elbasan and for all of Albania," said the Mayor during the reopening ceremony. "Our castle stands once again as a testament to our rich history and as a beacon for cultural tourism in the region."',
-    author: 'Elton Mara',
-    publishedAt: '2023-06-15T09:30:00Z',
-    image: 'https://images.unsplash.com/photo-1533154683836-84ea7a0bc310?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    category: 'Culture',
-    source: 'Elbasan News',
+    content: `After two years of meticulous work, the restoration of Elbasan Castle has been completed, preserving this important historical monument for future generations. The project, funded by the Ministry of Culture and the European Union, focused on strengthening the castle walls, restoring the ancient gates, and improving visitor facilities.
+
+    "This is a significant achievement for our cultural heritage," said the Mayor of Elbasan during the reopening ceremony. "The castle is not just a tourist attraction but a symbol of our city's rich history."
+
+    The restoration work was carried out by a team of local and international experts who used traditional techniques and materials to ensure authenticity. New lighting has been installed to highlight the architectural features, and informational panels have been added to enhance the visitor experience.
+
+    The castle, which dates back to the 15th century, will now be open to visitors daily from 9 AM to 7 PM, with guided tours available in multiple languages.`,
+    author: 'Artan Meti',
+    publishedAt: '2025-06-10T09:30:00Z',
+    image: 'https://images.unsplash.com/photo-1569880153113-76e33fc52d5f?auto=format&fit=crop&q=80&w=1170',
+    category: 'culture',
+    source: 'Elbasan Daily',
     featured: true,
     location: {
       name: 'Elbasan Castle',
       coordinates: {
-        latitude: 41.1123,
-        longitude: 20.0826
+        latitude: 41.1125,
+        longitude: 20.0822
       }
     }
   },
   {
     id: '2',
-    title: 'New Bus Terminal Opens in Elbasan',
-    summary: 'A modern bus terminal has opened in the eastern part of the city, improving transportation links.',
-    content: 'A state-of-the-art bus terminal has opened in eastern Elbasan, significantly improving transportation infrastructure for both residents and visitors. The new facility, which cost approximately 3.5 million euros, features 12 platforms, digital information displays, comfortable waiting areas, and retail spaces.\n\nThe terminal will serve both intercity routes and international connections to neighboring countries, centralizing bus services that were previously scattered across multiple locations in the city. Modern ticketing systems allow passengers to purchase tickets online or through a mobile app.\n\n"This new terminal represents a major step forward for our city\'s infrastructure," said the Director of Transportation. "It will make travel more convenient, more comfortable, and more efficient for everyone."\n\nThe project was completed ahead of schedule and includes environmentally friendly features such as solar panels, rainwater collection systems, and energy-efficient lighting. A dedicated bicycle parking area and electric vehicle charging stations have also been installed to promote sustainable transportation options.',
-    author: 'Mirela Koci',
-    publishedAt: '2023-05-28T14:15:00Z',
-    image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    category: 'Infrastructure',
-    source: 'Elbasan Daily',
-    featured: false,
-    location: {
-      name: 'East Elbasan Bus Terminal',
-      coordinates: {
-        latitude: 41.1072,
-        longitude: 20.0956
-      }
-    }
+    title: 'New International Flight Route Connects Elbasan to European Capitals',
+    summary: 'A new flight service will connect Elbasan region to major European cities starting next month.',
+    content: `Starting next month, residents of Elbasan will have easier access to European destinations thanks to a new flight route connecting Tirana International Airport with several European capitals. The service, operated by Albanian Airlines, will offer direct flights to Rome, Vienna, and Athens.
+
+    "This new route will significantly boost tourism and business opportunities for Elbasan," said the Minister of Transport at the announcement event. "It's part of our strategy to improve connectivity between Albania and the rest of Europe."
+
+    The flights will operate three times a week, with promotional fares available for the first three months. Travel time from Elbasan to Tirana Airport is approximately 45 minutes by car or shuttle service.
+
+    Local businesses have welcomed the news, anticipating increased tourist numbers and new opportunities for international trade. The Elbasan Chamber of Commerce estimates that the improved connectivity could bring up to 15% more visitors to the region annually.`,
+    author: 'Elira Hoxha',
+    publishedAt: '2025-06-09T14:15:00Z',
+    image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=1174',
+    category: 'business',
+    source: 'Albania Business Review',
+    featured: false
   },
   {
     id: '3',
-    title: 'Local Olive Oil Wins International Award',
-    summary: 'Elbasan-produced olive oil has won gold at the Mediterranean Olive Oil Competition.',
-    content: 'An olive oil produced in the hills surrounding Elbasan has won the gold medal at the prestigious Mediterranean Olive Oil Competition held in Barcelona last week. The extra virgin olive oil, produced by the Elbasan Agricultural Cooperative, beat over 150 competitors from countries including Italy, Spain, Greece, and Turkey.\n\nThe winning oil, made from a blend of local olive varieties grown in the fertile soil of the Shkumbin Valley, was praised by judges for its "complex fruity notes, perfect balance, and exceptional purity." This is the first time an Albanian olive oil has received the top honor in the competition\'s 25-year history.\n\n"This award puts Elbasan and Albania on the map of premium olive oil producers," said Fatmir Beqiri, head of the cooperative. "It\'s a recognition of the hard work of our farmers, the quality of our land, and our commitment to traditional production methods enhanced by modern technology."\n\nThe cooperative, which represents over 200 small-scale farmers from the region, has seen increasing international demand for its products in recent years. Following this award, they plan to expand production while maintaining their commitment to quality and sustainability.',
-    author: 'Arben Shehu',
-    publishedAt: '2023-05-10T11:45:00Z',
-    image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    category: 'Business',
-    source: 'Elbasan Economic Times',
+    title: 'Elbasan Hosts International Cultural Festival',
+    summary: 'The week-long festival will showcase music, dance, and cuisine from around the world.',
+    content: `Elbasan is set to become a global cultural hub next week as it hosts the International Cultural Festival, bringing together artists and performers from over 20 countries. The festival, now in its fifth year, will feature daily performances, workshops, and food stalls in various locations around the city.
+
+    "This festival celebrates diversity and promotes cultural exchange," explained the festival director. "It's a wonderful opportunity for locals and visitors to experience traditions from around the world without leaving Elbasan."
+
+    Highlights include performances by a Japanese taiko drum ensemble, a Spanish flamenco group, and traditional Albanian folk dancers. The main stage will be set up in the central square, with additional venues at the Cultural Center and Elbasan Castle.
+
+    Food stalls will offer a taste of international cuisines, from Italian pasta to Indian curry, alongside traditional Albanian specialties. Workshops on traditional crafts, dance, and music will be available for all ages, with advance registration recommended for popular sessions.
+
+    The festival runs from June 15-21, with most events free to the public. A detailed program is available on the festival website and at tourist information points throughout the city.`,
+    author: 'Besnik Kraja',
+    publishedAt: '2025-06-08T11:45:00Z',
+    image: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6a3?auto=format&fit=crop&q=80&w=1170',
+    category: 'culture',
+    source: 'Elbasan Times',
     featured: true,
     location: {
-      name: 'Elbasan Agricultural Cooperative',
+      name: 'Elbasan City Center',
       coordinates: {
-        latitude: 41.0923,
-        longitude: 20.0726
+        latitude: 41.1115,
+        longitude: 20.0832
       }
     }
   },
   {
     id: '4',
-    title: 'Summer Festival Lineup Announced',
-    summary: 'The annual Elbasan Summer Festival will feature international and local artists this July.',
-    content: 'The organizing committee of the Elbasan Summer Festival has announced an impressive lineup for this year\'s event, scheduled to take place from July 15-18 in the city center and castle grounds. The festival, now in its 12th year, will feature performances by international artists alongside the best of Albanian music, dance, and theater.\n\nHeadlining the music program are several well-known Balkan performers, as well as artists from Italy, Greece, and beyond. The festival will also showcase traditional Albanian folk music and dance ensembles from across the country.\n\n"We\'ve worked hard to create a diverse program that celebrates both our cultural heritage and contemporary arts," said Festival Director Erjona Prifti. "This year\'s festival will be the biggest and most inclusive yet, with something for everyone to enjoy."\n\nIn addition to performances, the festival will feature artisan markets, food stalls highlighting local cuisine, workshops, and activities for children. Most events are free to attend, with special concerts in the castle requiring tickets that are already selling quickly.\n\nLocal businesses are preparing for an influx of visitors, with hotels reporting high booking rates for the festival period. The event is expected to bring significant economic benefits to the city, with last year\'s festival attracting over 30,000 visitors.',
-    author: 'Teuta Hoxha',
-    publishedAt: '2023-05-05T16:20:00Z',
-    image: 'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    category: 'Entertainment',
-    source: 'Elbasan Culture Guide',
+    title: 'Local Olive Oil Producer Wins International Award',
+    summary: 'Elbasan-based olive oil company receives gold medal at prestigious competition in Italy.',
+    content: `Elbasan's own "Green Gold" olive oil producer has brought international recognition to the region by winning a gold medal at the prestigious Olive Oil Competition in Milan, Italy. The family-run business, which has been producing olive oil for three generations, was recognized for its premium extra virgin olive oil in the "intense fruity" category.
+
+    "This award validates our commitment to quality and traditional methods," said the company's owner. "We're proud to represent Elbasan and Albanian olive oil on the international stage."
+
+    The winning oil is produced from a blend of local olive varieties grown in the hills surrounding Elbasan, where the Mediterranean climate and soil conditions are ideal for olive cultivation. The olives are hand-picked and cold-pressed within 24 hours of harvesting to preserve their flavor and nutritional properties.
+
+    The competition featured over 500 entries from 25 countries, with judges evaluating each oil for aroma, flavor, and overall quality. This is the first time an Albanian producer has received a gold medal in this competition.
+
+    "Green Gold" olive oil is available at local markets in Elbasan and select gourmet shops throughout Albania. Following the award, the company plans to expand distribution to international markets.`,
+    author: 'Mirela Tafa',
+    publishedAt: '2025-06-07T16:20:00Z',
+    image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=1170',
+    category: 'business',
+    source: 'Food & Agriculture Today',
     featured: false,
     location: {
-      name: 'Elbasan City Center',
+      name: 'Green Gold Olive Farm',
       coordinates: {
-        latitude: 41.1123,
-        longitude: 20.0826
+        latitude: 41.0925,
+        longitude: 20.0722
       }
     }
   },
   {
     id: '5',
-    title: 'New Sports Complex to Break Ground Next Month',
-    summary: 'Construction of a multi-sport complex will begin in June, providing modern facilities for local athletes.',
-    content: 'Officials have announced that construction of a new sports complex will begin next month on the outskirts of Elbasan. The 15-million-euro project will include a 5,000-seat indoor arena, Olympic-sized swimming pool, tennis courts, and training facilities for various sports.\n\nThe complex, funded through a combination of national government allocations and international development grants, is expected to be completed within two years. It will serve as a training center for national teams as well as providing facilities for local clubs and the general public.\n\n"This investment will transform sports infrastructure in our region," said the Director of Sports and Youth. "It will give our talented young athletes the facilities they need to develop their potential and compete at the highest levels."\n\nThe project is expected to create approximately 200 jobs during construction and 50 permanent positions once operational. Environmental considerations have been integrated into the design, with energy-efficient systems, solar power, and water recycling features.\n\nLocal sports clubs have welcomed the announcement, particularly the swimming and basketball associations, which have achieved national success despite limited training facilities. The complex will also include a sports medicine center, the first of its kind in the region.',
-    author: 'Genti Kraja',
-    publishedAt: '2023-04-28T10:00:00Z',
-    image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    category: 'Sports',
-    source: 'Elbasan Sports News',
+    title: 'Elbasan University Launches New Technology Center',
+    summary: 'State-of-the-art facility aims to boost innovation and tech education in the region.',
+    content: `Elbasan University has officially opened its new Technology Innovation Center, a 2,000-square-meter facility equipped with the latest technology to support education, research, and entrepreneurship in the tech sector. The center, which represents an investment of €3.5 million, includes computer labs, a startup incubator, and research facilities.
+
+    "This center will be a catalyst for technological innovation in our region," said the University Rector during the opening ceremony. "It will provide our students with hands-on experience with cutting-edge technology and support local entrepreneurs in developing new products and services."
+
+    The center will offer specialized courses in artificial intelligence, cybersecurity, and software development, with industry experts serving as guest lecturers. A partnership program with local businesses will provide internship opportunities for students and research support for companies.
+
+    The startup incubator within the center will provide workspace, mentoring, and potential funding for promising tech ventures. Five startups have already been selected for the first incubation program, which begins next month.
+
+    Funding for the center came from a combination of government grants, EU development funds, and private sector donations. The university expects the center to serve over 500 students annually and support the creation of at least 20 new tech businesses in the next five years.`,
+    author: 'Dritan Malaj',
+    publishedAt: '2025-06-06T10:00:00Z',
+    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=1170',
+    category: 'education',
+    source: 'Tech Albania',
     featured: true,
     location: {
-      name: 'North Elbasan Development Zone',
+      name: 'Elbasan University',
       coordinates: {
-        latitude: 41.1223,
-        longitude: 20.0726
+        latitude: 41.1135,
+        longitude: 20.0842
+      }
+    }
+  },
+  {
+    id: '6',
+    title: 'Archaeological Discovery Reveals Ancient Settlement Near Elbasan',
+    summary: 'Excavation uncovers remains of a previously unknown Illyrian settlement dating back to 4th century BCE.',
+    content: `Archaeologists working at a site 5 kilometers outside Elbasan have made a significant discovery: the remains of an Illyrian settlement estimated to be from the 4th century BCE. The excavation, which began as a routine survey before highway construction, has revealed foundations of buildings, pottery, tools, and jewelry that provide new insights into the region's ancient history.
+
+    "This is one of the most important archaeological discoveries in the region in recent decades," said the lead archaeologist. "The settlement appears to have been a trading post, given its location and the variety of artifacts we've found."
+
+    Among the most notable finds are several intact ceramic vessels with distinctive Illyrian decorative patterns, bronze jewelry, and coins that suggest trade connections with Greek colonies along the Adriatic coast. The layout of the settlement indicates a planned community with a central square and surrounding residential areas.
+
+    The Ministry of Culture has temporarily halted the highway construction in the area to allow for a complete archaeological investigation. Plans are being developed to preserve the site and possibly create an on-site museum to display the findings.
+
+    "This discovery adds an important chapter to our understanding of Illyrian civilization and the early history of the Elbasan region," said a representative from the National Institute of Archaeology. "It confirms the area's significance as a cultural crossroads even in ancient times."`,
+    author: 'Teuta Brahimi',
+    publishedAt: '2025-06-05T13:40:00Z',
+    image: 'https://images.unsplash.com/photo-1579445710183-f9a816f5da05?auto=format&fit=crop&q=80&w=1170',
+    category: 'culture',
+    source: 'Heritage Albania',
+    featured: false,
+    location: {
+      name: 'Archaeological Site',
+      coordinates: {
+        latitude: 41.0825,
+        longitude: 20.0622
       }
     }
   }

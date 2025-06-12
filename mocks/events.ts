@@ -3,104 +3,138 @@ import { Event } from '@/types';
 export const events: Event[] = [
   {
     id: '1',
-    title: 'Summer Day Festival',
-    description: 'Annual celebration of the end of winter and beginning of summer with traditional music, dance, and food in the city center.',
-    date: '2023-03-14',
-    time: '10:00 AM - 10:00 PM',
-    location: 'Elbasan City Center',
-    image: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6a3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+    title: 'Elbasan Summer Festival',
+    description: 'Annual summer festival with music, food, and cultural performances celebrating the rich heritage of Elbasan.',
+    date: '2025-07-15',
+    time: '18:00 - 23:00',
+    location: 'Elbasan Castle',
+    image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=1074',
     category: 'festival',
     organizer: 'Elbasan Municipality',
     price: 'Free',
     featured: true,
     coordinates: {
-      latitude: 41.1123,
-      longitude: 20.0826
+      latitude: 41.1125,
+      longitude: 20.0822
     }
   },
   {
     id: '2',
-    title: 'Elbasan Castle Food Festival',
-    description: "Experience the best of traditional Albanian cuisine with local chefs showcasing regional specialties inside the historic castle walls.",
-    date: '2023-07-15',
-    time: '5:00 PM - 11:00 PM',
-    location: 'Elbasan Castle',
-    image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+    title: 'Traditional Albanian Cuisine Workshop',
+    description: 'Learn how to prepare authentic Albanian dishes with local chefs. Ingredients and recipes provided.',
+    date: '2025-06-20',
+    time: '14:00 - 17:00',
+    location: 'Elbasan Culinary Center',
+    image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&q=80&w=1170',
     category: 'food',
-    organizer: 'Elbasan Culinary Association',
-    price: '500 LEK',
-    featured: true,
+    organizer: 'Albanian Culinary Association',
+    price: '25€',
+    featured: false,
     coordinates: {
-      latitude: 41.1133,
-      longitude: 20.0846
+      latitude: 41.1095,
+      longitude: 20.0802
     }
   },
   {
     id: '3',
-    title: 'Traditional Crafts Exhibition',
-    description: 'Exhibition of traditional Albanian crafts including filigree, wood carving, and textile arts by local artisans.',
-    date: '2023-08-10',
-    time: '11:00 AM - 7:00 PM',
-    location: 'Ethnographic Museum',
-    image: 'https://images.unsplash.com/photo-1531058020387-3be344556be6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    category: 'art',
-    organizer: 'Elbasan Artisans Guild',
-    price: '300 LEK',
-    featured: false,
+    title: 'Elbasan Symphony Orchestra Concert',
+    description: 'A night of classical music featuring works by Albanian and international composers performed by the Elbasan Symphony Orchestra.',
+    date: '2025-06-25',
+    time: '19:30 - 21:30',
+    location: 'Elbasan Theater',
+    image: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?auto=format&fit=crop&q=80&w=1170',
+    category: 'music',
+    organizer: 'Elbasan Cultural Center',
+    price: '15€',
+    featured: true,
     coordinates: {
-      latitude: 41.1103,
-      longitude: 20.0816
+      latitude: 41.1115,
+      longitude: 20.0832
     }
   },
   {
     id: '4',
-    title: 'Elbasan Marathon',
-    description: 'Annual city marathon with routes through historic districts and scenic countryside.',
-    date: '2023-09-24',
-    time: '7:00 AM',
-    location: 'Starting at Rruga Qemal Stafa',
-    image: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    category: 'sports',
-    organizer: 'Elbasan Athletics Club',
-    price: '1500 LEK registration',
+    title: 'Contemporary Art Exhibition',
+    description: 'Exhibition featuring works by emerging Albanian artists exploring themes of identity, tradition, and modernity.',
+    date: '2025-06-18',
+    time: '10:00 - 18:00',
+    location: 'Elbasan Art Gallery',
+    image: 'https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&q=80&w=1170',
+    category: 'art',
+    organizer: 'Albanian Artists Association',
+    price: '5€',
     featured: false,
     coordinates: {
-      latitude: 41.1143,
-      longitude: 20.0806
+      latitude: 41.1105,
+      longitude: 20.0812
     }
   },
   {
     id: '5',
-    title: 'Albanian Independence Day Celebration',
-    description: 'Commemoration of Albanian independence with parades, performances, and fireworks.',
-    date: '2023-11-28',
-    time: '12:00 PM - 10:00 PM',
-    location: 'Elbasan City Square',
-    image: 'https://images.unsplash.com/photo-1572445271230-a78b5944a659?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    category: 'festival',
-    organizer: 'Elbasan Municipality',
-    price: 'Free',
+    title: 'Elbasan Marathon',
+    description: 'Annual marathon through the historic streets of Elbasan. Categories include full marathon, half marathon, and 10K run.',
+    date: '2025-07-05',
+    time: '08:00 - 14:00',
+    location: 'Elbasan City Center',
+    image: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&q=80&w=1170',
+    category: 'sports',
+    organizer: 'Elbasan Sports Association',
+    price: '20€',
     featured: true,
     coordinates: {
-      latitude: 41.1123,
-      longitude: 20.0826
+      latitude: 41.1135,
+      longitude: 20.0842
     }
   },
   {
     id: '6',
-    title: 'Balkan Music Festival',
-    description: 'Three-day music festival featuring traditional and contemporary artists from across the Balkans.',
-    date: '2023-08-05',
-    time: '6:00 PM - 1:00 AM',
-    location: 'Elbasan Stadium',
-    image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-    category: 'music',
-    organizer: 'Balkan Cultural Foundation',
-    price: '2000 LEK',
+    title: 'Traditional Folk Dance Workshop',
+    description: 'Learn traditional Albanian folk dances with professional dancers. All skill levels welcome.',
+    date: '2025-06-22',
+    time: '16:00 - 18:00',
+    location: 'Elbasan Community Center',
+    image: 'https://images.unsplash.com/photo-1504609813442-a9924e2e4531?auto=format&fit=crop&q=80&w=1170',
+    category: 'other',
+    organizer: 'Albanian Folk Dance Ensemble',
+    price: '10€',
     featured: false,
     coordinates: {
-      latitude: 41.1163,
-      longitude: 20.0876
+      latitude: 41.1145,
+      longitude: 20.0852
+    }
+  },
+  {
+    id: '7',
+    title: 'Wine Tasting: Albanian Varieties',
+    description: 'Discover the rich flavors of Albanian wines with expert sommeliers. Includes tasting of 6 premium local wines.',
+    date: '2025-06-28',
+    time: '19:00 - 21:00',
+    location: 'Elbasan Wine Cellar',
+    image: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&q=80&w=1170',
+    category: 'food',
+    organizer: 'Albanian Wine Association',
+    price: '30€',
+    featured: true,
+    coordinates: {
+      latitude: 41.1155,
+      longitude: 20.0862
+    }
+  },
+  {
+    id: '8',
+    title: 'Summer Jazz Nights',
+    description: 'Open-air jazz concert featuring local and international jazz musicians in the beautiful setting of Elbasan Castle.',
+    date: '2025-07-10',
+    time: '20:00 - 23:00',
+    location: 'Elbasan Castle Courtyard',
+    image: 'https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?auto=format&fit=crop&q=80&w=1170',
+    category: 'music',
+    organizer: 'Elbasan Jazz Club',
+    price: '12€',
+    featured: false,
+    coordinates: {
+      latitude: 41.1125,
+      longitude: 20.0822
     }
   }
 ];

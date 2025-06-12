@@ -2,42 +2,50 @@ import { Weather } from '@/types';
 
 export const mockWeather: Weather = {
   location: 'Elbasan, Albania',
-  temperature: 28,
-  condition: 'Sunny',
-  icon: 'sun',
+  temperature: 24,
+  condition: 'Partly Cloudy',
+  icon: 'cloud-sun',
   windSpeed: 12,
-  humidity: 45,
+  humidity: 65,
   lastUpdated: new Date().toISOString(),
   forecast: [
     {
       day: 'Today',
-      icon: 'sun',
+      icon: 'cloud-sun',
       temperature: {
-        min: 22,
-        max: 30
+        min: 18,
+        max: 26
       }
     },
     {
-      day: 'Tomorrow',
-      icon: 'cloud-sun',
+      day: 'Thu',
+      icon: 'sun',
       temperature: {
         min: 20,
         max: 28
       }
     },
     {
-      day: 'Wed',
-      icon: 'cloud',
+      day: 'Fri',
+      icon: 'sun',
       temperature: {
-        min: 19,
-        max: 26
+        min: 21,
+        max: 30
       }
     },
     {
-      day: 'Thu',
+      day: 'Sat',
+      icon: 'cloud',
+      temperature: {
+        min: 19,
+        max: 27
+      }
+    },
+    {
+      day: 'Sun',
       icon: 'cloud-rain',
       temperature: {
-        min: 18,
+        min: 17,
         max: 24
       }
     }
