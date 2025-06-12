@@ -48,7 +48,7 @@ export const cityChallenges: CityChallenge[] = [
     reward: {
       points: 30,
       badge: 'art_enthusiast',
-      story: 'This mural was created in 2010 by local artists as part of a movement to revitalize the old town. The imagery represents the blend of cultures that have influenced Elbasan throughout its history.',
+      story: "This mural was created in 2010 by local artists as part of a movement to revitalize the old town. The imagery represents the blend of cultures that have influenced Elbasan throughout its history.",
       puzzlePiece: 'piece_2'
     },
     image: 'https://images.unsplash.com/photo-1551913902-c92207136625?q=80&w=1000&auto=format&fit=crop',
@@ -132,7 +132,7 @@ export const cityChallenges: CityChallenge[] = [
     reward: {
       points: 45,
       badge: 'water_finder',
-      story: 'This fountain has provided water to Elbasan residents since 1485. According to local legend, the water has healing properties, and the three cypress trees were planted by three brothers who returned safely from war after drinking from the fountain before their departure.',
+      story: "This fountain has provided water to Elbasan residents since 1485. According to local legend, the water has healing properties, and the three cypress trees were planted by three brothers who returned safely from war after drinking from the fountain before their departure.",
       puzzlePiece: 'piece_5'
     },
     image: 'https://images.unsplash.com/photo-1536438213775-eb8d1a7f3509?q=80&w=1000&auto=format&fit=crop',
@@ -160,7 +160,7 @@ export const cityChallenges: CityChallenge[] = [
     reward: {
       points: 55,
       badge: 'trade_master',
-      story: 'This hidden courtyard served as a secret trading post during the 16th-18th centuries. Merchants dealing in valuable or restricted goods would meet here to conduct business away from tax collectors and authorities. The symbols carved into the walls were a code used to indicate what goods were available.',
+      story: "This hidden courtyard served as a secret trading post during the 16th-18th centuries. Merchants dealing in valuable or restricted goods would meet here to conduct business away from tax collectors and authorities. The symbols carved into the walls were a code used to indicate what goods were available.",
       puzzlePiece: 'piece_6'
     },
     image: 'https://images.unsplash.com/photo-1473163928189-364b2c4e1135?q=80&w=1000&auto=format&fit=crop',
@@ -188,7 +188,7 @@ export const cityChallenges: CityChallenge[] = [
     reward: {
       points: 35,
       badge: 'craft_preserver',
-      story: 'This workshop has been operated by the same family since 1720. They still use traditional techniques to create pottery with distinctive Elbasan patterns. The current master potter is teaching local youth to ensure these traditions continue for future generations.',
+      story: "This workshop has been operated by the same family since 1720. They still use traditional techniques to create pottery with distinctive Elbasan patterns. The current master potter is teaching local youth to ensure these traditions continue for future generations.",
       puzzlePiece: 'piece_7'
     },
     image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?q=80&w=1000&auto=format&fit=crop',
