@@ -1,198 +1,187 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useCityChallenges } from '@/hooks/useCityChallenges';
-import { Clock, MapPin } from 'lucide-react-native';
+import { Target, Check, ChevronRight } from 'lucide-react-native';
+import Colors from '@/constants/colors';
+import { useChallengesStore } from '@/stores/challenges-store';
+import { useGamificationStore } from '@/stores/gamification-store';
 
-export default function DailyChallengeWidget() {
+export function DailyChallengeWidget() {
   const router = useRouter();
-  const { dailyChallenge, loading, error } = useCityChallenges();
+  const { availableChallenges, completeChallenge } = useChallengesStore();
+  const { updateStats } = useGamificationStore();
+  const [completed, setCompleted] = useState(false);
   
-  const handlePress = () => {
-    if (dailyChallenge) {
-      router.push(`/city-challenges/${dailyChallenge.id}`);
-    } else {
-      router.push('/city-challenges');
+  // Get daily challenge - first uncompleted challenge or first challenge
+  const dailyChallenge = availableChallenges.find(c => !c.completed) || availableChallenges[0];
+  
+  // Handle challenge completion
+  const handleCompleteChallenge = () => {
+    if (dailyChallenge && !dailyChallenge.completed && !completed) {
+      // Mark challenge as completed
+      completeChallenge(dailyChallenge.id);
+      
+      // Update user stats
+      updateStats({
+        points: dailyChallenge.points,
+        challengesCompleted: 1
+      });
+      
+      // Update local state
+      setCompleted(true);
     }
   };
   
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color="#0066cc" />
-        <Text style={styles.loadingText}>Loading daily challenge...</Text>
-      </View>
-    );
+  if (!dailyChallenge) {
+    return null;
   }
-  
-  if (error || !dailyChallenge) {
-    return (
-      <TouchableOpacity 
-        style={[styles.container, styles.errorContainer]} 
-        onPress={() => router.push('/city-challenges')}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.errorTitle}>No Daily Challenge Available</Text>
-        <Text style={styles.errorText}>Tap to browse all challenges</Text>
-      </TouchableOpacity>
-    );
-  }
-  
-  // Format expiry time
-  const formatExpiryTime = () => {
-    const expiryDate = new Date(dailyChallenge.expiresAt);
-    const now = new Date();
-    const hoursRemaining = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60));
-    return `${hoursRemaining} hour${hoursRemaining !== 1 ? 's' : ''} left`;
-  };
   
   return (
-    <TouchableOpacity 
-      style={styles.container} 
-      onPress={handlePress}
-      activeOpacity={0.7}
-    >
+    <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Daily Challenge</Text>
-        <View style={styles.timeContainer}>
-          <Clock size={14} color="#666" />
-          <Text style={styles.timeText}>{formatExpiryTime()}</Text>
+        <View style={styles.titleContainer}>
+          <Target size={20} color={Colors.primary} />
+          <Text style={styles.title}>Daily Challenge</Text>
         </View>
+        
+        <TouchableOpacity 
+          style={styles.viewAllButton}
+          onPress={() => router.push('/challenges')}
+        >
+          <Text style={styles.viewAllText}>View All</Text>
+          <ChevronRight size={16} color={Colors.primary} />
+        </TouchableOpacity>
       </View>
       
-      <View style={styles.content}>
-        <Image source={{ uri: dailyChallenge.image }} style={styles.image} />
-        <View style={styles.details}>
-          <Text style={styles.challengeTitle}>{dailyChallenge.title}</Text>
-          <Text style={styles.description} numberOfLines={2}>{dailyChallenge.description}</Text>
+      <View style={styles.challengeContainer}>
+        <Text style={styles.challengeTitle}>{dailyChallenge.title}</Text>
+        <Text style={styles.challengeDescription}>{dailyChallenge.description}</Text>
+        
+        <View style={styles.rewardContainer}>
+          <Text style={styles.rewardText}>
+            Reward: <Text style={styles.pointsText}>{dailyChallenge.points} points</Text>
+          </Text>
           
-          <View style={styles.locationContainer}>
-            <MapPin size={14} color="#666" />
-            <Text style={styles.locationText} numberOfLines={1}>{dailyChallenge.location.name}</Text>
-          </View>
-          
-          <View style={styles.rewardContainer}>
-            <Text style={styles.rewardText}>
-              Reward: {dailyChallenge.reward.points} points + {dailyChallenge.reward.badge.replace('_', ' ')} badge
-            </Text>
-          </View>
+          {dailyChallenge.completed || completed ? (
+            <View style={styles.completedButton}>
+              <Check size={16} color="#fff" />
+              <Text style={styles.completedButtonText}>Completed</Text>
+            </View>
+          ) : (
+            <TouchableOpacity 
+              style={styles.completeButton}
+              onPress={handleCompleteChallenge}
+            >
+              <Text style={styles.completeButtonText}>Complete</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.card,
     borderRadius: 12,
     padding: 16,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+      },
+    }),
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#333',
-  },
-  timeContainer: {
+  titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
   },
-  timeText: {
-    fontSize: 12,
-    color: '#666',
-    marginLeft: 4,
+  title: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginLeft: 8,
   },
-  content: {
+  viewAllButton: {
     flexDirection: 'row',
+    alignItems: 'center',
   },
-  image: {
-    width: 100,
-    height: 100,
+  viewAllText: {
+    fontSize: 14,
+    color: Colors.primary,
+    marginRight: 2,
+  },
+  challengeContainer: {
+    backgroundColor: `${Colors.primary}08`,
     borderRadius: 8,
-  },
-  details: {
-    flex: 1,
-    marginLeft: 12,
-    justifyContent: 'space-between',
+    padding: 16,
   },
   challengeTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
-  },
-  description: {
-    fontSize: 14,
-    color: '#666',
+    fontWeight: 'bold',
+    color: Colors.text,
     marginBottom: 8,
+  },
+  challengeDescription: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginBottom: 16,
     lineHeight: 20,
   },
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  locationText: {
-    fontSize: 13,
-    color: '#666',
-    marginLeft: 4,
-  },
   rewardContainer: {
-    backgroundColor: '#f0f8ff',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   rewardText: {
-    fontSize: 12,
-    color: '#0066cc',
-  },
-  loadingContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  loadingText: {
-    marginTop: 8,
-    color: '#666',
-  },
-  errorContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 24,
-  },
-  errorTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#666',
-    marginBottom: 8,
-  },
-  errorText: {
     fontSize: 14,
-    color: '#0066cc',
+    color: Colors.textSecondary,
+  },
+  pointsText: {
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  completeButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  completeButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  completedButton: {
+    backgroundColor: Colors.success,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  completedButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+    marginLeft: 4,
   },
 });

@@ -1,21 +1,55 @@
+// Weather types
 export interface Weather {
-  city: string;
+  location: string;
   temperature: number;
   condition: string;
   icon: string;
-  humidity: number;
   windSpeed: number;
-  forecast: WeatherForecast[];
+  humidity: number;
   lastUpdated: string;
+  forecast?: WeatherForecast[];
 }
 
 export interface WeatherForecast {
   day: string;
-  temperature: number;
-  condition: string;
   icon: string;
+  temperature: {
+    min: number;
+    max: number;
+  };
 }
 
+// Shop types
+export interface Shop {
+  id: string;
+  name: string;
+  description: string;
+  category: ShopCategory;
+  address: string;
+  phone?: string;
+  website?: string;
+  email?: string;
+  hours: string;
+  image: string;
+  promotion?: ShopPromotion;
+  rating: number;
+  featured: boolean;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+}
+
+export type ShopCategory = 'souvenirs' | 'food' | 'clothing' | 'books' | 'sports';
+
+export interface ShopPromotion {
+  title: string;
+  description: string;
+  validUntil?: string;
+  discountPercent?: number;
+}
+
+// Event types
 export interface Event {
   id: string;
   title: string;
@@ -23,102 +57,67 @@ export interface Event {
   date: string;
   time: string;
   location: string;
-  category: string;
   image: string;
+  category: EventCategory;
   organizer: string;
-  contact: string;
-  price: string;
-  isFree: boolean;
-  isVirtual: boolean;
-  url?: string;
-  tags: string[];
+  price?: string;
+  featured?: boolean;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
-export type NewsCategory = 'local' | 'business' | 'culture' | 'sports' | 'politics' | 'other';
+export type EventCategory = 'music' | 'art' | 'food' | 'sports' | 'festival' | 'other';
 
+// News types
 export interface NewsItem {
   id: string;
   title: string;
   summary: string;
   content: string;
-  date: string;
-  source: string;
   author: string;
+  publishedAt: string;
   image: string;
-  category: NewsCategory;
-  tags: string[];
-  url?: string;
+  category: string;
+  source: string;
+  featured?: boolean;
+  location?: {
+    name: string;
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
+  };
+}
+
+// Tourist info types
+export interface TouristInfo {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  category: TouristInfoCategory;
+}
+
+export type TouristInfoCategory = 'accommodation' | 'transportation' | 'emergency' | 'wifi' | 'tips' | 'phrasebook';
+
+// Attraction types
+export interface Attraction {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  category: AttractionCategory;
+  address: string;
+  openingHours?: string;
+  admissionFee?: string;
+  rating: number;
+  featured: boolean;
   coordinates?: {
     latitude: number;
     longitude: number;
   };
-  locationName?: string;
 }
 
-export interface Shop {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  address: string;
-  phone: string;
-  website?: string;
-  email?: string;
-  hours: {
-    monday: string;
-    tuesday: string;
-    wednesday: string;
-    thursday: string;
-    friday: string;
-    saturday: string;
-    sunday: string;
-  };
-  coordinates: {
-    latitude: number;
-    longitude: number;
-  };
-  rating: number;
-  reviews: number;
-  images: string[];
-  tags: string[];
-  promotions?: Promotion[];
-}
-
-export interface Promotion {
-  id: string;
-  title: string;
-  description: string;
-  discount: string;
-  validUntil: string;
-  code?: string;
-  image?: string;
-}
-
-export interface CityChallenge {
-  id: string;
-  title: string;
-  description: string;
-  clue: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  type: 'riddle' | 'visual' | 'historical' | 'audio' | 'puzzle';
-  location: {
-    name: string;
-    hint: string;
-    coordinates: {
-      latitude: number;
-      longitude: number;
-    };
-    radius: number; // meters
-  };
-  reward: {
-    points: number;
-    badge: string;
-    story: string;
-    puzzlePiece: string;
-  };
-  image: string;
-  isActive: boolean;
-  expiresAt: string;
-  createdAt: string;
-  completedBy: number;
-}
+export type AttractionCategory = 'historical' | 'natural' | 'cultural' | 'religious' | 'entertainment';

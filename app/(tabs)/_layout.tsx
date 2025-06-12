@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Home, Map, Heart, User, Calendar, Search, Compass } from 'lucide-react-native';
+import { Home, Calendar, Newspaper, Map, Heart, ShoppingBag, Store, Info } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 
 export default function TabsLayout() {
@@ -10,52 +10,70 @@ export default function TabsLayout() {
         tabBarActiveTintColor: Colors.primary,
         tabBarInactiveTintColor: Colors.textSecondary,
         tabBarStyle: {
-          borderTopWidth: 1,
+          backgroundColor: Colors.background,
           borderTopColor: Colors.border,
         },
-        headerShown: true,
+        headerStyle: {
+          backgroundColor: Colors.background,
+        },
+        headerTintColor: Colors.text,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
+          tabBarIcon: ({ color }) => <Home size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="events"
         options={{
           title: 'Events',
-          tabBarIcon: ({ color, size }) => <Calendar size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="city-challenges"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color, size }) => <Compass size={size} color={color} />,
+          tabBarIcon: ({ color }) => <Calendar size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="news"
         options={{
           title: 'News',
-          tabBarIcon: ({ color, size }) => <Search size={size} color={color} />,
+          tabBarIcon: ({ color }) => <Newspaper size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="tourist"
+        options={{
+          title: 'Tourist',
+          tabBarIcon: ({ color }) => <Info size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="shops"
+        options={{
+          title: 'Shops',
+          tabBarIcon: ({ color }) => <Store size={24} color={color} />,
+          headerTitle: 'Local Shops',
+        }}
+      />
+      <Tabs.Screen
+        name="attractions"
+        options={{
+          title: 'Attractions',
+          tabBarIcon: ({ color }) => <Map size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="services"
+        options={{
+          title: 'Services',
+          tabBarIcon: ({ color }) => <ShoppingBag size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="favorites"
         options={{
           title: 'Favorites',
-          tabBarIcon: ({ color, size }) => <Heart size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
+          tabBarIcon: ({ color }) => <Heart size={24} color={color} />,
         }}
       />
     </Tabs>
