@@ -1,118 +1,99 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Platform, Image } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { useCityChallenges } from '@/hooks/useCityChallenges';
-import ChallengeCard from '@/components/ChallengeCard';
-import { ChevronLeft, ChevronRight } from 'lucide-react-native';
-import { EmptyState } from '@/components/EmptyState';
-import { CityChallenge } from '@/types';
+import { MapPin, Compass, ChevronLeft } from 'lucide-react-native';
+import * as Location from 'expo-location';
+import Colors from '@/constants/colors';
+import { useCityChallengesStore } from '@/stores/city-challenges-store';
 
 export default function ChallengesMapScreen() {
   const router = useRouter();
-  const { challenges, loading } = useCityChallenges();
-  const [selectedChallenge, setSelectedChallenge] = useState<string | null>(null);
-  const [mapReady, setMapReady] = useState(false);
-  
-  // For web compatibility
-  const [showMap, setShowMap] = useState(false);
+  const { availableChallenges, dailyChallenge } = useCityChallengesStore();
+  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [locationPermission, setLocationPermission] = useState<boolean | null>(null);
   
   useEffect(() => {
-    // On web, we'll show a message instead of the map
-    if (Platform.OS === 'web') {
-      setShowMap(false);
-    } else {
-      // Small delay to ensure map renders properly
-      const timer = setTimeout(() => {
-        setShowMap(true);
-      }, 500);
-      
-      return () => clearTimeout(timer);
+    // Request location permission
+    if (Platform.OS !== 'web') {
+      (async () => {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        setLocationPermission(status === 'granted');
+        
+        if (status === 'granted') {
+          const location = await Location.getCurrentPositionAsync({});
+          setLocation(location);
+        }
+      })();
     }
   }, []);
   
-  const selectedChallengeData = challenges.find(c => c.id === selectedChallenge);
-  
-  const handleMarkerPress = (challengeId: string) => {
-    setSelectedChallenge(challengeId);
-  };
-  
-  const navigateToChallenge = () => {
-    if (selectedChallenge) {
-      router.push(`/city-challenges/${selectedChallenge}`);
-    }
-  };
-  
-  const navigateToPrevious = () => {
-    if (!selectedChallenge) return;
-    
-    const currentIndex = challenges.findIndex(c => c.id === selectedChallenge);
-    if (currentIndex > 0) {
-      setSelectedChallenge(challenges[currentIndex - 1].id);
-    }
-  };
-  
-  const navigateToNext = () => {
-    if (!selectedChallenge) return;
-    
-    const currentIndex = challenges.findIndex(c => c.id === selectedChallenge);
-    if (currentIndex < challenges.length - 1) {
-      setSelectedChallenge(challenges[currentIndex + 1].id);
-    }
-  };
-  
-  if (Platform.OS === 'web') {
-    return (
-      <>
-        <Stack.Screen options={{ title: 'Challenge Map' }} />
-        <EmptyState
-          icon="map"
-          title="Map View Not Available"
-          message="The map view is not available on web. Please use the mobile app to access this feature."
-          actionLabel="Back to Challenges"
-          onAction={() => router.push('/city-challenges')}
-        />
-      </>
-    );
-  }
-  
   return (
     <>
-      <Stack.Screen options={{ title: 'Challenge Map' }} />
-      
+      <Stack.Screen 
+        options={{
+          title: 'Challenges Map',
+        }} 
+      />
       <View style={styles.container}>
-        {showMap ? (
-          <MapComponent 
-            challenges={challenges} 
-            onMarkerPress={handleMarkerPress} 
-            onMapReady={() => setMapReady(true)} 
+        {/* Map placeholder - in a real app, this would be a map component */}
+        <View style={styles.mapPlaceholder}>
+          <Image 
+            source={{ uri: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69c07b?q=80&w=1000&auto=format&fit=crop' }} 
+            style={styles.mapImage}
+            resizeMode="cover"
           />
-        ) : (
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Loading map...</Text>
-          </View>
-        )}
-        
-        {selectedChallenge && selectedChallengeData && (
-          <View style={styles.cardContainer}>
-            <View style={styles.navigationButtons}>
-              <TouchableOpacity 
-                style={styles.navButton} 
-                onPress={navigateToPrevious}
-              >
-                <ChevronLeft size={24} color="#333" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.navButton} 
-                onPress={navigateToNext}
-              >
-                <ChevronRight size={24} color="#333" />
-              </TouchableOpacity>
-            </View>
+          <View style={styles.mapOverlay}>
+            <MapPin size={60} color={Colors.primary} />
+            <Text style={styles.mapPlaceholderText}>
+              {Platform.OS === 'web' 
+                ? 'Interactive map available in mobile app' 
+                : locationPermission === false 
+                  ? 'Location permission required to view map'
+                  : 'Map view coming soon'}
+            </Text>
             
-            <TouchableOpacity onPress={navigateToChallenge} activeOpacity={0.9}>
-              <ChallengeCard challenge={selectedChallengeData} />
-            </TouchableOpacity>
+            {locationPermission === false && Platform.OS !== 'web' && (
+              <TouchableOpacity 
+                style={styles.permissionButton}
+                onPress={async () => {
+                  const { status } = await Location.requestForegroundPermissionsAsync();
+                  setLocationPermission(status === 'granted');
+                  
+                  if (status === 'granted') {
+                    const location = await Location.getCurrentPositionAsync({});
+                    setLocation(location);
+                  }
+                }}
+              >
+                <Text style={styles.permissionButtonText}>Grant Permission</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+        
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <ChevronLeft size={24} color={Colors.text} />
+        </TouchableOpacity>
+        
+        <View style={styles.challengesListContainer}>
+          <Text style={styles.challengesListTitle}>
+            {availableChallenges.length} Challenges Available
+          </Text>
+          
+          <TouchableOpacity 
+            style={styles.listButton}
+            onPress={() => router.push('/city-challenges')}
+          >
+            <Text style={styles.listButtonText}>View List</Text>
+          </TouchableOpacity>
+        </View>
+        
+        {location && (
+          <View style={styles.locationButton}>
+            <Compass size={24} color={Colors.primary} />
           </View>
         )}
       </View>
@@ -120,125 +101,134 @@ export default function ChallengesMapScreen() {
   );
 }
 
-// Define MapComponent with proper types
-interface MapComponentProps {
-  challenges: CityChallenge[];
-  onMarkerPress: (id: string) => void;
-  onMapReady: () => void;
-}
-
-// We'll conditionally render the MapComponent
-const MapComponent = Platform.OS !== 'web' ? 
-  ({ challenges, onMarkerPress, onMapReady }: MapComponentProps) => {
-    const [MapView, setMapView] = useState<any>(null);
-    const [Marker, setMarker] = useState<any>(null);
-    const [Provider, setProvider] = useState<any>(null);
-    
-    useEffect(() => {
-      // Only import on non-web platforms
-      if (Platform.OS !== 'web') {
-        import('react-native-maps').then((module) => {
-          setMapView(module.default);
-          setMarker(module.Marker);
-          setProvider(module.PROVIDER_GOOGLE);
-        }).catch(err => console.error('Error loading maps:', err));
-      }
-    }, []);
-    
-    if (!MapView || !Marker) {
-      return (
-        <View style={styles.mapPlaceholder}>
-          <Text style={styles.mapText}>Map view is loading...</Text>
-        </View>
-      );
-    }
-    
-    return (
-      <MapView
-        style={styles.map}
-        provider={Provider}
-        initialRegion={{
-          latitude: 41.1123,
-          longitude: 20.0826,
-          latitudeDelta: 0.02,
-          longitudeDelta: 0.02,
-        }}
-        onMapReady={onMapReady}
-        showsUserLocation
-        showsMyLocationButton
-      >
-        {challenges.map((challenge: CityChallenge) => (
-          <Marker
-            key={challenge.id}
-            coordinate={challenge.location.coordinates}
-            title={challenge.title}
-            description={challenge.location.name}
-            onPress={() => onMarkerPress(challenge.id)}
-          />
-        ))}
-      </MapView>
-    );
-  } : 
-  () => null; // Return null on web
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f8f8',
-  },
-  map: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
+    backgroundColor: Colors.background,
   },
   mapPlaceholder: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: Colors.card,
+  },
+  mapImage: {
+    width: '100%',
+    height: '100%',
+  },
+  mapOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#e8f0fe',
-  },
-  mapText: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
     padding: 20,
   },
-  cardContainer: {
+  mapPlaceholderText: {
+    fontSize: 18,
+    color: '#fff',
+    textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 24,
+  },
+  permissionButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  permissionButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  backButton: {
     position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
-  },
-  navigationButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  navButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 20,
+    top: 16,
+    left: 16,
     width: 40,
     height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.2,
         shadowRadius: 4,
       },
       android: {
-        elevation: 3,
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
       },
     }),
   },
-  loadingContainer: {
-    flex: 1,
+  challengesListContainer: {
+    position: 'absolute',
+    bottom: 24,
+    left: 16,
+    right: 16,
+    backgroundColor: Colors.card,
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+      },
+    }),
+  },
+  challengesListTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.text,
+  },
+  listButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+  },
+  listButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#fff',
+  },
+  locationButton: {
+    position: 'absolute',
+    bottom: 100,
+    right: 16,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: Colors.card,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    color: '#666',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+      },
+    }),
   },
 });

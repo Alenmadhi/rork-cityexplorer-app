@@ -1,12 +1,24 @@
+import React from 'react';
 import { Stack } from 'expo-router';
+import Colors from '@/constants/colors';
 
-export default function ChallengesLayout() {
+export default function CityChallengesLayout() {
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: Colors.background,
+        },
+        headerTintColor: Colors.text,
+        headerBackTitleVisible: false,
+        headerShadowVisible: false,
+      }}
+    >
       <Stack.Screen
         name="index"
         options={{
-          title: 'City Challenges',
+          title: 'Hidden Elbasan',
+          headerLargeTitle: true,
         }}
       />
       <Stack.Screen
