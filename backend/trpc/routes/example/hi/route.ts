@@ -1,8 +1,11 @@
-import { publicProcedure } from "../../../app-router";
+import { z } from "zod";
+import { publicProcedure } from "../../../create-context";
 
-export const hiProcedure = publicProcedure.query(() => {
-  return {
-    greeting: "Hello from tRPC server!",
-    timestamp: new Date().toISOString(),
-  };
-});
+export default publicProcedure
+  .input(z.object({ name: z.string().optional().default("world") }))
+  .query(({ input }) => {
+    return {
+      hello: input.name,
+      date: new Date(),
+    };
+  });

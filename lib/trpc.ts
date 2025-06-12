@@ -1,29 +1,33 @@
-// This is a mock implementation since backend is removed
-// It provides the necessary types and functions to prevent errors
-// but doesn't actually connect to any backend
+import { createTRPCReact } from "@trpc/react-query";
+import { httpLink } from "@trpc/client";
+import type { AppRouter } from "@/backend/trpc/app-router";
+import superjson from "superjson";
 
-import { createTRPCReact } from '@trpc/react-query';
-
-// Define a minimal router type that satisfies the constraints
-export type AppRouter = {
-  _def: any;
-  createCaller: any;
-  // Add other router definitions as needed
-};
-
-// Create a mock tRPC React client
 export const trpc = createTRPCReact<AppRouter>();
 
-// Mock function for initialization
+const getBaseUrl = () => {
+  if (process.env.EXPO_PUBLIC_RORK_API_BASE_URL) {
+    return process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
+  }
+
+  throw new Error(
+    "No base url found, please set EXPO_PUBLIC_RORK_API_BASE_URL"
+  );
+};
+
+export const trpcClient = trpc.createClient({
+  links: [
+    httpLink({
+      url: `${getBaseUrl()}/api/trpc`,
+      transformer: superjson,
+    }),
+  ],
+});
+
+// For backward compatibility with existing code
 export const initTRPC = () => {
-  console.log('tRPC initialized in mock mode - no backend connection');
+  console.log('tRPC initialized with real backend connection');
   return {
     initialized: true
   };
-};
-
-// Export a dummy client for imports that need it
-export const trpcClient = {
-  query: async () => ({ data: null }),
-  mutation: async () => ({ data: null })
 };
