@@ -22,7 +22,7 @@ export function useWeather() {
       } else if (useMockOnFailure) {
         // Fall back to mock data if API returns empty results
         setWeather(mockWeather);
-        setError("Couldn't fetch live weather. Showing sample data instead.");
+        setError("Couldn't fetch live weather. Showing sample weather instead.");
       } else {
         setError("No weather data available at this time.");
       }
@@ -32,7 +32,7 @@ export function useWeather() {
       if (useMockOnFailure) {
         // Fall back to mock data on error
         setWeather(mockWeather);
-        setError("Couldn't connect to weather service. Showing sample data instead.");
+        setError("Couldn't connect to weather service. Showing sample weather instead.");
       } else {
         setError("Failed to load weather. Please check your connection and try again.");
       }

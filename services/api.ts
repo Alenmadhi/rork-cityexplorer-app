@@ -3,70 +3,59 @@ import { mockWeather } from '@/mocks/weather';
 import { events as mockEvents } from '@/mocks/events';
 import { news as mockNews } from '@/mocks/news';
 import { shops as mockShops } from '@/mocks/shops';
+import { trpcClient } from '@/lib/trpc';
 
-// Simulated API call to fetch weather data
+// Fetch weather data from tRPC backend
 export async function fetchWeather(): Promise<Weather> {
-  // In a real app, this would be an actual API call
-  // For now, we'll simulate a network request with a delay
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      // Simulate successful API response with 80% probability
-      if (Math.random() > 0.2) {
-        // Return mock data with current timestamp
-        const currentWeather = {
-          ...mockWeather,
-          lastUpdated: new Date().toISOString()
-        };
-        resolve(currentWeather);
-      } else {
-        // Simulate API error
-        reject(new Error('Failed to fetch weather data'));
-      }
-    }, 1000);
-  });
+  try {
+    // Try to fetch from backend
+    const data = await trpcClient.weather.query();
+    return data;
+  } catch (error) {
+    console.error("Error fetching weather from backend:", error);
+    // Fallback to mock data if backend fails
+    return {
+      ...mockWeather,
+      lastUpdated: new Date().toISOString()
+    };
+  }
 }
 
-// Simulated API call to fetch events data
+// Fetch events data from tRPC backend
 export async function fetchEvents(): Promise<Event[]> {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      // Simulate successful API response with 80% probability
-      if (Math.random() > 0.2) {
-        resolve(mockEvents);
-      } else {
-        // Simulate API error
-        reject(new Error('Failed to fetch events data'));
-      }
-    }, 800);
-  });
+  try {
+    // Try to fetch from backend
+    const data = await trpcClient.events.query();
+    return data;
+  } catch (error) {
+    console.error("Error fetching events from backend:", error);
+    // Fallback to mock data if backend fails
+    return mockEvents;
+  }
 }
 
-// Simulated API call to fetch news data
+// Fetch news data from tRPC backend
 export async function fetchNews(): Promise<NewsItem[]> {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      // Simulate successful API response with 80% probability
-      if (Math.random() > 0.2) {
-        resolve(mockNews);
-      } else {
-        // Simulate API error
-        reject(new Error('Failed to fetch news data'));
-      }
-    }, 800);
-  });
+  try {
+    // Try to fetch from backend
+    const data = await trpcClient.news.query();
+    return data;
+  } catch (error) {
+    console.error("Error fetching news from backend:", error);
+    // Fallback to mock data if backend fails
+    return mockNews;
+  }
 }
 
-// Simulated API call to fetch shops data
+// Fetch shops data from tRPC backend
 export async function fetchShops(): Promise<Shop[]> {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      // Simulate successful API response with 80% probability
-      if (Math.random() > 0.2) {
-        resolve(mockShops);
-      } else {
-        // Simulate API error
-        reject(new Error('Failed to fetch shops data'));
-      }
-    }, 800);
-  });
+  try {
+    // Try to fetch from backend
+    const data = await trpcClient.shops.query();
+    return data;
+  } catch (error) {
+    console.error("Error fetching shops from backend:", error);
+    // Fallback to mock data if backend fails
+    return mockShops;
+  }
 }
