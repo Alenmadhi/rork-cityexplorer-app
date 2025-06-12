@@ -20,7 +20,7 @@ export const cityChallenges: CityChallenge[] = [
     reward: {
       points: 50,
       badge: 'history_explorer',
-      story: 'This wall section was built in the 15th century during Ottoman rule. In 1466, Skanderbeg's forces attempted to liberate the city and left secret messages carved into stones for local resistance fighters.',
+      story: "This wall section was built in the 15th century during Ottoman rule. In 1466, Skanderbeg's forces attempted to liberate the city and left secret messages carved into stones for local resistance fighters.",
       puzzlePiece: 'piece_1'
     },
     image: 'https://images.unsplash.com/photo-1566419808810-658178380987?q=80&w=1000&auto=format&fit=crop',
@@ -76,7 +76,7 @@ export const cityChallenges: CityChallenge[] = [
     reward: {
       points: 40,
       badge: 'knowledge_seeker',
-      story: 'This building served as Elbasan's first modern school from 1909 to 1978. When the new school was built, citizens transformed it into a community library to preserve its educational legacy. It houses rare manuscripts dating back to the 17th century.',
+      story: "This building served as Elbasan's first modern school from 1909 to 1978. When the new school was built, citizens transformed it into a community library to preserve its educational legacy. It houses rare manuscripts dating back to the 17th century.",
       puzzlePiece: 'piece_3'
     },
     image: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=1000&auto=format&fit=crop',
@@ -104,7 +104,7 @@ export const cityChallenges: CityChallenge[] = [
     reward: {
       points: 60,
       badge: 'music_historian',
-      story: 'These steps led to Elbasan's first opera house, built in 1892 and destroyed during WWII. Local musicians still gather here on summer evenings to perform traditional Albanian folk music, continuing a tradition that spans generations.',
+      story: "These steps led to Elbasan's first opera house, built in 1892 and destroyed during WWII. Local musicians still gather here on summer evenings to perform traditional Albanian folk music, continuing a tradition that spans generations.",
       puzzlePiece: 'piece_4'
     },
     image: 'https://images.unsplash.com/photo-1511735111819-9a3f7709049c?q=80&w=1000&auto=format&fit=crop',
