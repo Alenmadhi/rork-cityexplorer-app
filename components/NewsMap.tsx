@@ -142,130 +142,138 @@ interface MapComponentWrapperProps {
 }
 
 // Conditionally import and render MapView component
-const MapComponentWrapper = Platform.OS !== 'web' ? 
-  (props: MapComponentWrapperProps) => {
-    // Dynamically import MapView to avoid web errors
-    const [MapViewComponent, setMapViewComponent] = useState<any>(null);
-    const [MarkerComponent, setMarkerComponent] = useState<any>(null);
-    const [CalloutComponent, setCalloutComponent] = useState<any>(null);
-    const [Provider, setProvider] = useState<any>(null);
-    
-    useEffect(() => {
-      // Import map components only on native platforms
-      import('react-native-maps').then(({ default: MapView, Marker, Callout, PROVIDER_GOOGLE }) => {
-        setMapViewComponent(() => MapView);
-        setMarkerComponent(() => Marker);
-        setCalloutComponent(() => Callout);
-        setProvider(PROVIDER_GOOGLE);
+const MapComponentWrapper = (props: MapComponentWrapperProps) => {
+  if (Platform.OS === 'web') {
+    return null;
+  }
+  
+  // Use state to store map components
+  const [MapViewComponent, setMapViewComponent] = useState<any>(null);
+  const [MarkerComponent, setMarkerComponent] = useState<any>(null);
+  const [CalloutComponent, setCalloutComponent] = useState<any>(null);
+  const [Provider, setProvider] = useState<any>(null);
+  
+  useEffect(() => {
+    // Import map components only on native platforms
+    if (Platform.OS !== 'web') {
+      import('react-native-maps').then((module) => {
+        setMapViewComponent(module.default);
+        setMarkerComponent(module.Marker);
+        setCalloutComponent(module.Callout);
+        setProvider(module.PROVIDER_GOOGLE);
       }).catch(err => console.error('Error loading maps:', err));
-    }, []);
-    
-    if (!MapViewComponent || !MarkerComponent || !CalloutComponent) {
-      return (
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading map...</Text>
-        </View>
-      );
     }
-    
-    const { 
-      mapRef,
-      newsWithCoordinates, 
-      defaultRegion, 
-      getMarkerColor, 
-      handleMarkerPress, 
-      handleCalloutPress,
-      handleZoomIn,
-      handleZoomOut,
-      handleResetMap
-    } = props;
-    
+  }, []);
+  
+  if (!MapViewComponent || !MarkerComponent || !CalloutComponent) {
     return (
-      <>
-        <MapViewComponent
-          ref={mapRef}
-          style={styles.map}
-          initialRegion={defaultRegion}
-          provider={Provider}
-          showsUserLocation
-          showsCompass
-          showsScale
-          showsBuildings
-          showsTraffic={false}
-          showsIndoors={false}
-          showsPointsOfInterest
-          toolbarEnabled={false}
-        >
-          {newsWithCoordinates.map((item: NewsItem) => (
-            <MarkerComponent
-              key={item.id}
-              coordinate={item.coordinates!}
-              title={item.title}
-              description={item.locationName || ''}
-              pinColor={getMarkerColor(item.category)}
-              onPress={() => handleMarkerPress(item)}
-            >
-              <CalloutComponent tooltip onPress={() => handleCalloutPress(item)}>
-                <View style={styles.callout}>
-                  <Text style={styles.calloutTitle} numberOfLines={2}>
-                    {item.title}
-                  </Text>
-                  <Text style={styles.calloutCategory}>
-                    {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
-                  </Text>
-                  <Text style={styles.calloutLocation}>
-                    {item.locationName || 'Elbasan'}
-                  </Text>
-                  <Text style={styles.calloutAction}>Tap to read more</Text>
-                </View>
-              </CalloutComponent>
-            </MarkerComponent>
-          ))}
-        </MapViewComponent>
-        
-        {/* Map controls */}
-        <View style={styles.mapControls}>
-          <TouchableOpacity style={styles.mapButton} onPress={handleZoomIn}>
-            <ZoomIn size={20} color={Colors.text} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.mapButton} onPress={handleZoomOut}>
-            <ZoomOut size={20} color={Colors.text} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.mapButton} onPress={handleResetMap}>
-            <Layers size={20} color={Colors.text} />
-          </TouchableOpacity>
-        </View>
-        
-        {/* Legend */}
-        <View style={styles.legend}>
-          <Text style={styles.legendTitle}>News Categories</Text>
-          <View style={styles.legendItems}>
-            <View style={styles.legendItem}>
-              <MapPin size={16} color={Colors.categoryLocal} />
-              <Text style={styles.legendText}>Local</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <MapPin size={16} color={Colors.categoryBusiness} />
-              <Text style={styles.legendText}>Business</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <MapPin size={16} color={Colors.categoryCulture} />
-              <Text style={styles.legendText}>Culture</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <MapPin size={16} color={Colors.categorySports} />
-              <Text style={styles.legendText}>Sports</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <MapPin size={16} color={Colors.categoryPolitics} />
-              <Text style={styles.legendText}>Politics</Text>
-            </View>
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading map...</Text>
+      </View>
+    );
+  }
+  
+  const { 
+    mapRef,
+    newsWithCoordinates, 
+    defaultRegion, 
+    getMarkerColor, 
+    handleMarkerPress, 
+    handleCalloutPress,
+    handleZoomIn,
+    handleZoomOut,
+    handleResetMap
+  } = props;
+  
+  const MapView = MapViewComponent;
+  const Marker = MarkerComponent;
+  const Callout = CalloutComponent;
+  
+  return (
+    <>
+      <MapView
+        ref={mapRef}
+        style={styles.map}
+        initialRegion={defaultRegion}
+        provider={Provider}
+        showsUserLocation
+        showsCompass
+        showsScale
+        showsBuildings
+        showsTraffic={false}
+        showsIndoors={false}
+        showsPointsOfInterest
+        toolbarEnabled={false}
+      >
+        {newsWithCoordinates.map((item: NewsItem) => (
+          <Marker
+            key={item.id}
+            coordinate={item.coordinates!}
+            title={item.title}
+            description={item.locationName || ''}
+            pinColor={getMarkerColor(item.category)}
+            onPress={() => handleMarkerPress(item)}
+          >
+            <Callout tooltip onPress={() => handleCalloutPress(item)}>
+              <View style={styles.callout}>
+                <Text style={styles.calloutTitle} numberOfLines={2}>
+                  {item.title}
+                </Text>
+                <Text style={styles.calloutCategory}>
+                  {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
+                </Text>
+                <Text style={styles.calloutLocation}>
+                  {item.locationName || 'Elbasan'}
+                </Text>
+                <Text style={styles.calloutAction}>Tap to read more</Text>
+              </View>
+            </Callout>
+          </Marker>
+        ))}
+      </MapView>
+      
+      {/* Map controls */}
+      <View style={styles.mapControls}>
+        <TouchableOpacity style={styles.mapButton} onPress={handleZoomIn}>
+          <ZoomIn size={20} color={Colors.text} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.mapButton} onPress={handleZoomOut}>
+          <ZoomOut size={20} color={Colors.text} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.mapButton} onPress={handleResetMap}>
+          <Layers size={20} color={Colors.text} />
+        </TouchableOpacity>
+      </View>
+      
+      {/* Legend */}
+      <View style={styles.legend}>
+        <Text style={styles.legendTitle}>News Categories</Text>
+        <View style={styles.legendItems}>
+          <View style={styles.legendItem}>
+            <MapPin size={16} color={Colors.categoryLocal} />
+            <Text style={styles.legendText}>Local</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <MapPin size={16} color={Colors.categoryBusiness} />
+            <Text style={styles.legendText}>Business</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <MapPin size={16} color={Colors.categoryCulture} />
+            <Text style={styles.legendText}>Culture</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <MapPin size={16} color={Colors.categorySports} />
+            <Text style={styles.legendText}>Sports</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <MapPin size={16} color={Colors.categoryPolitics} />
+            <Text style={styles.legendText}>Politics</Text>
           </View>
         </View>
-      </>
-    );
-  } : 
-  () => null;
+      </View>
+    </>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

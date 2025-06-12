@@ -14,7 +14,7 @@ export default function ChallengesMapScreen() {
   const [mapReady, setMapReady] = useState(false);
   
   // For web compatibility
-  const [showMap, setShowMap] = useState(Platform.OS !== 'web');
+  const [showMap, setShowMap] = useState(false);
   
   useEffect(() => {
     // On web, we'll show a message instead of the map
@@ -81,14 +81,11 @@ export default function ChallengesMapScreen() {
       
       <View style={styles.container}>
         {showMap ? (
-          // We'll dynamically import MapView to avoid web errors
-          Platform.OS !== 'web' ? (
-            <View style={styles.mapPlaceholder}>
-              <Text style={styles.mapText}>
-                Map view is loading...
-              </Text>
-            </View>
-          ) : null
+          <MapComponent 
+            challenges={challenges} 
+            onMarkerPress={handleMarkerPress} 
+            onMapReady={() => setMapReady(true)} 
+          />
         ) : (
           <View style={styles.loadingContainer}>
             <Text style={styles.loadingText}>Loading map...</Text>
@@ -123,21 +120,43 @@ export default function ChallengesMapScreen() {
   );
 }
 
-// We'll dynamically import MapView in a useEffect to avoid web errors
-if (Platform.OS !== 'web') {
-  import('react-native-maps').then(({ default: MapView, Marker, PROVIDER_GOOGLE }) => {
-    const MapComponent = ({ 
-      challenges, 
-      onMarkerPress, 
-      onMapReady 
-    }: {
-      challenges: CityChallenge[];
-      onMarkerPress: (id: string) => void;
-      onMapReady: () => void;
-    }) => (
+// Define MapComponent with proper types
+interface MapComponentProps {
+  challenges: CityChallenge[];
+  onMarkerPress: (id: string) => void;
+  onMapReady: () => void;
+}
+
+// We'll conditionally render the MapComponent
+const MapComponent = Platform.OS !== 'web' ? 
+  ({ challenges, onMarkerPress, onMapReady }: MapComponentProps) => {
+    const [MapView, setMapView] = useState<any>(null);
+    const [Marker, setMarker] = useState<any>(null);
+    const [Provider, setProvider] = useState<any>(null);
+    
+    useEffect(() => {
+      // Only import on non-web platforms
+      if (Platform.OS !== 'web') {
+        import('react-native-maps').then((module) => {
+          setMapView(module.default);
+          setMarker(module.Marker);
+          setProvider(module.PROVIDER_GOOGLE);
+        }).catch(err => console.error('Error loading maps:', err));
+      }
+    }, []);
+    
+    if (!MapView || !Marker) {
+      return (
+        <View style={styles.mapPlaceholder}>
+          <Text style={styles.mapText}>Map view is loading...</Text>
+        </View>
+      );
+    }
+    
+    return (
       <MapView
         style={styles.map}
-        provider={PROVIDER_GOOGLE}
+        provider={Provider}
         initialRegion={{
           latitude: 41.1123,
           longitude: 20.0826,
@@ -159,8 +178,8 @@ if (Platform.OS !== 'web') {
         ))}
       </MapView>
     );
-  }).catch(err => console.error('Error loading maps:', err));
-}
+  } : 
+  () => null; // Return null on web
 
 const styles = StyleSheet.create({
   container: {
