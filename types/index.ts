@@ -89,3 +89,72 @@ export interface TouristInfo {
   category: string;
   isFeatured?: boolean;
 }
+
+// Emergency Alert types
+export interface EmergencyAlert {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'warning' | 'danger';
+  active: boolean;
+  date: string;
+  link?: string;
+}
+
+// Success Story types
+export interface SuccessStory {
+  id: string;
+  title: string;
+  description: string;
+  beforeImage: string;
+  afterImage: string;
+  date: string;
+  location: string;
+  category: string;
+  featured?: boolean;
+  reportId?: string;
+  likes?: number;
+  comments?: Comment[];
+}
+
+// Shop types
+export interface Shop {
+  id: string;
+  name: string;
+  description: string;
+  category: ShopCategory;
+  address: string;
+  phone?: string;
+  website?: string;
+  image: string;
+  rating: number;
+  reviewCount: number;
+  openingHours: string;
+  featured?: boolean;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+  promotions?: Promotion[];
+}
+
+export type ShopCategory = 'souvenirs' | 'food' | 'clothing' | 'books' | 'sports';
+
+export interface Promotion {
+  id: string;
+  title: string;
+  description: string;
+  discount: string;
+  validUntil: string;
+  image?: string;
+}
+
+export type AttractionCategory = 'landmark' | 'museum' | 'park' | 'entertainment' | 'shopping' | 'restaurant';
+
+// Comment type for success stories
+export interface Comment {
+  id: string;
+  author: string;
+  content: string;
+  date: string;
+}

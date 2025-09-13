@@ -17,7 +17,7 @@ export function WeatherCard({ weather, loading, error, onRefresh }: WeatherCardP
     try {
       const date = new Date(dateString);
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } catch (error) {
+    } catch (err) {
       return 'Unknown';
     }
   };
@@ -61,7 +61,7 @@ export function WeatherCard({ weather, loading, error, onRefresh }: WeatherCardP
       <View style={styles.currentWeather}>
         <View style={styles.temperatureContainer}>
           {renderWeatherIcon(weather?.icon || 'sun')}
-          <Text style={styles.temperature}>{weather?.temperature || '--'}°</Text>
+          <Text style={styles.temperature}>{weather?.currentTemp || '--'}°</Text>
         </View>
         
         <View style={styles.detailsContainer}>
@@ -91,7 +91,7 @@ export function WeatherCard({ weather, loading, error, onRefresh }: WeatherCardP
         <View style={styles.forecastContainer}>
           {weather.forecast.map((day, index) => (
             <View 
-              key={index}
+              key={`forecast-${index}`}
               style={[
                 styles.forecastDay,
                 index < (weather.forecast?.length || 0) - 1 && styles.forecastDayBorder
@@ -100,7 +100,7 @@ export function WeatherCard({ weather, loading, error, onRefresh }: WeatherCardP
               <Text style={styles.forecastDayName}>{day.day}</Text>
               {renderWeatherIcon(day.icon, 24)}
               <Text style={styles.forecastTemperature}>
-                {day.temperature.min}° / {day.temperature.max}°
+                {day.high}° / {day.low}°
               </Text>
             </View>
           ))}

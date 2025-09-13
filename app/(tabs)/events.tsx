@@ -12,7 +12,7 @@ export default function EventsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<EventCategory | 'all'>('all');
 
-  const categories: Array<EventCategory | 'all'> = ['all', 'music', 'art', 'food', 'sports', 'festival', 'other'];
+  const categories: (EventCategory | 'all')[] = ['all', 'music', 'art', 'food', 'sports', 'festival', 'other'];
 
   const filteredEvents = events.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -27,17 +27,23 @@ export default function EventsScreen() {
   const renderCategoryButton = (category: EventCategory | 'all') => {
     const isSelected = category === selectedCategory;
     return (
-      <Text
+      <TouchableOpacity
         key={category}
         style={[
           styles.categoryButton,
-          isSelected && styles.selectedCategoryButton,
-          { color: isSelected ? Colors.background : Colors.text }
+          isSelected && styles.selectedCategoryButton
         ]}
         onPress={() => setSelectedCategory(category)}
       >
-        {category === 'all' ? 'All' : category.charAt(0).toUpperCase() + category.slice(1)}
-      </Text>
+        <Text
+          style={[
+            styles.categoryButtonText,
+            { color: isSelected ? Colors.background : Colors.text }
+          ]}
+        >
+          {category === 'all' ? 'All' : category.charAt(0).toUpperCase() + category.slice(1)}
+        </Text>
+      </TouchableOpacity>
     );
   };
 
@@ -144,7 +150,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
     borderRadius: 20,
     backgroundColor: Colors.card,
-    overflow: 'hidden',
+  },
+  categoryButtonText: {
     fontSize: 14,
     fontWeight: '500',
   },

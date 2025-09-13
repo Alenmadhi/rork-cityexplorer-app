@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, FlatList, Dimensions, Platform } from 'react-native';
-import { AlertTriangle, ChevronUp, ChevronDown, X } from 'lucide-react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Dimensions, Platform } from 'react-native';
+import { AlertTriangle, ChevronUp, ChevronDown } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import Colors from '@/constants/colors';
 import { EmergencyAlert } from '@/types';
@@ -12,8 +12,8 @@ interface EmergencyAlertCarouselProps {
 export const EmergencyAlertCarousel: React.FC<EmergencyAlertCarouselProps> = ({ alerts }) => {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const flatListRef = useRef<FlatList>(null);
-  const [height, setHeight] = useState(80); // Default height for an alert
+  const scrollViewRef = useRef<ScrollView>(null);
+
   
   // Auto-scroll through alerts
   useEffect(() => {
@@ -22,10 +22,10 @@ export const EmergencyAlertCarousel: React.FC<EmergencyAlertCarouselProps> = ({ 
     const interval = setInterval(() => {
       const nextIndex = (currentIndex + 1) % alerts.length;
       setCurrentIndex(nextIndex);
-      flatListRef.current?.scrollToIndex({ 
-        index: nextIndex, 
-        animated: true,
-        viewPosition: 0.5
+      const { width } = Dimensions.get('window');
+      scrollViewRef.current?.scrollTo({ 
+        x: nextIndex * (width - 32), // Account for padding
+        animated: true
       });
     }, 5000);
     
@@ -36,34 +36,32 @@ export const EmergencyAlertCarousel: React.FC<EmergencyAlertCarouselProps> = ({ 
   const handlePrev = useCallback(() => {
     const prevIndex = currentIndex === 0 ? alerts.length - 1 : currentIndex - 1;
     setCurrentIndex(prevIndex);
-    flatListRef.current?.scrollToIndex({ 
-      index: prevIndex, 
-      animated: true,
-      viewPosition: 0.5
+    const { width } = Dimensions.get('window');
+    scrollViewRef.current?.scrollTo({ 
+      x: prevIndex * (width - 32), // Account for padding
+      animated: true
     });
   }, [currentIndex, alerts.length]);
   
   const handleNext = useCallback(() => {
     const nextIndex = (currentIndex + 1) % alerts.length;
     setCurrentIndex(nextIndex);
-    flatListRef.current?.scrollToIndex({ 
-      index: nextIndex, 
-      animated: true,
-      viewPosition: 0.5
+    const { width } = Dimensions.get('window');
+    scrollViewRef.current?.scrollTo({ 
+      x: nextIndex * (width - 32), // Account for padding
+      animated: true
     });
   }, [currentIndex, alerts.length]);
   
-  // Create a stable reference to the viewability config
-  const viewabilityConfig = {
-    itemVisiblePercentThreshold: 50
-  };
-  
-  // Create a stable reference to the viewability callback
-  const onViewableItemsChangedRef = useRef(({ viewableItems }: any) => {
-    if (viewableItems.length > 0) {
-      setCurrentIndex(viewableItems[0].index);
+  // Handle scroll events to update current index
+  const handleScroll = useCallback((event: any) => {
+    const { width } = Dimensions.get('window');
+    const scrollX = event.nativeEvent.contentOffset.x;
+    const index = Math.round(scrollX / (width - 32));
+    if (index !== currentIndex && index >= 0 && index < alerts.length) {
+      setCurrentIndex(index);
     }
-  });
+  }, [currentIndex, alerts.length]);
   
   const handleAlertPress = useCallback((alert: EmergencyAlert) => {
     if (alert.link) {
@@ -71,55 +69,46 @@ export const EmergencyAlertCarousel: React.FC<EmergencyAlertCarouselProps> = ({ 
     }
   }, [router]);
   
-  const renderItem = useCallback(({ item }: { item: EmergencyAlert }) => (
-    <TouchableOpacity
-      style={[
-        styles.alertCard,
-        item.type === 'warning' && styles.warningCard,
-        item.type === 'danger' && styles.dangerCard,
-      ]}
-      onPress={() => handleAlertPress(item)}
-      activeOpacity={item.link ? 0.7 : 1}
-    >
-      <View style={styles.alertContent}>
-        <AlertTriangle size={24} color="#fff" />
-        <View style={styles.alertTextContainer}>
-          <Text style={styles.alertTitle}>{item.title}</Text>
-          <Text style={styles.alertMessage}>{item.message}</Text>
+  const renderAlert = useCallback((item: EmergencyAlert) => {
+    const { width } = Dimensions.get('window');
+    return (
+      <TouchableOpacity
+        key={item.id}
+        style={[
+          styles.alertCard,
+          { width: width - 32 }, // Account for container padding
+          item.type === 'warning' && styles.warningCard,
+          item.type === 'danger' && styles.dangerCard,
+        ]}
+        onPress={() => handleAlertPress(item)}
+        activeOpacity={item.link ? 0.7 : 1}
+      >
+        <View style={styles.alertContent}>
+          <AlertTriangle size={24} color="#fff" />
+          <View style={styles.alertTextContainer}>
+            <Text style={styles.alertTitle}>{item.title}</Text>
+            <Text style={styles.alertMessage}>{item.message}</Text>
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
-  ), [handleAlertPress]);
+      </TouchableOpacity>
+    );
+  }, [handleAlertPress]);
   
   if (!alerts || alerts.length === 0) return null;
   
   return (
     <View style={styles.container}>
-      <FlatList
-        ref={flatListRef}
-        data={alerts}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
+      <ScrollView
+        ref={scrollViewRef}
+        horizontal
         pagingEnabled
-        snapToAlignment="start"
-        decelerationRate="fast"
-        onViewableItemsChanged={onViewableItemsChangedRef.current}
-        viewabilityConfig={viewabilityConfig}
-        initialNumToRender={1}
-        maxToRenderPerBatch={2}
-        windowSize={3}
-        getItemLayout={(data, index) => ({
-          length: height,
-          offset: height * index,
-          index,
-        })}
-        style={styles.flatList}
-        onLayout={(event) => {
-          // Update height based on the first item
-          setHeight(event.nativeEvent.layout.height);
-        }}
-      />
+        showsHorizontalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        style={styles.scrollView}
+      >
+        {alerts.map(renderAlert)}
+      </ScrollView>
       
       {alerts.length > 1 && (
         <View style={styles.navigation}>
@@ -128,9 +117,9 @@ export const EmergencyAlertCarousel: React.FC<EmergencyAlertCarouselProps> = ({ 
           </TouchableOpacity>
           
           <View style={styles.indicators}>
-            {alerts.map((_, index) => (
+            {alerts.map((alert, index) => (
               <View
-                key={index}
+                key={alert.id}
                 style={[
                   styles.indicator,
                   index === currentIndex && styles.activeIndicator,
@@ -168,14 +157,14 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  flatList: {
+  scrollView: {
     maxHeight: 100, // Set a max height for the carousel
   },
   alertCard: {
     backgroundColor: Colors.primary,
     borderRadius: 12,
     padding: 16,
-    marginBottom: 1, // Small gap between alerts
+    marginRight: 16, // Gap between alerts
   },
   warningCard: {
     backgroundColor: Colors.warning,
