@@ -1,24 +1,29 @@
 import React from 'react';
+import { View, StyleSheet } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Home, Calendar, Newspaper, Map, Heart, ShoppingBag, Store, Info } from 'lucide-react-native';
 import Colors from '@/constants/colors';
+import { HamburgerButton } from '@/components/HamburgerButton';
+import { SideDrawer } from '@/components/SideDrawer';
 
 export default function TabsLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: Colors.textSecondary,
-        tabBarStyle: {
-          backgroundColor: Colors.background,
-          borderTopColor: Colors.border,
-        },
-        headerStyle: {
-          backgroundColor: Colors.background,
-        },
-        headerTintColor: Colors.text,
-      }}
-    >
+    <View style={styles.container}>
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: Colors.primary,
+          tabBarInactiveTintColor: Colors.textSecondary,
+          tabBarStyle: {
+            backgroundColor: Colors.background,
+            borderTopColor: Colors.border,
+          },
+          headerStyle: {
+            backgroundColor: Colors.background,
+          },
+          headerTintColor: Colors.text,
+          headerLeft: () => <HamburgerButton />,
+        }}
+      >
       <Tabs.Screen
         name="index"
         options={{
@@ -76,6 +81,14 @@ export default function TabsLayout() {
           tabBarIcon: ({ color }) => <Heart size={24} color={color} />,
         }}
       />
-    </Tabs>
+      </Tabs>
+      <SideDrawer />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

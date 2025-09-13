@@ -1,12 +1,13 @@
 import { Stack } from 'expo-router';
-import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, StyleSheet } from 'react-native';
 import { useAuthStore } from '@/stores/auth-store';
 
 import { ThemeProvider } from '@/context/theme-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { trpc, trpcClient } from '@/lib/trpc';
+import { DrawerProvider } from '@/context/drawer-context';
+import React from "react";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -22,12 +23,14 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={styles.container}>
       <ThemeProvider value={colorScheme === 'dark' ? 'dark' : 'light'}>
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
             <AuthProvider>
-              <RootLayoutNav />
+              <DrawerProvider>
+                <RootLayoutNav />
+              </DrawerProvider>
             </AuthProvider>
           </QueryClientProvider>
         </trpc.Provider>
@@ -37,11 +40,6 @@ export default function RootLayout() {
 }
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuthStore();
-
-  // You can add additional auth logic here if needed
-  // For example, refreshing tokens, checking auth status, etc.
-
   return <>{children}</>;
 }
 
@@ -79,3 +77,9 @@ function RootLayoutNav() {
     </Stack>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
