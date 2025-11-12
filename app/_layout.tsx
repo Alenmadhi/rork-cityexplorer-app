@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { useColorScheme, StyleSheet, View } from 'react-native';
+import { useColorScheme, StyleSheet } from 'react-native';
 import { useAuthStore } from '@/stores/auth-store';
 
 import { ThemeProvider } from '@/context/theme-context';
@@ -47,7 +47,7 @@ function RootLayoutNav() {
 
   return (
     <DrawerProvider>
-      <View style={styles.container}>
+      <>
         <Stack screenOptions={{ headerShown: false }}>
           {isAuthenticated ? (
             <>
@@ -77,7 +77,7 @@ function RootLayoutNav() {
           )}
         </Stack>
         {isAuthenticated && <SideDrawer />}
-      </View>
+      </>
     </DrawerProvider>
   );
 }
