@@ -219,12 +219,12 @@ export default function HomeScreen() {
           <View style={styles.quickActions}>
             <TouchableOpacity 
               style={styles.quickActionButton}
-              onPress={() => router.push('/(tabs)/report-issue')}
+              onPress={() => router.push('/(tabs)/services')}
             >
               <View style={[styles.quickActionIcon, { backgroundColor: `${Colors.primary}20` }]}>
                 <AlertTriangle size={24} color={Colors.primary} />
               </View>
-              <Text style={styles.quickActionText}>Report Issue</Text>
+              <Text style={styles.quickActionText}>City Services</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
