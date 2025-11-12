@@ -29,9 +29,7 @@ export default function RootLayout() {
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
             <AuthProvider>
-              <DrawerProvider>
-                <RootLayoutNav />
-              </DrawerProvider>
+              <RootLayoutNav />
             </AuthProvider>
           </QueryClientProvider>
         </trpc.Provider>
@@ -48,37 +46,39 @@ function RootLayoutNav() {
   const { isAuthenticated } = useAuthStore();
 
   return (
-    <View style={styles.container}>
-      <Stack screenOptions={{ headerShown: false }}>
-        {isAuthenticated ? (
-          <>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="badges/index" options={{ presentation: 'card' }} />
-            <Stack.Screen name="notifications/index" options={{ presentation: 'card' }} />
-            <Stack.Screen name="profile/edit" options={{ presentation: 'card' }} />
-            <Stack.Screen name="success-stories/index" options={{ presentation: 'card' }} />
-            <Stack.Screen name="success-stories/[id]" options={{ presentation: 'card' }} />
-            <Stack.Screen name="challenges/index" options={{ presentation: 'card' }} />
-            <Stack.Screen name="challenges/[id]" options={{ presentation: 'card' }} />
-            <Stack.Screen name="issues/index" options={{ presentation: 'card' }} />
-            <Stack.Screen name="issues/[id]" options={{ presentation: 'card' }} />
-            <Stack.Screen name="settings/index" options={{ presentation: 'card' }} />
-            <Stack.Screen name="settings/privacy" options={{ presentation: 'card' }} />
-            <Stack.Screen name="offline-reports/index" options={{ presentation: 'card' }} />
-            <Stack.Screen name="qr-scanner/index" options={{ presentation: 'card' }} />
-            <Stack.Screen name="leaderboard/index" options={{ presentation: 'card' }} />
-            <Stack.Screen name="news/[id]" options={{ presentation: 'card' }} />
-          </>
-        ) : (
-          <>
-            <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
-            <Stack.Screen name="(auth)/signup" options={{ headerShown: false }} />
-            <Stack.Screen name="guest/index" options={{ headerShown: false }} />
-          </>
-        )}
-      </Stack>
-      {isAuthenticated && <SideDrawer />}
-    </View>
+    <DrawerProvider>
+      <View style={styles.container}>
+        <Stack screenOptions={{ headerShown: false }}>
+          {isAuthenticated ? (
+            <>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="badges/index" options={{ presentation: 'card' }} />
+              <Stack.Screen name="notifications/index" options={{ presentation: 'card' }} />
+              <Stack.Screen name="profile/edit" options={{ presentation: 'card' }} />
+              <Stack.Screen name="success-stories/index" options={{ presentation: 'card' }} />
+              <Stack.Screen name="success-stories/[id]" options={{ presentation: 'card' }} />
+              <Stack.Screen name="challenges/index" options={{ presentation: 'card' }} />
+              <Stack.Screen name="challenges/[id]" options={{ presentation: 'card' }} />
+              <Stack.Screen name="issues/index" options={{ presentation: 'card' }} />
+              <Stack.Screen name="issues/[id]" options={{ presentation: 'card' }} />
+              <Stack.Screen name="settings/index" options={{ presentation: 'card' }} />
+              <Stack.Screen name="settings/privacy" options={{ presentation: 'card' }} />
+              <Stack.Screen name="offline-reports/index" options={{ presentation: 'card' }} />
+              <Stack.Screen name="qr-scanner/index" options={{ presentation: 'card' }} />
+              <Stack.Screen name="leaderboard/index" options={{ presentation: 'card' }} />
+              <Stack.Screen name="news/[id]" options={{ presentation: 'card' }} />
+            </>
+          ) : (
+            <>
+              <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
+              <Stack.Screen name="(auth)/signup" options={{ headerShown: false }} />
+              <Stack.Screen name="guest/index" options={{ headerShown: false }} />
+            </>
+          )}
+        </Stack>
+        {isAuthenticated && <SideDrawer />}
+      </View>
+    </DrawerProvider>
   );
 }
 
