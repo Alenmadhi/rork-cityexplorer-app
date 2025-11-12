@@ -1,5 +1,4 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Home, Calendar, Newspaper, Map, Heart, ShoppingBag, Store, Info } from 'lucide-react-native';
 import Colors from '@/constants/colors';
@@ -8,7 +7,7 @@ import { SideDrawer } from '@/components/SideDrawer';
 
 export default function TabsLayout() {
   return (
-    <View style={styles.container}>
+    <>
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: Colors.primary,
@@ -83,12 +82,6 @@ export default function TabsLayout() {
       />
       </Tabs>
       <SideDrawer />
-    </View>
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
