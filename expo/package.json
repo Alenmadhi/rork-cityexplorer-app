@@ -3,9 +3,9 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start --tunnel",
-    "start-web": "expo start --web --tunnel",
-    "start-web-dev": "DEBUG=expo* expo start --web --tunnel"
+    "start": "expo start",
+    "start-web": "expo start --web",
+    "start-web-dev": "DEBUG=expo* expo start --web"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -42,7 +42,6 @@
     "jose": "^6.0.11",
     "jsonwebtoken": "^9.0.2",
     "lucide-react-native": "^0.475.0",
-    "nativewind": "^4.1.23",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
@@ -55,11 +54,11 @@
     "react-native-web": "^0.21.0",
     "superjson": "^2.2.2",
     "zod": "^3.25.63",
-    "zustand": "^5.0.2"
+    "zustand": "^5.0.2",
+    "@rork-ai/toolkit-sdk": "latest"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
-    "@expo/ngrok": "^4.1.0",
     "@types/react": "~19.1.10",
     "typescript": "~5.9.2"
   },

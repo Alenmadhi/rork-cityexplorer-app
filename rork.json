@@ -4,6 +4,15 @@
       "name": "Expo",
       "path": "expo",
       "framework": "react-native"
+    },
+    {
+      "name": "Elbasan City Guide iOS",
+      "path": "ios-elbasan-city-guide-ios",
+      "framework": "swift",
+      "settings": {
+        "swiftSibling": false
+      }
     }
-  ]
+  ],
+  "$schema": "https://rork.com/schema/rork.json"
 }
